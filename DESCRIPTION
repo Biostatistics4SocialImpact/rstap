@@ -1,8 +1,8 @@
 Package: rstap
 Version: 0.0.0.9000
-Title: What the Package Does (One Line, Title Case)
+Title: Spatiotemporal Aggregated Predictor Models via Bayesian Inference 
 Description: What the package does (one paragraph).
-Authors@R: person("First", "Last", , "first.last@example.com", c("aut", "cre"))
+Authors@R: person("Adam", "Peterson", , "atpvyc@umich.edu", c("aut", "cre"))
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
