@@ -83,3 +83,31 @@ assign_dist <- function(prior){
           prior_scale, prior_df,
          prior_dist_name)
 }
+
+#' Check family argument
+#
+# @param f the \code{family} argument specified by user (or default)
+#'@return If no error is thrown than either \code{f} itself is returned
+#' (if already a family) or the family object created from \code{f} is 
+#' returned if \code{f} a string or function. Code adapted from \pkg{rstanarm}.
+validate_family <-  function(f) {
+    if(is.character(f))
+        f <-  get(f, mode = 'function', envir = parent.frame(2))
+    if(is.function(f))
+        f  <- f()
+    if(!is(f,'family'))
+        stop("'family' must be a family.", call. = F)
+
+    return(f)
+}
+
+# Convert 2-level factor to 0/1
+fac2bin <- function(y) {
+  if (!is.factor(y)) 
+    stop("Bug found: non-factor as input to fac2bin.", 
+         call. = FALSE)
+  if (!identical(nlevels(y), 2L)) 
+    stop("Bug found: factor with nlevels != 2 as input to fac2bin.", 
+         call. = FALSE)
+  as.integer(y != levels(y)[1L])
+}

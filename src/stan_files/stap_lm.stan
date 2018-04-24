@@ -5,8 +5,9 @@ data {
     int<lower=0> p; // number of subj specific covariates
     #include "prior_data.stan" // prior_data
     int<lower=1> M; // Maximum number of EFs within boundary distance
-    int u[q,N,2]; // placement array  
+    int u[q,N,2]; // index holder array  
     vector<lower=0>[M] spatial_mat[q];
+    real d_constraint; // maximum distance
     matrix[N,p] Z;
     vector[N] y;
 }
@@ -15,7 +16,7 @@ parameters {
     vector[p] beta_one;
     vector[q] beta_two;
     real<lower=0> sigma;
-    real<lower=0> thetas[q];
+    real<lower=0, upper = d_constraint> thetas[q];
 }
 model { 
     #include "priors_stap_lm.stan"
