@@ -19,6 +19,10 @@ stap_lm <- function(y, Z, dists_csr, u, max_distance = 3,
                          control = list(...),
                          ...){
 
+    
+    if(max_distance<max(dists_csr))
+        stop("max_distance must be the maximum possible distance amongst all distances in dists_csr")
+
     beta_naught_p <- assign_dist(prior_intercept)
     beta_one_p <- assign_dist(prior_beta_one)
     beta_two_p <- assign_dist(prior_beta_two)

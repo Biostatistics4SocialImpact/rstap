@@ -4,10 +4,11 @@
 \alias{stap_lm}
 \title{Fitting Linear STKAP models}
 \usage{
-stap_lm(y, Z, dists_csr, u, M = 10, prior_intercept = normal(location = 25,
-  scale = 5), prior_beta_one = normal(location = 0, scale = 5),
+stap_lm(y, Z, dists_csr, u, max_distance = 3,
+  prior_intercept = normal(location = 25, scale = 5),
+  prior_beta_one = normal(location = 0, scale = 5),
   prior_beta_two = normal(location = 0, scale = 5),
-  prior_theta = list(theta_one = exponential(rate = 2/sqrt(8))),
+  prior_theta = list(theta_one = normal(location = 1.5, scale = 0.5)),
   prior_sigma = cauchy(location = 0, scale = 5), chains = 1, iter = 500,
   warmup = floor(iter/2), thin = 1, cores = getOption("mc.cores", 1L),
   seed = Sys.Date(), control = list(...), ...)
