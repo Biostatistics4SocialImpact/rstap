@@ -296,6 +296,18 @@ exponential <- function(rate = 1, autoscale = TRUE) {
           autoscale)
 }
 
+#' @rdname priors
+#' @export
+log_normal <- function(location = 0, scale = 1){
+    nlist(dist = "lognormal", location, scale, df = NA)
+}    
+
+#' @rdname priors
+#' @export
+beta_prior <- function(alpha = 1, beta = 1){
+    nlist(dist = "beta",location = alpha, scale = beta, df = NA)  
+}
+
 
 # internal ------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 #' Fitting Generalized Linear STKAP models
 #'
 #'@param y n length vector or n x 2 matrix of outcomes
-#'@param dists_csr q x M matrix of distances between outcome observations and environmental features where q is the number of spatial covariates, and M is the maximum number of environmental features amongst all q features
+#'@param dists_crs q x M matrix of distances between outcome observations and environmental features where q is the number of spatial covariates, and M is the maximum number of environmental features amongst all q features
 #'@param max_distance the upper bound of distance for which all
 #'@param Z n x p design matrix of subject specific covariates
 #'@export stap_glm
@@ -25,18 +25,28 @@ stap_glm <- function(y, Z, dists_crs, u, max_distance = 3L, family = gaussian(),
     fam <- which(pmatch(supported_families, family$family, nomatch = 0L) == 1L)
     if(!length(fam))
         stop("'family' must be one of ", paste(supported_families, collapse = ', '))
-    if(max_distance<max(dists_crs))
-        stop("max_distance must be the maximum possible distance amongst all distances in dists_csr")
+    if(max_distance < max(dists_crs))
+        stop("max_distance must be the maximum possible distance amongst all distances in dists_crs")
+    if(max(u) != ncol(dists_crs)){
+      ix <- which(u==max(u), arr.ind = T)
+      if(length(dim(u))==2)
+        if(any(u[ix[,1],1]<=u[ix[,1],2]))
+          stop("Maximum index value of u must be equivalent to the number of columns in the distance matrix")
+      if(any(u[ix[,1],ix[,2],1]<= u[ix[,1],ix[,2],2]))
+        stop("Maximum index value of u must be equivalent to the number of columns in the distance matrix")
+    }
     supported_links <- supported_glm_links(supported_families[fam])
     link <- which(supported_links == family$link)
     if(!length(link))
         stop("'link' must be one of", paste( supported_links, collapse = ', '))
+    if(length(prior_theta)!=nrow(dists_crs))
+        stop("Insufficient number of priors set for spatial scale parameter")
 
     beta_naught_p <- assign_dist(prior_intercept)
     beta_one_p <- assign_dist(prior_beta_one)
     beta_two_p <- assign_dist(prior_beta_two)
     theta_p  <- lapply(prior_theta, assign_dist)
-    if(fam == 1)
+    if(fam == 2)
         sigma_p <- assign_dist(prior_sigma)
     y <- validate_glm_outcome_support(y,family)
 

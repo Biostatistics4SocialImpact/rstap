@@ -70,8 +70,8 @@ assign_dist <- function(prior){
     if(prior_dist_name == "normal") prior_dist <- 1L
     else if(prior_dist_name == "t") prior_dist <- 2L
     else if(prior_dist_name == "cauchy") prior_dist <- 3L
-    else if(prior_dist_name == "laplace") prior_dist <- 4L
-    else if(prior_dist_name == "lasso") prior_dist <- 5L
+    else if(prior_dist_name == "lognormal") prior_dist <- 4L
+    else if(prior_dist_name == "beta") prior_dist <- 5L
     else if(prior_dist_name == "product_normal") prior_dist <- 6L
     else if(prior_dist_name == NA){
         prior_scale <- 0L

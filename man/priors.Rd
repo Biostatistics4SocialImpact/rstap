@@ -11,6 +11,8 @@
 \alias{lasso}
 \alias{product_normal}
 \alias{exponential}
+\alias{log_normal}
+\alias{beta_prior}
 \title{Prior distributions and options}
 \usage{
 normal(location = 0, scale = NULL, autoscale = TRUE)
@@ -30,6 +32,10 @@ lasso(df = 1, location = 0, scale = NULL, autoscale = TRUE)
 product_normal(df = 2, location = 0, scale = 1)
 
 exponential(rate = 1, autoscale = TRUE)
+
+log_normal(location = 0, scale = 1)
+
+beta_prior(alpha = 1, beta = 1)
 }
 \arguments{
 \item{location}{Prior location. In most cases, this is the prior mean, but

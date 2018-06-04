@@ -1,5 +1,31 @@
 // STKAP model for a Gaussian outcome with no link function
 functions{
+  /**
+    * Scale/center Matrix M
+    * @param M matrix
+    * @return A matrix M' s.t. M*1 = 0
+    */
+    matrix centerscale(matrix M){
+        matrix[cols(M), rows(M)] out;
+        for(q in 1:cols(M))  
+            out[q] = ((M[,q] - mean(M[,q]))/sd(M[,q]))';
+        return(out');
+   }
+   /** 
+    * Get column means,sds from Matrix M
+    * @param M matrix
+    * @return a vector m
+    */ 
+    vector get_meansds(matrix M){
+        vector[2*cols(M)] m;
+        for(q in 1:2*cols(M)){
+            if(q<=cols(M))
+                m[q] = mean(M[,q]);
+            else
+                m[q] = sd(M[,(q-cols(M))]);
+        }
+        return(m);
+    }
   /** 
    * Apply inverse link function to linear predictor
    *
@@ -79,7 +105,7 @@ data {
     matrix[N,p] Z;
     #include "prior_data.stan" // prior_data
     int<lower=1> M; // Maximum number of EFs within boundary distance
-    int u[q,N,2]; // index holder array  
+    int u[N,q,2]; // index holder array  
     vector<lower=0>[M] spatial_mat[q];
     real d_constraint; // maximum distance
 }
@@ -87,16 +113,23 @@ parameters {
     real beta_naught;
     vector[p] beta_one;
     vector[q] beta_two;
-    real<lower=0, upper = d_constraint> thetas[q];
+   real<lower=0.0001, upper = 1> thetas[q];
 }
-model { 
-    #include "priors_stap_lm.stan"
-    {
-        matrix[N,q] X_tilde;
-        for(n_ix in 1:N){
-            for(q_ix in 1:q)
-                X_tilde[n_ix,q_ix] = sum( erfc(spatial_mat[q_ix][u[q_ix,n_ix,1]:u[q_ix,n_ix,2]] * inv(thetas[q_ix]) ) ); 
+transformed parameters{
+    matrix [N,q] X;
+    matrix [N,q] X_tilde;
+    for(n_ix in 1:N){
+        for(q_ix in 1:q){
+            if(u[n_ix,q_ix,1]>u[n_ix,q_ix,2])
+                X[n_ix,q_ix] = 0;
+            else
+                X[n_ix,q_ix] = sum( erfc(spatial_mat[q_ix][u[n_ix,q_ix,1]:u[n_ix,q_ix,2]] * inv(d_constraint * thetas[q_ix])));
         }
-            target += pw_binom(y, trials, beta_naught + Z * beta_one + X_tilde * beta_two, link);
-    }
+    } 
+    X_tilde = centerscale(X);
+
+}
+model{ 
+    #include "priors_stap_lm.stan"
+    target += pw_binom(y, trials, beta_naught + Z * beta_one + X_tilde * beta_two, link);
 }
