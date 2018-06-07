@@ -113,7 +113,7 @@ parameters {
     real beta_naught;
     vector[p] beta_one;
     vector[q] beta_two;
-   real<lower=0.0001, upper = 1> thetas[q];
+   real<lower=0, upper = 1> thetas[q];
 }
 transformed parameters{
     matrix [N,q] X;
