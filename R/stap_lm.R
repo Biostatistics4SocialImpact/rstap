@@ -1,27 +1,27 @@
 #' Fitting Linear STKAP models
 #'
 #'@param y vector of continuous outcomes
-#'@param X vector of environmental features integer coding
 #'@param Z n*p design matrix of subject specific covariates
+#'@param dists_csr distance crs array
+#'@param u crs index array
+#'@param D_M inclusion distance
+#'@param prior_intercept
+#'@param prior_beta_one
+#'@param prior_BEFS
+#'@param prior_theta
+#'@param prior_sigma
 #'@export stap_lm
-stap_lm <- function(y, Z, dists_csr, u, max_distance = 3,
+stap_lm <- function(y, Z, dists_csr, u, D_M = 3,
                          prior_intercept = normal(location = 25, scale = 5),
-                         prior_beta_one = normal(location = 0, scale = 5),
-                         prior_beta_two = normal(location = 0, scale = 5),
+                         prior_beta = normal(),
+                         prior_BEFS = normal(),
                          prior_theta = list(theta_one = normal(location = 1.5, scale = .5)), 
                          prior_sigma = cauchy(location = 0, scale = 5),
-                         chains = 1,
-                         iter = 500,
-                         warmup = floor(iter/2),
-                         thin = 1,
-                         cores = getOption("mc.cores", 1L),
-                         seed = Sys.Date(),
-                         control = list(...),
                          ...){
 
     
-    if(max_distance<max(dists_csr))
-        stop("max_distance must be the maximum possible distance amongst all distances in dists_csr")
+    if(D_M<max(dists_csr))
+        stop("D_M must be the maximum possible distance amongst all distances in dists_csr")
 
     beta_naught_p <- assign_dist(prior_intercept)
     beta_one_p <- assign_dist(prior_beta_one)
