@@ -97,12 +97,13 @@ functions{
 }
 data {
     int<lower=0> N; // number of subjects
-    int<lower=0> q; // number of ef_types
+    int<lower=0> q; // number of bef covariates
     int<lower=0> p; // number of subj specific covariates
     int<lower=0> link; //
     int<lower=0> trials[N];
     int<lower=0> y[N];
     matrix[N,p] Z;
+    int<lower=0,upper=1> log_transform[q]; // log transform indicator for BEF covariates
     #include "prior_data.stan" // prior_data
     int<lower=1> M; // Maximum number of EFs within boundary distance
     int u[N,q,2]; // index holder array  
@@ -122,6 +123,8 @@ transformed parameters{
         for(q_ix in 1:q){
             if(u[n_ix,q_ix,1]>u[n_ix,q_ix,2])
                 X[n_ix,q_ix] = 0;
+            else if(log_transform[q])
+                X[n_ix,q_ix] = log(1+sum( erfc(spatial_mat[q_ix][u[n_ix,q_ix,1]:u[n_ix,q_ix,2]] * inv(d_constraint * thetas[q_ix]))));
             else
                 X[n_ix,q_ix] = sum( erfc(spatial_mat[q_ix][u[n_ix,q_ix,1]:u[n_ix,q_ix,2]] * inv(d_constraint * thetas[q_ix])));
         }
