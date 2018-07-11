@@ -14,9 +14,12 @@
 #' inference for a generalized linear model stap_glm incorporates spatial 
 #' information akin to the description in --need to add citation
 #'@export stap_glm
-stap_glm <- function(formula, dists_crs, u, D_M,
+stap_glm <- function(formula,
                      family = stats::gaussian(),
-                     data,
+                     subject_data,
+                     distance_data,
+                     id_key = NULL,
+                     D_M,
                      weights,
                      subset,
                      na.action = NULL,
@@ -26,32 +29,37 @@ stap_glm <- function(formula, dists_crs, u, D_M,
                      y = TRUE,
                      contrasts = NULL,
                      ...,
+                     prior = normal(),
                      prior_intercept = normal(),
-                     prior_beta_one = normal(),
-                     prior_beta_two = normal(),
+                     prior_stap = normal(),
                      prior_theta = list(theta_one = normal(location = 1.5, scale = .5)),
                      prior_aux = cauchy(location = 0L, scale = 5L),
                      adapt_delta = NULL){
 
+    crs_data <- extract_stap_components(formula,distance_data,
+                                        subject_data, id_key, 
+                                        max_distance = D_M)
+    formula <- crs_data$formula
     family <- validate_family(family)
     validate_glm_formula(formula)
-    data <- validate_data(data, if_missing = environment(formula))
-    
+    subject_data <- validate_data(subject_data, if_missing = environment(formula))
     call <- match.call(expand.dots = TRUE)
     mf <-  match.call(expand.dots = FALSE)
-    m <- match(c("formula", "subset", "weights", "na.action", "offset"),
+    mf$formula <- formula
+    m <- match(c("formula","subset", "weights", "na.action", "offset"),
                table = names(mf), nomatch=0L)
     mf <- mf[c(1L,m)]
-    mf$data <- data
+    mf$data <- subject_data
     mf$drop.unused.levels <- TRUE
+    
     mf[[1L]] <- as.name("model.frame")
-    mf <- eval(mf, parent.frame())
+    mf <- eval(mf, parent.frame()) 
     mf <- check_constant_vars(mf)
     mt <- attr(mf, "terms")
     Y <- array1D_check(model.response(mf, type = "any"))
     if(is.empty.model(mt))
         stop("No intercept or predictors specified.", call. = FALSE)
-    X <- model.matrix(mt, mf, contrasts)
+    Z <- model.matrix(mt, mf, contrasts)
     weights <- validate_weights(as.vector(model.weights(mf)))
     offset <- validate_offset(as.vector(model.offset(mf)), y = Y)
     if(binom_y_prop(Y,family, weights)) {
@@ -59,24 +67,27 @@ stap_glm <- function(formula, dists_crs, u, D_M,
         Y <- cbind(y1, y0 = weights - y1)
         weights <- double(0)
     }
-    
-    # stanfit <- stan_glm.fit(x = X, y = Y, weights = weights, 
-    #                         max_distance = D_M,
-    #                         offset = offset, family = family,
-    #                         prior = prior, 
-    #                         prior_intercept = prior_intercept,
-    #                         prior_aux = prior_aux,
-    #                         adapt_delta = adapt_delta, 
-    #                         ...)
-    # 
-    # sel <- apply(X, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
-    # X <- X[ , !sel, drop = FALSE]  
-    # fit <- nlist(stanfit, family, formula, data, offset, weights,
-    #              x = X, y = Y, model = mf,  terms = mt, call, 
-    #              na.action = attr(mf, "na.action"), 
-    #              contrasts = attr(X, "contrasts"), 
-    #              stan_function = "stap_glm")
-    # out <- stanreg(fit)
+    debug(stap_glm.fit) 
+    stapfit <- stap_glm.fit(z = Z, y = Y, weights = weights,
+                            dists_crs = crs_data$d_mat, u = crs_data$u,
+                            max_distance = D_M,
+                            offset = offset, family = family,
+                            prior = prior,
+                            prior_intercept = prior_intercept,
+                            prior_stap = prior_stap,
+                            prior_aux = prior_aux,
+                            prior_theta = prior_theta,
+                            adapt_delta = adapt_delta,
+                            ...) ## time to debug stap_glm.fit
+
+    sel <- apply(X, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
+    X <- X[ , !sel, drop = FALSE]
+    fit <- nlist(stanfit, family, formula, data, offset, weights,
+                 x = X, y = Y, model = mf,  terms = mt, call,
+                 na.action = attr(mf, "na.action"),
+                 contrasts = attr(X, "contrasts"),
+                 stan_function = "stap_glm")
+    # out <- stapreg(fit)
     # out$xlevels <- .getXlevels(mt, mf)
     # if (!x) 
     #     out$x <- NULL

@@ -1,4 +1,4 @@
-// STKAP model for a Gaussian outcome with no link function
+// STAP model for a Gaussian outcome with no link function
 data {
     int<lower=0> N; // number of subjects
     int<lower=0> q; // number of ef_types

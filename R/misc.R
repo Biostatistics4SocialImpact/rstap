@@ -1,32 +1,68 @@
-#' Set arguments for sampling
-#'
-#' Prepare a list of arguments to use with \code{rstan::sampling} via
-#' \code{do.call}.
-#'
-#' @param object The stanfit object to use for sampling.
-#' @param user_dots The contents of \code{...} from the user's call to
-#'   the \code{stan_*} modeling function.
-#' @param user_adapt_delta The value for \code{adapt_delta} specified by the
-#'   user.
-#' @param prior Prior distribution list (can be NULL).
-#' @param ... Other arguments to \code{\link[rstan]{sampling}} not coming from
-#'   \code{user_dots} (e.g. \code{data}, \code{pars}, \code{init}, etc.)
-#' @return A list of arguments to use for the \code{args} argument for
-#'   \code{do.call(sampling, args)}.
-set_sampling_args <- function(object, prior, user_dots = list(),
-                              user_adapt_delta = NULL, user_max_tree_depth = 10, ...) {
-    args <- list(object = object, ...)
-    unms <- names(user_dots)
-    for (j in seq_along(user_dots)) {
-        args[[unms[j]]] <- user_dots[[j]]
-    }
-    defaults <- list(adapt_delta = .85, max_treedepth = 18)
-    args$control$adapt_delta <- defaults$adapt_delta
-    args$control$max_treedepth <- defaults$max_treedepth
+# Part of the rstap package for estimating model parameters
+# Copyright (C)  2018 Trustees of University of Michigan
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-    args$save_warmup <- FALSE
-    return(args)
+# Set arguments for sampling 
+#
+# Prepare a list of arguments to use with \code{rstan::sampling} via
+# \code{do.call}.
+#
+# @param object The stanfit object to use for sampling.
+# @param user_dots The contents of \code{...} from the user's call to
+#   the \code{stan_*} modeling function.
+# @param user_adapt_delta The value for \code{adapt_delta} specified by the
+#   user.
+# @param prior Prior distribution list (can be NULL).
+# @param ... Other arguments to \code{\link[rstan]{sampling}} not coming from
+#   \code{user_dots} (e.g. \code{data}, \code{pars}, \code{init}, etc.)
+# @return A list of arguments to use for the \code{args} argument for 
+#   \code{do.call(sampling, args)}.
+set_sampling_args <- function(object, prior, user_dots = list(), 
+                              user_adapt_delta = NULL, ...) {
+  args <- list(object = object, ...)
+  unms <- names(user_dots)
+  for (j in seq_along(user_dots)) {
+    args[[unms[j]]] <- user_dots[[j]]
+  }
+  defaults <- default_stan_control(prior = prior, 
+                                   adapt_delta = user_adapt_delta)
+  
+  if (!"control" %in% unms) { 
+    # no user-specified 'control' argument
+    args$control <- defaults
+  } else { 
+    # user specifies a 'control' argument
+    if (!is.null(user_adapt_delta)) { 
+      # if user specified adapt_delta argument to stan_* then 
+      # set control$adapt_delta to user-specified value
+      args$control$adapt_delta <- user_adapt_delta
+    } else {
+      # use default adapt_delta for the user's chosen prior
+      args$control$adapt_delta <- defaults$adapt_delta
+    }
+    if (is.null(args$control$max_treedepth)) {
+      # if user's 'control' has no max_treedepth set it to rstanarm default
+      args$control$max_treedepth <- defaults$max_treedepth
+    }
+  }
+  args$save_warmup <- FALSE
+  
+  return(args)
 }
+
 
 
 #' create a named list using specified names or, if names are omitted using the
@@ -52,39 +88,6 @@ nlist <- function(...){
 
 
 
-#' assign appropriate numeric coding for specified distribution
-#'
-#' @param prior the named list returned by the specific prior function
-#' this code is taken from the rstanarm package
-#' @return list with all possible parameter values appropriately populated
-assign_dist <- function(prior){
-    if(!is.list(prior))
-        stop(sQuote(deparse(substitute(prior))), "should be a named list")
-
-    prior_dist_name <- prior$dist
-    prior_scale <- prior$scale
-    prior_mean <- prior$location
-    prior_df <- prior$df
-    prior_mean [is.na(prior_mean)] <- 0
-    prior_df[is.na(prior_df)] <- 1
-    if(prior_dist_name == "normal") prior_dist <- 1L
-    else if(prior_dist_name == "t") prior_dist <- 2L
-    else if(prior_dist_name == "cauchy") prior_dist <- 3L
-    else if(prior_dist_name == "lognormal") prior_dist <- 4L
-    else if(prior_dist_name == "beta") prior_dist <- 5L
-    else if(prior_dist_name == "product_normal") prior_dist <- 6L
-    else if(prior_dist_name == NA){
-        prior_scale <- 0L
-        prior_dist <- 99L ## won't be used
-    }
-    else prior_dist <- 8L
-
-    nlist(prior_dist, prior_mean,
-          prior_scale, prior_df,
-         prior_dist_name)
-}
-
-
 
 # Convert 2-level factor to 0/1
 fac2bin <- function(y) {
@@ -106,6 +109,9 @@ validate_glm_formula <- function(f) {
     if (any(grepl("\\|", f)))
         stop("Using '|' in model formula not allowed. ",
              "Maybe you meant to use 'stap_(g)lmer'?", call. = FALSE)
+    if(any(grepl("stap",f)))
+        stop("error - stap component found in amended formula - please
+             report bug")
 }
 
 # Validate data argument
@@ -130,10 +136,96 @@ validate_data <- function(data, if_missing = NULL) {
         return(if_missing)
     }
     if (!is.data.frame(data)) {
-        stop("'data' must be a data frame.", call. = FALSE)
+        stop("'subject_data' must be a supplied data frame.", call. = FALSE)
     }
     
     drop_redundant_dims(data)
+}
+# extract_stap_components
+#
+# extract stap components from formula and create crs matrices
+# 
+# @param formula that designates model expression including stap covariates 
+# @param distance_data
+# @return If no error is thrown a list with the crs data matrix, index matrix u
+#           and corresponding covariate names is returned
+#
+extract_stap_components <- function(formula, distance_data, subject_data,
+                                    id_key, max_distance){
+    dcol_ix <- validate_distancedata(distance_data,max_distance)
+    new_formula <- get_stapless_formula(formula)
+    stap_covs <- all.names(formula)[which(all.names(formula)=='stap')+1]
+    stap_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
+    if(!all(stap_col_ics))
+        stop("The stap_covariates must all be in (only) one column
+             of the distance dataframe as a character or factor variable.
+             see `?stap_glm`")
+    stap_col <- colnames(distance_data)[stap_col_ics[1]]
+    dcol <- colnames(distance_data)[dcol_ix]
+    ##ensure subjects that have zero exposure are included
+    ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
+                                                                   distance_data[,dcol]<= max_distance)),])
+    if(any(lapply(ddata,nrow)==0)){
+        missing <- stap_covs[which(sapply(ddata,nrow)==0)]
+        stap_covs <- stap_covs[which(sapply(ddata,nrow)!=0)]
+        print(paste("The following stap_covariates are not present in distance_data:",
+              paste(missing,collapse = ', ')))
+        print("These will be omitted from the analysis")
+        ddata <- lapply(ddata,function(x) if(nrow(x)!=0) x)
+        ddata[sapply(ddata,is.null)] <- NULL
+    }
+    M <- max(sapply(ddata, nrow))
+    mddata <- lapply(ddata,function(y) merge(subject_data[,id_key], y, by = eval(id_key),
+                                            all.x = T) )
+    d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
+    d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M)) else x)),
+                    nrow = length(stap_covs), ncol = M)
+    freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
+                                         data = x, addNA = TRUE)[,1])
+    u <- lapply(freq,function(x) cbind(
+        replace(dplyr::lag(cumsum(x)),
+                is.na(dplyr::lag(cumsum(x))),0)+1,
+                cumsum(x)))
+    u <- array(Reduce(function(x,y) abind::abind(x,y,along = 2), u), 
+               dim = c(nrow(subject_data), length(stap_covs), 2) )
+    
+    return(list(d_mat = d_mat, u = u, formula = new_formula))
+}
+# Validate distance_data
+#
+# Make sure that data is a data frame. 
+#
+# @param distance_data User's distance_data argument
+# @return If no error is thrown, distance_column is returned
+#
+validate_distancedata <- function(distance_data, max_distance ) {
+    if(missing(distance_data) || is.null(distance_data) || 
+       !is.data.frame(distance_data)) 
+        stop("distance_data dataframe must be supplied to function")
+    dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x])))*x))
+    if(dcol_ix==0)
+        stop("distance_data should be a data frame with only one numeric column - see `?stap_glm`")
+    if(sum(distance_data[,dcol_ix]<=max_distance)==0) 
+        stop("exclusion distance results in no BEFs included in the model")
+    return(dcol_ix)
+}
+
+
+# get_stapless_formula
+#
+# Get formula for typical covariates
+#
+# @param f formula from stap_glm
+# @return formula without ~ stap() components
+#
+get_stapless_formula <- function(f){
+    stap_ics <- which(all.names(f)=='stap')
+    if(!length(stap_ics))
+        stop("No Stap Covariates designated in formula")
+    stap_nms <- all.names(f)[stap_ics+1]
+    formula_components <- all.vars(f)[!(all.vars(f)%in%stap_nms)]
+    new_f <- paste(paste0(formula_components[1],' ~ '),formula_components[2:length(formula_components)],collapse = '+')
+    return(as.formula(new_f))
 }
 
 # Throw a warning if 'data' argument to modeling function is missing
@@ -297,3 +389,106 @@ is.ig <- function(x) x == "inverse.gaussian"
 is.nb <- function(x) x == "neg_binomial_2"
 is.poisson <- function(x) x == "poisson"
 is.beta <- function(x) x == "beta" || x == "Beta regression"
+
+# Maybe broadcast 
+#
+# @param x A vector or scalar.
+# @param n Number of replications to possibly make. 
+# @return If \code{x} has no length the \code{0} replicated \code{n} times is
+#   returned. If \code{x} has length 1, the \code{x} replicated \code{n} times
+#   is returned. Otherwise \code{x} itself is returned.
+maybe_broadcast <- function(x, n) {
+  if (!length(x)) {
+    rep(0, times = n)
+  } else if (length(x) == 1L) {
+    rep(x, times = n)
+  } else {
+    x
+  }
+}
+# Check and set scale parameters for priors
+#
+# @param scale Value of scale parameter (can be NULL).
+# @param default Default value to use if \code{scale} is NULL.
+# @param link String naming the link function or NULL.
+# @return If a probit link is being used, \code{scale} (or \code{default} if
+#   \code{scale} is NULL) is scaled by \code{dnorm(0) / dlogis(0)}. Otherwise
+#   either \code{scale} or \code{default} is returned.
+set_prior_scale <- function(scale, default, link) {
+  stopifnot(is.numeric(default), is.character(link) || is.null(link))
+  if (is.null(scale)) 
+    scale <- default
+  if (isTRUE(link == "probit"))
+    scale <- scale * dnorm(0) / dlogis(0)
+  
+  return(scale)
+}
+# Check that a stanfit object (or list returned by rstan::optimizing) is valid
+#
+check_stapfit <- function(x) {
+  if (is.list(x)) {
+    if (!all(c("par", "value") %in% names(x)))
+      stop("Invalid object produced please report bug")
+  }
+  else {
+    stopifnot(is(x, "stapfit"))
+    if (x@mode != 0)
+      stop("Invalid stapfit object produced please report bug")
+  }
+  return(TRUE)
+}
+
+# Default control arguments for sampling
+# 
+# Called by set_sampling_args to set the default 'control' argument for
+# \code{rstan::sampling} if none specified by user. This allows the value of
+# \code{adapt_delta} to depend on the prior.
+# 
+# @param prior Prior distribution list (can be NULL).
+# @param adapt_delta User's \code{adapt_delta} argument.
+# @param max_treedepth Default for \code{max_treedepth}.
+# @return A list with \code{adapt_delta} and \code{max_treedepth}.
+default_stan_control <- function(prior, adapt_delta = NULL, 
+                                 max_treedepth = 15L) {
+  if (!length(prior)) {
+    if (is.null(adapt_delta)) adapt_delta <- 0.95
+  } else if (is.null(adapt_delta)) {
+    adapt_delta <- switch(prior$dist, 
+                          "R2" = 0.99,
+                          "hs" = 0.99,
+                          "hs_plus" = 0.99,
+                          "lasso" = 0.99,
+                          "product_normal" = 0.99,
+                          0.95) # default
+  }
+  nlist(adapt_delta, max_treedepth)
+}
+
+# Test if an object is a stapreg object
+#
+# @param x The object to test. 
+is.stapreg <- function(x) inherits(x, "stapreg")
+
+# Throw error if object isn't a stanreg object
+# 
+# @param x The object to test.
+validate_stapreg_object <- function(x, call. = FALSE) {
+  if (!is.stapreg(x))
+    stop("Object is not a stapreg object.", call. = call.) 
+}
+
+# If a is NULL (and Inf, respectively) return b, otherwise just return a
+# @param a,b Objects
+`%ORifNULL%` <- function(a, b) {
+  if (is.null(a)) b else a
+}
+`%ORifINF%` <- function(a, b) {
+  if (a == Inf) b else a
+}
+
+# Return the appropriate stub for variable names
+#
+# @param object A stanmvreg object
+get_stub <- function(object) {
+  if (is.jm(object)) "Long" else if (is.mvmer(object)) "y" else NULL  
+} 
