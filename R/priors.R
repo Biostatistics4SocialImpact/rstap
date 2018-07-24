@@ -30,11 +30,7 @@
 #'   for \code{cauchy} (which is equivalent to \code{student_t} with
 #'   \code{df=1}), the mean does not exist and \code{location} is the prior
 #'   median. The default value is \eqn{0}, except for \code{R2} which has no
-#'   default value for \code{location}. For \code{R2}, \code{location} pertains
-#'   to the prior location of the \eqn{R^2} under a Beta distribution, but the
-#'   interpretation of the \code{location} parameter depends on the specified
-#'   value of the \code{what} argument (see the \emph{R2 family} section in
-#'   \strong{Details}).
+#'   default value for \code{location}. 
 #' @param scale Prior scale. The default depends on the family (see
 #'   \strong{Details}).
 #' @param df,df1,df2 Prior degrees of freedom. The default is \eqn{1} for 

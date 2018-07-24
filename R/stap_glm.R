@@ -1,45 +1,47 @@
-#' Fitting Generalized Linear STKAP models
+#' Fitting Generalized Linear STAP models
 #'
 #'@param y n length vector or n x 2 matrix of outcomes
 #'@param dists_crs q x M matrix of distances between outcome observations and
 #' environmental features where q is the number of spatial covariates, 
 #' and M is the maximum number of environmental features amongst all q features
 #' @param u crs array
-#' @D_M the inclusion distance; upper bound for all elements of dists_crs
-#' @family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
-#' 
-
+#' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
+#' @param subject_data
+#' @param distance_data
+#' @param id_key name of column to join on between subject_data and distance_data
+#' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
+#' @param weights 
 #' @details The \code{stap_glm} function is similar in syntax to 
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 #' inference for a generalized linear model stap_glm incorporates spatial 
-#' information akin to the description in --need to add citation
+#' as detailed in in --need to add citation --
 #'@export stap_glm
 stap_glm <- function(formula,
                      family = stats::gaussian(),
                      subject_data,
                      distance_data,
                      id_key = NULL,
-                     D_M,
+                     max_distance,
                      weights,
                      subset,
                      na.action = NULL,
                      offset = NULL,
                      model = TRUE,
-                     x = FALSE,
+                     z = FALSE,
                      y = TRUE,
+                     x = FALSE,
                      contrasts = NULL,
                      ...,
                      prior = normal(),
                      prior_intercept = normal(),
                      prior_stap = normal(),
-                     prior_theta = list(theta_one = normal(location = 1.5, scale = .5)),
+                     prior_theta = normal(location = max_distance/2, scale = 10),
                      prior_aux = cauchy(location = 0L, scale = 5L),
                      adapt_delta = NULL){
-
     crs_data <- extract_stap_components(formula,distance_data,
                                         subject_data, id_key, 
-                                        max_distance = D_M)
-    formula <- crs_data$formula
+                                        max_distance)
+    formula <- get_stapless_formula(formula)
     family <- validate_family(family)
     validate_glm_formula(formula)
     subject_data <- validate_data(subject_data, if_missing = environment(formula))
@@ -67,10 +69,9 @@ stap_glm <- function(formula,
         Y <- cbind(y1, y0 = weights - y1)
         weights <- double(0)
     }
-    debug(stap_glm.fit) 
     stapfit <- stap_glm.fit(z = Z, y = Y, weights = weights,
                             dists_crs = crs_data$d_mat, u = crs_data$u,
-                            max_distance = D_M,
+                            max_distance = max_distance,
                             offset = offset, family = family,
                             prior = prior,
                             prior_intercept = prior_intercept,
@@ -78,24 +79,29 @@ stap_glm <- function(formula,
                             prior_aux = prior_aux,
                             prior_theta = prior_theta,
                             adapt_delta = adapt_delta,
-                            ...) ## time to debug stap_glm.fit
+                            ...)
 
-    sel <- apply(X, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
-    X <- X[ , !sel, drop = FALSE]
-    fit <- nlist(stanfit, family, formula, data, offset, weights,
-                 x = X, y = Y, model = mf,  terms = mt, call,
+    sel <- apply(Z, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
+    Z <- Z[ , !sel, drop = FALSE]
+    fit <- nlist(stapfit, family, formula, subject_data,
+                 distance_data,
+                 dists_crs = crs_data$d_mat,
+                 u = crs_data$u,
+                 offset, weights, z = Z, y = Y,
+                 model = mf,  terms = mt, call,
                  na.action = attr(mf, "na.action"),
-                 contrasts = attr(X, "contrasts"),
+                 contrasts = attr(Z, "contrasts"),
                  stan_function = "stap_glm")
-    # out <- stapreg(fit)
-    # out$xlevels <- .getXlevels(mt, mf)
-    # if (!x) 
-    #     out$x <- NULL
-    # if (!y) 
-    #     out$y <- NULL
-    # if (!model) 
-    #     out$model <- NULL
-    # 
-    # return(out)
+    out <- stapreg(fit)
+    out$xlevels <- .getXlevels(mt, mf)
+    if (!x)
+        out$x <- NULL
+    if(!z)
+        out$z <- NULL
+    if (!y)
+        out$y <- NULL
+    if (!model)
+        out$model <- NULL
+    return(out)
 }
 

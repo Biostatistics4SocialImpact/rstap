@@ -4,24 +4,24 @@
 #'@param Z n*p design matrix of subject specific covariates
 #'@param dists_csr distance crs array
 #'@param u crs index array
-#'@param D_M inclusion distance
+#'@param max_distance inclusion distance
 #'@param prior_intercept
 #'@param prior_beta_one
 #'@param prior_BEFS
 #'@param prior_theta
 #'@param prior_sigma
 #'@export stap_lm
-stap_lm <- function(y, Z, dists_csr, u, D_M = 3,
-                         prior_intercept = normal(location = 25, scale = 5),
-                         prior_beta = normal(),
-                         prior_BEFS = normal(),
-                         prior_theta = list(theta_one = normal(location = 1.5, scale = .5)), 
-                         prior_sigma = cauchy(location = 0, scale = 5),
-                         ...){
+stap_lm <- function(y, Z, dists_csr, u, max_distance = 3,
+                    prior = normal(),
+                    prior_intercept = normal(location = 25, scale = 5),
+                    prior_stap = normal(),
+                    prior_theta = list(theta_one = normal(location = 1.5, scale = .5)), 
+                    prior_sigma = cauchy(location = 0, scale = 5),
+                    ...){
 
     
-    if(D_M<max(dists_csr))
-        stop("D_M must be the maximum possible distance amongst all distances in dists_csr")
+    if(max_distance<max(dists_csr))
+        stop("max_distance must be the maximum possible distance amongst all distances in dists_csr")
 
     beta_naught_p <- assign_dist(prior_intercept)
     beta_one_p <- assign_dist(prior_beta_one)

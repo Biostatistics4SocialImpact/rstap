@@ -1,4 +1,4 @@
-!(https://avatars1.githubusercontent.com/u/28572271?s=400&u=4cfc3435602d8ad1cc847faa0000caa418713ce4&v=4)
+[<img src = "https://avatars1.githubusercontent.com/u/28572271?s=400&u=4cfc3435602d8ad1cc847faa0000caa418713ce4&v=4"/>](https://biostatistics4socialimpact.github.io)
 # rstap
 [![Build Status](https://travis-ci.org/Biostatistics4SocialImpact/rstap.svg?branch=master)](https://travis-ci.org/Biostatistics4SocialImpact/rstap)
 

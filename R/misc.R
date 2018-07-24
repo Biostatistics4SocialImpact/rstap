@@ -141,6 +141,7 @@ validate_data <- function(data, if_missing = NULL) {
     
     drop_redundant_dims(data)
 }
+
 # extract_stap_components
 #
 # extract stap components from formula and create crs matrices
@@ -153,7 +154,6 @@ validate_data <- function(data, if_missing = NULL) {
 extract_stap_components <- function(formula, distance_data, subject_data,
                                     id_key, max_distance){
     dcol_ix <- validate_distancedata(distance_data,max_distance)
-    new_formula <- get_stapless_formula(formula)
     stap_covs <- all.names(formula)[which(all.names(formula)=='stap')+1]
     stap_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
     if(!all(stap_col_ics))
@@ -180,6 +180,7 @@ extract_stap_components <- function(formula, distance_data, subject_data,
     d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
     d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M)) else x)),
                     nrow = length(stap_covs), ncol = M)
+    rownames(d_mat) <- stap_covs
     freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
                                          data = x, addNA = TRUE)[,1])
     u <- lapply(freq,function(x) cbind(
@@ -189,7 +190,7 @@ extract_stap_components <- function(formula, distance_data, subject_data,
     u <- array(Reduce(function(x,y) abind::abind(x,y,along = 2), u), 
                dim = c(nrow(subject_data), length(stap_covs), 2) )
     
-    return(list(d_mat = d_mat, u = u, formula = new_formula))
+    return(list(d_mat = d_mat, u = u))
 }
 # Validate distance_data
 #
@@ -202,9 +203,11 @@ validate_distancedata <- function(distance_data, max_distance ) {
     if(missing(distance_data) || is.null(distance_data) || 
        !is.data.frame(distance_data)) 
         stop("distance_data dataframe must be supplied to function")
-    dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x])))*x))
-    if(dcol_ix==0)
+    num_dbl <- sum(sapply(1:ncol(distance_data),
+                      function(x) all(is.double(as.matrix(distance_data[,x])))))
+    if(num_dbl!=1)
         stop("distance_data should be a data frame with only one numeric column - see `?stap_glm`")
+    dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x])))*x))
     if(sum(distance_data[,dcol_ix]<=max_distance)==0) 
         stop("exclusion distance results in no BEFs included in the model")
     return(dcol_ix)
@@ -425,13 +428,13 @@ set_prior_scale <- function(scale, default, link) {
 }
 # Check that a stanfit object (or list returned by rstan::optimizing) is valid
 #
-check_stapfit <- function(x) {
+check_stanfit <- function(x) {
   if (is.list(x)) {
     if (!all(c("par", "value") %in% names(x)))
       stop("Invalid object produced please report bug")
   }
   else {
-    stopifnot(is(x, "stapfit"))
+    stopifnot(is(x, "stanfit"))
     if (x@mode != 0)
       stop("Invalid stapfit object produced please report bug")
   }
@@ -469,7 +472,7 @@ default_stan_control <- function(prior, adapt_delta = NULL,
 # @param x The object to test. 
 is.stapreg <- function(x) inherits(x, "stapreg")
 
-# Throw error if object isn't a stanreg object
+# Throw error if object isn't a stapreg object
 # 
 # @param x The object to test.
 validate_stapreg_object <- function(x, call. = FALSE) {
@@ -486,9 +489,101 @@ validate_stapreg_object <- function(x, call. = FALSE) {
   if (a == Inf) b else a
 }
 
-# Return the appropriate stub for variable names
+# Wrapper for rstan::summary
+# @param stanfit A stanfit object created using rstan::sampling or rstan::vb
+# @return A matrix of summary stats
+make_stap_summary <- function(stanfit){
+    levs <- c(.5, .8, .95)
+    qq <- ( 1 - levs ) / 2
+    probs <- sort(c(.5, qq, 1 - qq))
+    rstan::summary(stanfit, probs = probs, digits = 10)$summary
+}
+
+
+# Issue warning if high rhat values
+# 
+# @param rhats Vector of rhat values.
+# @param threshold Threshold value. If any rhat values are above threshold a 
+#   warning is issued.
+check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
+  if (!check_lp)
+    rhats <- rhats[!names(rhats) %in% c("lp__", "log-posterior")]
+  
+  if (any(rhats > threshold, na.rm = TRUE)) 
+    warning("Markov chains did not converge! Do not analyze results!", 
+            call. = FALSE, noBreaks. = TRUE)
+}
+
+
+# Get the correct column name to use for selecting the median
 #
-# @param object A stanmvreg object
-get_stub <- function(object) {
-  if (is.jm(object)) "Long" else if (is.mvmer(object)) "y" else NULL  
-} 
+# @param algorithm String naming the estimation algorithm (probably
+#   \code{fit$algorithm}).
+# @return Either \code{"50%"} or \code{"Median"} depending on \code{algorithm}.
+select_median <- function(algorithm) {
+  switch(algorithm, 
+         sampling = "50%",
+         meanfield = "50%",
+         fullrank = "50%",
+         optimizing = "Median",
+         stop("Bug found (incorrect algorithm name passed to select_median)", 
+              call. = FALSE))
+}
+
+# Methods for creating linear predictor
+#
+# Make linear predictor vector from x and point estimates for delta and beta 
+# or linear predictor matrix from x and full posterior sample of delta and beta.
+#
+# @param delta_beta A vector or matrix of parameter estimates
+# @param x Predictor matrix.
+# @param offset Optional offset vector.
+# @return A vector or matrix.
+linear_predictor <- function(delta_beta, x, offset = NULL) {
+  UseMethod("linear_predictor")
+}
+linear_predictor.default <- function(delta_beta, x, offset = NULL) {
+  eta <- as.vector(if (NCOL(x) == 1L) x * delta_beta else x %*% delta_beta)
+  if (length(offset))
+    eta <- eta + offset
+  
+  return(eta)
+}
+linear_predictor.matrix <- function(delta_beta, x, offset = NULL) {
+  if (NCOL(delta_beta) == 1L) 
+    delta_beta <- as.matrix(delta_beta)
+  eta <- delta_beta %*% t(x)
+  if (length(offset)) 
+    eta <- sweep(eta, 2L, offset, `+`)
+
+  return(eta)
+}
+
+# Combine pars and regex_pars
+#
+# @param x stapreg object
+# @param pars Character vector of parameter names
+# @param regex_pars Character vector of patterns
+collect_pars <- function(x, pars = NULL, regex_pars = NULL) {
+  if (is.null(pars) && is.null(regex_pars)) 
+    return(NULL)
+  if (!is.null(pars)) 
+    pars[pars == "varying"] <- "b"
+  if (!is.null(regex_pars)) 
+    pars <- c(pars, grep_for_pars(x, regex_pars))
+  unique(pars)
+}
+# Test if stapreg object used stan_(g)lmer
+#
+# @param x A stapreg object.
+is.mer <- function(x) {
+  stopifnot(is.stapreg(x))
+  check1 <- inherits(x, "lmerMod")
+  check2 <- !is.null(x$glmod)
+  if (check1 && !check2) {
+    stop("Bug found. 'x' has class 'lmerMod' but no 'glmod' component.")
+  } else if (!check1 && check2) {
+    stop("Bug found. 'x' has 'glmod' component but not class 'lmerMod'.")
+  }
+  isTRUE(check1 && check2)
+}

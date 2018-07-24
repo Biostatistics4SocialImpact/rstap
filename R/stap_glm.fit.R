@@ -39,9 +39,6 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     link <- which(supported_links == family$link)
     if(!length(link))
         stop("'link' must be one of", paste( supported_links, collapse = ', '))
-    if(length(prior_theta)!=nrow(dists_crs))
-        stop("Insufficient number of priors set for spatial scale parameter")
-    
     if (binom_y_prop(y, family, weights))
         stop("To specify 'y' as proportion of successes and 'weights' as ",
              "number of trials please use stan_glm rather than calling ",
@@ -55,30 +52,19 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     
     # useless assignments to pass R CMD check
     has_intercept <- 
-        prior_df <- prior_df_for_intercept <- prior_df_for_aux <- prior_df_for_smooth <-
+        prior_df <- prior_df_for_intercept <- prior_df_for_aux  <-
         prior_dist <- prior_dist_for_intercept <- prior_dist_for_aux <- prior_mean <- 
         prior_mean_for_intercept <- prior_mean_for_aux <- prior_scale <-
         prior_scale_for_intercept <- prior_scale_for_aux <- prior_autoscale <- 
-        prior_autoscale_for_intercept <- prior_autoscale_for_aux <- 
-        prior_autoscale_for_smooth <- global_prior_scale <- global_prior_df <-
+        prior_autoscale_for_intercept <- prior_autoscale_for_aux <- NULL
     
-    if (is.list(z)) {
-            z_stuff <- center_z(z[[1]])
-            smooth_map <- unlist(lapply(1:(length(x) - 1L), FUN = function(j) {
-                rep(j, NCOL(z[[j + 1L]]))
-            }))
-            S <- do.call(cbind, z[-1L]) ## make smoothing matrix
-        }
-    else {
-        z_stuff <- center_z(z)
-        S <- matrix(NA_real_, nrow = nrow(z), ncol = 0L) ## Null Smooth Matrix
-        smooth_map <- integer()
-    }
+    z_stuff <- center_z(z)
+
     for (i in names(z_stuff)) # ztemp, zbar, has_intercept
         assign(i, z_stuff[[i]])
     nvars <- ncol(ztemp)
     
-    ok_dists <- nlist("normal", student_t = "t", "cauchy", "hs", "hs_plus", 
+    ok_dists <- nlist("normal", student_t = "t", "cauchy", 
                       "laplace", "lasso", "product_normal")
     ok_intercept_dists <- ok_dists[1:3]
     ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
@@ -106,6 +92,17 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     for (i in names(prior_intercept_stuff))
         assign(i, prior_intercept_stuff[[i]])
     
+    prior_stap_stuff <- handle_glm_prior(
+        prior_stap,
+        nvars = nrow(dists_crs),
+        link = family$link,
+        default_scale = 2.5,
+        ok_dists = ok_dists
+    )
+    names(prior_stap_stuff) <- paste0(names(prior_stap_stuff), "_for_stap")
+    for(i in names(prior_stap_stuff))
+        assign(i, prior_stap_stuff[[i]])
+    
     prior_aux_stuff <-
         handle_glm_prior(
             prior_aux,
@@ -117,38 +114,24 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     # prior_{dist, mean, scale, df, dist_name, autoscale}_for_aux
     names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_aux")
     if (is.null(prior_aux)) {
-        if (prior_PD)
-            stop("'prior_aux' cannot be NULL if 'prior_PD' is TRUE.")
         prior_aux_stuff$prior_scale_for_aux <- Inf
     }
     for (i in names(prior_aux_stuff)) 
         assign(i, prior_aux_stuff[[i]])
     
-    if (ncol(S) > 0) {   # prior_{dist, mean, scale, df, dist_name, autoscale}_for_smooth
-        prior_smooth_stuff <-
-            handle_glm_prior(
-                prior_smooth,
-                nvars = max(smooth_map),
-                default_scale = 1,
-                link = NULL,
-                ok_dists = ok_aux_dists
-            )
-        
-        
-        names(prior_smooth_stuff) <- paste0(names(prior_smooth_stuff), "_for_smooth")
-        if (is.null(prior_smooth)) {
-            if (prior_PD)
-                stop("'prior_smooth' cannot be NULL if 'prior_PD' is TRUE")
-            prior_smooth_stuff$prior_scale_for_smooth <- Inf
-        }
-        for (i in names(prior_smooth_stuff))
-            assign(i, prior_smooth_stuff[[i]])
-    } else {
-        prior_dist_for_smooth <- 0L
-        prior_mean_for_smooth <- array(NA_real_, dim = 0)
-        prior_scale_for_smooth <- array(NA_real_, dim = 0)
-        prior_df_for_smooth <- array(NA_real_, dim = 0)
-    }
+    #prior_{dist, mean, scale, df, dist_name, autoscale}_for_theta
+    prior_theta_stuff <- 
+        handle_glm_prior(
+            prior_theta,
+            nvars = nrow(dists_crs),
+            default_scale = 1,
+            link = NULL,
+            ok_dists = nlist("normal","lognormal","beta")
+        )
+    names(prior_theta_stuff) <- paste0(names(prior_theta_stuff),"_for_theta")
+    for(i in names(prior_theta_stuff))
+        assign(i, prior_theta_stuff[[i]])
+    
     
     famname <- supported_families[fam]
     is_bernoulli <- is.binomial(famname) && all(y %in% 0:1)
@@ -205,9 +188,14 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     standata <- nlist(
         N = nrow(ztemp),
         K = ncol(ztemp),
+        Q = nrow(dists_crs),
+        M = ncol(dists_crs),
         zbar = as.array(zbar),
         family = stan_family_number(famname), 
         link,
+        max_distance = max_distance/pracma::erfcinv(0.975),
+        u_array = u,
+        dists_crs = dists_crs,
         has_weights = length(weights) > 0,
         has_offset = length(offset) > 0,
         has_intercept,
@@ -219,23 +207,16 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         prior_scale_for_intercept = c(prior_scale_for_intercept),
         prior_mean_for_intercept = c(prior_mean_for_intercept),
         prior_df_for_intercept = c(prior_df_for_intercept), 
-        global_prior_df, global_prior_scale, slab_df, slab_scale, # for hs priors
-        z_dim = 0,  # betareg data
-        link_phi = 0,
-        betareg_z = array(0, dim = c(nrow(ztemp), 0)),
-        has_intercept_z = 0,
-        zbar = array(0, dim = c(0)),
-        prior_dist_z = 0, prior_mean_z = integer(), prior_scale_z = integer(), 
-        prior_df_z = integer(), global_prior_scale_z = 0, global_prior_df_z = 0,
-        prior_dist_for_intercept_z = 0, prior_mean_for_intercept_z = 0,
-        prior_scale_for_intercept_z = 0, prior_df_for_intercept_z = 0,
-        prior_df_for_intercept = c(prior_df_for_intercept),
+        prior_dist_for_stap,prior_mean_for_stap,
+        prior_scale_for_stap = array(prior_scale_for_stap),
+        prior_df_for_stap,
+        prior_dist_for_theta, 
+        prior_scale_for_theta = array(prior_scale_for_theta),
+        prior_mean_for_theta = array(prior_mean_for_theta),
+        prior_df_for_theta = array(prior_df_for_theta),
         prior_dist_for_aux = prior_dist_for_aux,
-        prior_dist_for_smooth, prior_mean_for_smooth, prior_scale_for_smooth, prior_df_for_smooth,
-        slab_df_z = 0, slab_scale_z = 0,
         num_normals = if(prior_dist == 7) as.integer(prior_df) else integer(0),
-        num_normals_z = integer(0),
-        clogit = 0L, J = 0L, strata = integer()
+        num_normals_for_stap = if(prior_dist_for_stap == 7) as.integer(prior_df_for_stap) else integer(0)
         # mean,df,scale for aux added below depending on family
     )
     #make a copy of user specification before modifying 'group' (used for keeping
@@ -244,116 +225,116 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     
     if (length(group) && length(group$flist)) {
         if (length(group$strata)) {
-            standata$clogit <- TRUE
-            standata$J <- nlevels(group$strata)
-            standata$strata <- c(as.integer(group$strata)[y == 1],
-                                 as.integer(group$strata)[y == 0])
+            # standata$clogit <- TRUE
+            # standata$J <- nlevels(group$strata)
+            # standata$strata <- c(as.integer(group$strata)[y == 1],
+            #                      as.integer(group$strata)[y == 0])
         }
-        check_reTrms(group)
-        decov <- group$decov
+        # check_reTrms(group)
+        # decov <- group$decov
         if (is.null(group$SSfun)) {
-            standata$SSfun <- 0L
-            standata$input <- double()
-            standata$Dose <- double()
+            # standata$SSfun <- 0L
+            # standata$input <- double()
+            # standata$Dose <- double()
         } else {
-            standata$SSfun <- group$SSfun
-            standata$input <- group$input
-            if (group$SSfun == 5) standata$Dose <- group$Dose
-            else standata$Dose <- double()
+            # standata$SSfun <- group$SSfun
+            # standata$input <- group$input
+            # if (group$SSfun == 5) standata$Dose <- group$Dose
+            # else standata$Dose <- double()
         }
-        Z <- t(group$Zt)
-        group <-
-            pad_reTrms(Ztlist = group$Ztlist,
-                       cnms = group$cnms,
-                       flist = group$flist)
-        Z <- group$Z
-        p <- sapply(group$cnms, FUN = length)
-        l <- sapply(attr(group$flist, "assign"), function(i)
-            nlevels(group$flist[[i]]))
-        t <- length(l)
-        b_nms <- make_b_nms(group)
-        g_nms <- unlist(lapply(1:t, FUN = function(i) {
-            paste(group$cnms[[i]], names(group$cnms)[i], sep = "|")
-        }))
-        standata$t <- t
-        standata$p <- as.array(p)
-        standata$l <- as.array(l)
-        standata$q <- ncol(Z)
-        standata$len_theta_L <- sum(choose(p, 2), p)
+        # Z <- t(group$Zt)
+        # group <-
+        #     pad_reTrms(Ztlist = group$Ztlist,
+        #                cnms = group$cnms,
+        #                flist = group$flist)
+        # Z <- group$Z
+        # p <- sapply(group$cnms, FUN = length)
+        # l <- sapply(attr(group$flist, "assign"), function(i)
+        #     nlevels(group$flist[[i]]))
+        # t <- length(l)
+        # b_nms <- make_b_nms(group)
+        # g_nms <- unlist(lapply(1:t, FUN = function(i) {
+        #     paste(group$cnms[[i]], names(group$cnms)[i], sep = "|")
+        # }))
+        # standata$t <- t
+        # standata$p <- as.array(p)
+        # standata$l <- as.array(l)
+        # standata$q <- ncol(Z)
+        # standata$len_theta_L <- sum(choose(p, 2), p)
         if (is_bernoulli) {
-            parts0 <- extract_sparse_parts(Z[y == 0, , drop = FALSE])
-            parts1 <- extract_sparse_parts(Z[y == 1, , drop = FALSE])
-            standata$num_non_zero <- c(length(parts0$w), length(parts1$w))
-            standata$w0 <- parts0$w
-            standata$w1 <- parts1$w
-            standata$v0 <- parts0$v - 1L
-            standata$v1 <- parts1$v - 1L
-            standata$u0 <- parts0$u - 1L
-            standata$u1 <- parts1$u - 1L
+            # parts0 <- extract_sparse_parts(Z[y == 0, , drop = FALSE])
+            # parts1 <- extract_sparse_parts(Z[y == 1, , drop = FALSE])
+            # standata$num_non_zero <- c(length(parts0$w), length(parts1$w))
+            # standata$w0 <- parts0$w
+            # standata$w1 <- parts1$w
+            # standata$v0 <- parts0$v - 1L
+            # standata$v1 <- parts1$v - 1L
+            # standata$u0 <- parts0$u - 1L
+            # standata$u1 <- parts1$u - 1L
         } else {
-            parts <- extract_sparse_parts(Z)
-            standata$num_non_zero <- length(parts$w)
-            standata$w <- parts$w
-            standata$v <- parts$v - 1L
-            standata$u <- parts$u - 1L
+            # parts <- extract_sparse_parts(Z)
+            # standata$num_non_zero <- length(parts$w)
+            # standata$w <- parts$w
+            # standata$v <- parts$v - 1L
+            # standata$u <- parts$u - 1L
         }
-        standata$shape <- as.array(maybe_broadcast(decov$shape, t))
-        standata$scale <- as.array(maybe_broadcast(decov$scale, t))
-        standata$len_concentration <- sum(p[p > 1])
-        standata$concentration <- 
-            as.array(maybe_broadcast(decov$concentration, sum(p[p > 1])))
-        standata$len_regularization <- sum(p > 1)
-        standata$regularization <- 
-            as.array(maybe_broadcast(decov$regularization, sum(p > 1)))
-        standata$special_case <- all(sapply(group$cnms, FUN = function(x) {
-            length(x) == 1 && x == "(Intercept)"
-        }))
+        # standata$shape <- as.array(maybe_broadcast(decov$shape, t))
+        # standata$scale <- as.array(maybe_broadcast(decov$scale, t))
+        # standata$len_concentration <- sum(p[p > 1])
+        # standata$concentration <- 
+        #     as.array(maybe_broadcast(decov$concentration, sum(p[p > 1])))
+        # standata$len_regularization <- sum(p > 1)
+        # standata$regularization <- 
+        #     as.array(maybe_broadcast(decov$regularization, sum(p > 1)))
+        # standata$special_case <- all(sapply(group$cnms, FUN = function(x) {
+        #     length(x) == 1 && x == "(Intercept)" }))
     } else { # not multilevel
         if (length(group)) {
-            standata$clogit <- TRUE
-            standata$J <- nlevels(group$strata)
-            standata$strata <- c(as.integer(group$strata)[y == 1],
-                                 as.integer(group$strata)[y == 0])
+            # standata$clogit <- TRUE
+            # standata$J <- nlevels(group$strata)
+            # standata$strata <- c(as.integer(group$strata)[y == 1],
+            #                      as.integer(group$strata)[y == 0])
         }
-        standata$t <- 0L
-        standata$p <- integer(0)
-        standata$l <- integer(0)
-        standata$q <- 0L
-        standata$len_theta_L <- 0L
+        ## to be added later when group terms implemented
+        # standata$t <- 0L 
+        # standata$p <- integer(0)
+        # standata$l <- integer(0)
+        # standata$q <- 0L
+        # standata$len_theta_L <- 0L
         if (is_bernoulli) {
-            standata$num_non_zero <- rep(0L, 2)
-            standata$w0 <- standata$w1 <- double(0)
-            standata$v0 <- standata$v1 <- integer(0)
-            standata$u0 <- standata$u1 <- integer(0)
+            # standata$num_non_zero <- rep(0L, 2)
+            # standata$w0 <- standata$w1 <- double(0)
+            # standata$v0 <- standata$v1 <- integer(0)
+            # standata$u0 <- standata$u1 <- integer(0)
         } else {
-            standata$num_non_zero <- 0L
-            standata$w <- double(0)
-            standata$v <- integer(0)
-            standata$u <- integer(0)
+            # standata$num_non_zero <- 0L
+            # standata$w <- double(0)
+            # standata$v <- integer(0)
+            # standata$u <- integer(0)
         }
-        standata$special_case <- 0L
-        standata$shape <- standata$scale <- standata$concentration <-
-            standata$regularization <- rep(0, 0)
-        standata$len_concentration <- 0L
-        standata$len_regularization <- 0L
-        standata$SSfun <- 0L
-        standata$input <- double()
-        standata$Dose <- double()
+        # standata$special_case <- 0L
+        # standata$shape <- standata$scale <- standata$concentration <-
+        #     standata$regularization <- rep(0, 0)
+        # standata$len_concentration <- 0L
+        # standata$len_regularization <- 0L
+        # standata$SSfun <- 0L
+        # standata$input <- double()
+        # standata$Dose <- double()
     }
     
     
     if (!is_bernoulli) {
-        standata$Z <- array(ztemp, dim = c(1L, dim(ztemp)))
-        standata$nnz_Z <- 0L
-        standata$w_Z <- double(0)
-        standata$v_Z <- integer(0)
-        standata$u_Z <- integer(0)
+        standata$Z <- array(ztemp, dim = dim(ztemp))
+        # standata$nnz_Z <- 0L
+        # standata$w_Z <- double(0)
+        # standata$v_Z <- integer(0)
+        # standata$u_Z <- integer(0)
         standata$y <- y
         standata$weights <- weights
         standata$offset <- offset
-        standata$K_smooth <- ncol(S)
-        standata$S <- S
-        standata$smooth_map <- smooth_map
+        # standata$K_smooth <- ncol(S)
+        # standata$S <- S
+        # standata$smooth_map <- smooth_map
     }
     
     if (is_continuous) {
@@ -404,10 +385,6 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
                 standata$offset0 <- double(0)
                 standata$offset1 <- double(0)
             }
-            standata$K_smooth <- ncol(S)
-            standata$S0 <- S[y0, , drop = FALSE]
-            standata$S1 <- S[y1, , drop = FALSE]
-            standata$smooth_map <- smooth_map
             stanfit <- stanmodels$bernoulli
         } else {
             standata$trials <- trials
@@ -434,7 +411,6 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         user_prior = prior_stuff,
         user_prior_intercept = prior_intercept_stuff,
         user_prior_aux = prior_aux_stuff,
-        user_prior_covariance = user_covariance,
         has_intercept = has_intercept,
         has_predictors = nvars > 0,
         adjusted_prior_scale = prior_scale,
@@ -444,13 +420,11 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     )
     
     pars <- c(if (has_intercept) "alpha", 
+              "delta",
               "beta",
-              if (ncol(S)) "beta_smooth",
-              if (length(group)) "b",
+              "theta",
               if (is_continuous | is_nb) "aux",
-              if (ncol(S)) "smooth_sd",
-              if (standata$len_theta_L) "theta_L",
-              if (!standata$clogit) "mean_PPD")
+              "mean_PPD")
     
     sampling_args <- set_sampling_args(
         object = stanfit, 
@@ -460,9 +434,22 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         data = standata, 
         pars = pars, 
         show_messages = FALSE)
+    
     stapfit <- do.call(sampling, sampling_args)
-    check <- try(check_stapfit(stapfit))
+    check <- try(check_stanfit(stapfit))
     if (!isTRUE(check)) return(standata)
+    new_names <- c(if (has_intercept) "(Intercept)", 
+                   colnames(ztemp),
+                   rownames(dists_crs),
+                   paste0(rownames(dists_crs),'_spatial_scale'),
+                   if (is_gaussian) "sigma",
+                   if (is_gamma) "shape",
+                   if (is_ig) "lambda",
+                   if (is_nb) "reciprocal_dispersion",
+                   "log-posterior")
+    stapfit@sim$fnames_oi <- new_names
+    return(structure(stapfit, prior.info = prior_info))
+    
 }
 
 # internal ---------------------------------------------------------------------------------------------------------
@@ -487,7 +474,7 @@ stan_family_number <- function(famname) {
         "gaussian" = 1L,
         "Gamma" = 2L,
         "inverse.gaussian" = 3L,
-        "beta" = 4L,
+        "beta" = 4L, ## need to get rid of this eventually
         "Beta regression" = 4L,
         "binomial" = 5L,
         "poisson" = 6L,
@@ -584,7 +571,6 @@ summarize_glm_prior <-
     function(user_prior,
              user_prior_intercept,
              user_prior_aux,
-             user_prior_covariance,
              has_intercept, 
              has_predictors,
              adjusted_prior_scale,
@@ -650,8 +636,6 @@ summarize_glm_prior <-
                         prior_df_for_intercept else NULL
                 ))
         )
-        if (length(user_prior_covariance))
-            prior_list$prior_covariance <- user_prior_covariance
         
         aux_name <- .rename_aux(family)
         prior_list$prior_aux <- if (is.na(aux_name)) 
