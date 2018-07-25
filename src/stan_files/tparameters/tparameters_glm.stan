@@ -6,13 +6,14 @@
 
   //construction of X, X_tilde
   for(n in 1:N){
-    for(q in 1:Q){
-        if(u_array[n,q,1]>u_array[n,q,2])
-            X[n,q] = 0;
+    for(q_ix in 1:Q){
+        if(u_array[n,(q_ix*2)-1]>u_array[n,(q_ix*2)])
+            X[n,q_ix] = 0;
         else
-            X[n,q] = sum( erfc(dists_crs[q][u_array[n,q,1]:u_array[n,q,2]] * inv(theta[q])) );
+            X[n,q_ix] = sum( erfc(dists_crs[q_ix][u_array[n,(q_ix*2)-1]:u_array[n,(q_ix*2)]] * inv(theta[q_ix])) );
     }
   }
+
 
   X_tilde = centerscale(X);
   if(prior_dist == 0) delta = z_delta;

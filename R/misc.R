@@ -178,7 +178,7 @@ extract_stap_components <- function(formula, distance_data, subject_data,
     mddata <- lapply(ddata,function(y) merge(subject_data[,id_key], y, by = eval(id_key),
                                             all.x = T) )
     d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
-    d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M)) else x)),
+    d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
                     nrow = length(stap_covs), ncol = M)
     rownames(d_mat) <- stap_covs
     freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
@@ -187,9 +187,7 @@ extract_stap_components <- function(formula, distance_data, subject_data,
         replace(dplyr::lag(cumsum(x)),
                 is.na(dplyr::lag(cumsum(x))),0)+1,
                 cumsum(x)))
-    u <- array(Reduce(function(x,y) abind::abind(x,y,along = 2), u), 
-               dim = c(nrow(subject_data), length(stap_covs), 2) )
-    
+    u <- abind(u)
     return(list(d_mat = d_mat, u = u))
 }
 # Validate distance_data

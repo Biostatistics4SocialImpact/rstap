@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 library(tidyverse)
+library(rstap)
 ```
 
 ### No within BEF Spatial Correlation
@@ -42,7 +43,7 @@ Here we use the following
 
 ```{r}
 alpha <- 22.5
-Z <- rbernoulli(n = 5.5E2, p = .45)
+Z <- rbernoulli(n = num_subj, p = .45)
 delta <- -.8
 theta <- .5
 beta <- 1.2
@@ -83,11 +84,12 @@ subject_data <- data_frame(subj_id = 1:num_subj,
                            y = y,
                            sex = factor(Z,labels=c("M","F")))
 
-fit <- stap_glm(y ~ sex + stap(Fast_Food), subject_data = subject_data,
+fit <- stap_glm(formula = y ~ sex + stap(Fast_Food),
+                subject_data = subject_data,
                 distance_data = distance_data,
                 family = gaussian(link = 'identity'),
                 id_key = 'subj_id',
-                prior = normal(location = 0,scale = 5,autoscale = F),
+                prior = normal(location = 0, scale = 5,autoscale = F),
                 prior_intercept = normal(location = 25, scale = 5, autoscale = F),
                 prior_stap = normal(location = 0, scale = 3, autoscale = F),
                 prior_theta = log_normal(location = 0, scale = 1), 
@@ -170,9 +172,9 @@ results_3
 ```
 
 ```{r}
-rbind(fit$ses,fit_125$ses,fit_5$ses)
+rbind(fit$ses,fit_125$ses,fit_25$ses)
 ```
 
 We start to see some bias, as we should, in addition to increased noise, since 
-we're increasingly missing ``important'' data that is related to the outcome.
+we're increasingly missing informative data for our spatial parameter.
 

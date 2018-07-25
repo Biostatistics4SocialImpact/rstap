@@ -97,15 +97,15 @@ stapreg <- function(object){
 
 calculate_stap_X <- function(dists_crs, u, scales){
     ags <- expand.grid(n_ix = 1:nrow(u), q_ix = nrow(dists_crs))
-    X <- mapply(function(x,y) sapply(scales[,y], 
-                                     function(z){ 
-                                         if(u[x,y,1]>u[x,y,2])
-                                             return(0)
-                                         else 
-                                             sum(pracma::erfc(dists_crs[u[x,y,1]:u[x,y,2]]/z))
-                                         }),
-                                     ags$n_ix,ags$q_ix)
-    if(nrow(dists_crs)==1)
-        X <- array(X,dim=c(nrow(scales),nrow(u),nrow(dists_crs)))
+    X <- array(NA,dim=c(nrow(scales),nrow(u),nrow(dists_crs)))
+    for(n_ix in 1:nrow(u)){
+        for(q_ix in 1:nrow(dists_crs)){
+            if(u[n_ix,(q_ix*2)-1]>u[n_ix,(q_ix*2)])
+                X[,n_ix,q_ix] <- 0
+            else
+                X[,n_ix,q_ix] <- sapply(scales[,q_ix], 
+                                        function(z) sum(pracma::erfc(dists_crs[u[n_ix,(q_ix*2)-1]:u[n_ix,(q_ix*2)]]/z)))
+        }
+    }
    return(X) 
 }
