@@ -26,6 +26,8 @@ stapreg <- function(object){
     y <- object$y
     Z <- object$z
     nvars <- ncol(Z) + 2*nrow(object$dists_crs)
+    n_stap_vars <- nrow(object$dists_crs)
+    n_fixef_vars <- ncol(Z)
     nobs <- NROW(y)
     ynames <- if(is.matrix(y)) rownames(y) else names(y)
     stap_summary <- make_stap_summary(stapfit)
@@ -68,6 +70,8 @@ stapreg <- function(object){
         x = X,
         x_tilde = X_tilde,
         z = Z,
+        n_stap_vars = n_stap_vars,
+        n_fixef_vars = n_fixef_vars,
         model = object$model, 
         data = object$data, 
         family,

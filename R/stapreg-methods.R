@@ -116,6 +116,13 @@ fitted.stapreg <- function(object, ...)  {
 nobs.stapreg <- function(object, ...) {
   nrow(model.frame(object))
 }
+#' @rdname stapreg-methods
+#' @export
+nstap.stapreg <- function(object, ...)
+    return(object$n_stap_var)
+
+nfix.stapreg <- function(object,...)
+    return(object$n_fixef_vars)
 
 #' @rdname stapreg-methods
 #' @export 
@@ -163,7 +170,7 @@ vcov.stapreg <- function(object, correlation = FALSE, ...) {
 #' 
 fixef.stapreg <- function(object, ...) {
   coefs <- object$coefficients
-  coefs[b_names(names(coefs), invert = TRUE)]
+  #coefs[b_names(names(coefs), invert = TRUE)]
 }
 
 #' @rdname stapreg-methods
@@ -222,7 +229,7 @@ sigma.stapreg <- function(object, ...) {
   if (!("sigma" %in% rownames(object$stan_summary))) 
     return(1)
   
-  object$stan_summary["sigma", select_median(object$algorithm)]
+  object$stan_summary["sigma", '50%']
 }
 
 #' @rdname stapreg-methods
