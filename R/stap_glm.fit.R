@@ -446,6 +446,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
                    if (is_gamma) "shape",
                    if (is_ig) "lambda",
                    if (is_nb) "reciprocal_dispersion",
+                   "mean_PPD",
                    "log-posterior")
     stapfit@sim$fnames_oi <- new_names
     return(structure(stapfit, prior.info = prior_info))

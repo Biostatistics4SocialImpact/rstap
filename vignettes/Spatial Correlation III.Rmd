@@ -1,0 +1,327 @@
+---
+title: "Spatial Correlation III"
+author: "Adam Peterson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+library(rstap)
+```
+
+To induce correlation between business locations, we generate the x and y coordinates from a bivariate normal with correlation $\rho$
+
+```{r}
+set.seed(2524)
+num_subj <- 550
+intenfun <- function(x,y) 200 * x *y
+bef_rpp <- spatstat::rpoispp(intenfun, lmax = 5E3)
+bef_df <- data_frame(x = bef_rpp$x,
+                     y = bef_rpp$y, class = 'BEF')
+sub_df <- data_frame(x = runif(n = num_subj, min = 0, max = 1.0),
+                     y = runif(n = num_subj, min = 0, max = 1.0),
+                     class = "Subject")
+rbind(bef_df,sub_df) %>% ggplot(aes(x=x,y=y,color=class)) + geom_point() + 
+    theme_bw() + ggtitle("Correlated Business Positions")
+```
+
+Then suppose the form of some measurement on the subjects is:
+
+$$
+E[Y_i] = \alpha + Z_i \delta + X_i(\theta)\beta_2\\
+X_i(\theta) = \sum_{d \in \mathcal{D}_i} \text{erfc}(\frac{d}{\theta})
+$$
+Here we use the following 
+
+```{r}
+alpha <- 22.5
+Z <- rbernoulli(n = num_subj, p = .45)
+delta <- -.8
+theta <- .3
+beta <- 1.2
+sigma <- 2.3
+```
+
+supposing we use all the data available (no exclusion distance), then 
+this results in the following dataset
+
+```{r}
+dists <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(bef_df[,1:2]))
+X <- apply(dists,1,function(x) sum(pracma::erfc(x/theta)))
+X_tilde <- (X-mean(X))/sd(X) ## center and scale the exposure effect
+y <- alpha + Z*delta + X_tilde*beta + rnorm(n = num_subj, mean = 0, sd = sigma)
+hist(y)
+```
+
+```{r}
+d <- seq(from = 0, to = max(dists), by = 0.01)
+X_theta_one <- pracma::erfc(d/theta)
+par(mfrow = c(1,2))
+plot(d,X_theta_one,type='l',main = "Exposure Decay Function", xlab = "Distance",
+     ylab = "Exposure")
+hist(X_tilde)
+```
+
+
+Then we model this with rstap in the following manner
+
+```{r}
+distance_data <- dists %>% as_data_frame() %>%
+    mutate(subj_id = 1:num_subj) %>% 
+    gather(contains("V"), key = 'BEF',value = 'Distance') %>% 
+    mutate(BEF = 'Fast_Food')
+
+subject_data <- data_frame(subj_id = 1:num_subj,
+                           y = y,
+                           sex = factor(Z,labels=c("M","F")))
+
+fit <- stap_glm(formula = y ~ sex + stap(Fast_Food),
+                subject_data = subject_data,
+                distance_data = distance_data,
+                family = gaussian(link = 'identity'),
+                id_key = 'subj_id',
+                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                prior_theta = log_normal(location = 0, scale = 1), 
+                prior_aux = cauchy(location = 0,scale = 5),
+                max_distance = max(dists), chains = 1) ## include all data
+```
+
+
+
+```{r}
+results <- rbind(c(alpha,delta,beta,theta),coef(fit))
+rownames(results) <- c("True","Estimated")
+results
+```
+
+```{r}
+se(fit)
+```
+
+
+
+```{r}
+set.seed(2524)
+intenfun <- function(x,y) 250 * x * y
+bef_rpp <- spatstat::rpoispp(intenfun, lmax = 500)
+bef_df <- data_frame(x = bef_rpp$x,
+                     y = bef_rpp$y, class = 'BEF_1')
+intenfun <- function(x,y) 250 * x * y
+bef_rpp <- spatstat::rpoispp(intenfun, lmax = 500)
+bef_df <- rbind(bef_df,data_frame(x = bef_rpp$x,
+                     y = bef_rpp$y, class = 'BEF_2'))
+rbind(bef_df) %>% ggplot(aes(x=x,y=y,color=class)) + 
+    geom_point() + theme_bw()
+```
+Then suppose the form of some measurement on the subjects is:
+
+$$
+E[Y_i] = \alpha + Z_i \delta + X_i(\theta)\beta_2\\
+X_i(\theta) = \sum_{d \in \mathcal{D}_i} \text{erfc}(\frac{d}{\theta})
+$$
+Here we use the following 
+
+```{r}
+alpha <- 22.5
+Z <- rbernoulli(n = num_subj, p = .45)
+delta <- -.8
+theta <- .3
+theta_2 <- .9
+beta <- c(1.2,.5)
+sigma <- 2.3
+```
+
+supposing we (again) use all the data available (no exclusion distance), then 
+this results in the following dataset
+
+```{r}
+dists_1 <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(bef_df[bef_df$class=='BEF_1',1:2]))
+X_1 <- apply(dists_1,1,function(x) sum(pracma::erfc(x/theta)))
+X_tilde <- (X_1-mean(X_1))/sd(X_1) ## center and scale the exposure effect
+dists_2 <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(bef_df[bef_df$class=='BEF_2',1:2]))
+X_2 <- apply(dists_2,1,function(x) sum(pracma::erfc(x/theta_2)))
+X_tilde <- cbind(X_tilde,(X_2-mean(X_2))/sd(X_2))
+y <- alpha + Z*delta + X_tilde %*% beta + rnorm(n = num_subj, mean = 0, sd = sigma)
+par(mfrow=c(1,2))
+hist(y)
+hist(dists)
+```
+
+```{r}
+d <- seq(from = 0, to = max(dists), by = 0.01)
+X_theta_one <- pracma::erfc(d/theta)
+X_theta_two <- pracma::erfc(d/theta_2)
+par(mfrow = c(2,2))
+plot(d,X_theta_one,type='l',main = "Exposure Decay Function BEF 1", xlab = "Distance", ylab = "Exposure")
+plot(d,X_theta_two,type='l', main = "Exposure Decay Function BEF 2")
+hist(X_tilde[,1])
+hist(X_tilde[,2])
+```
+
+Since the businesses, let's say Fast Food Restaurants and Coffee shops, 
+were generated using the same intensity function from an inhomogenous poisson model, we should expect the exposure to be correlated, since 
+these businesses tend to be located in the same area - as indeed, they may be
+in real life as well.
+```{r}
+cor(X_tilde[,1],X_tilde[,2])
+```
+
+
+```{r}
+plot(X_1,X_2, xlab = "FFR Exposure", ylab = "Coffee Exposure",
+     main = "Exposure Correlation")
+```
+
+This may cause problems in our modeling 
+
+Then we model this with rstap in the following manner
+
+```{r}
+distance_data <- dists_1 %>% as_data_frame() %>%
+    mutate(subj_id = 1:num_subj) %>% 
+    gather(contains("V"), key = 'BEF',value = 'Distance') %>% 
+    mutate(BEF = 'Fast_Food') %>% 
+    rbind(dists_2 %>% as_data_frame() %>% 
+              mutate(subj_id = 1:num_subj) %>% 
+              gather(contains("V"), key ='BEF', value = 'Distance') %>% 
+              mutate(BEF = 'Coffee_Shops'))
+
+subject_data <- data_frame(subj_id = 1:num_subj,
+                           y = as.vector(y),
+                           sex = factor(Z,labels=c("M","F")))
+
+fit <- stap_glm(formula = y ~ sex + stap(Fast_Food) + stap(Coffee_Shops),
+                subject_data = subject_data,
+                distance_data = distance_data,
+                family = gaussian(link = 'identity'),
+                id_key = 'subj_id',
+                prior = normal(location = 0, scale = 5,autoscale = F),
+                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                prior_theta = log_normal(location = 0, scale = 1), 
+                prior_aux = cauchy(location = 0,scale = 5),
+                max_distance = max(dists), chains = 1) ## include all data
+```
+ 
+ 
+ 
+```{r}
+results <- rbind(c(alpha,delta,beta,theta,theta_2),coef(fit))
+rownames(results) <- c("True","Estimated")
+results
+```
+
+
+
+```{r}
+fit$ses
+```
+
+```{r}
+colnames(X_tilde) <- c("Fast_Food","Coffee_Shops")
+fit_lm <- lm(y ~ sex + Fast_Food + Coffee_Shops,data=cbind(subject_data,X_tilde))
+summary(fit_lm)
+```
+```{r}
+cors <- sapply(1:nrow(fit$x_tilde), function(x) cor(fit$x_tilde[x,,1],fit$x_tilde[x,,2], method='spearman'))
+summary(cors)
+```
+
+
+```{r}
+b <- rstan::extract(fit$stapfit)
+par(mfrow=c(1,2))
+hist(b$theta[,1],main="FFR Spatial Scale")
+hist(b$theta[,2],main="Coffee Spatial Scale")
+```
+
+
+If the effect of coffee shops becomes stronger...
+
+```{r}
+alpha <- 22.5
+Z <- rbernoulli(n = num_subj, p = .45)
+delta <- -.8
+theta <- .3
+theta_2 <- .9
+beta <- c(1.2,2.5)
+sigma <- 2.3
+```
+
+supposing we use all the data available (no exclusion distance), then 
+this results in the following dataset
+
+```{r}
+dists_1 <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(bef_df[bef_df$class=='BEF_1',1:2]))
+X_1 <- apply(dists_1,1,function(x) sum(pracma::erfc(x/theta)))
+X_tilde <- (X_1-mean(X_1))/sd(X_1) ## center and scale the exposure effect
+dists_2 <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(bef_df[bef_df$class=='BEF_2',1:2]))
+X_2 <- apply(dists_2,1,function(x) sum(pracma::erfc(x/theta_2)))
+X_tilde <- cbind(X_tilde,(X_2-mean(X_2))/sd(X_2))
+y <- alpha + Z*delta + X_tilde %*% beta + rnorm(n = num_subj, mean = 0, sd = sigma)
+par(mfrow=c(1,2))
+hist(y)
+```
+
+
+```{r}
+distance_data <- dists_1 %>% as_data_frame() %>%
+    mutate(subj_id = 1:num_subj) %>% 
+    gather(contains("V"), key = 'BEF',value = 'Distance') %>% 
+    mutate(BEF = 'Fast_Food') %>% 
+    rbind(dists_2 %>% as_data_frame() %>% 
+              mutate(subj_id = 1:num_subj) %>% 
+              gather(contains("V"), key ='BEF', value = 'Distance') %>% 
+              mutate(BEF = 'Coffee_Shops'))
+
+subject_data <- data_frame(subj_id = 1:num_subj,
+                           y = as.vector(y),
+                           sex = factor(Z,labels=c("M","F")))
+
+fit_CF <- stap_glm(formula = y ~ sex + stap(Fast_Food) + stap(Coffee_Shops),
+                subject_data = subject_data,
+                distance_data = distance_data,
+                family = gaussian(link = 'identity'),
+                id_key = 'subj_id',
+                prior = normal(location = 0, scale = 5,autoscale = F),
+                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                prior_theta = log_normal(location = 0, scale = 1), 
+                prior_aux = cauchy(location = 0,scale = 5),
+                max_distance = max(dists), chains = 1) ## include all data
+```
+
+
+```{r}
+results_CF <- rbind(c(alpha,delta,beta,theta,theta_2),coef(fit_CF))
+rownames(results_CF) <- c("True","Estimated")
+results_CF
+```
+
+
+```{r}
+fit_CF$ses
+```
+
+
+```{r}
+colnames(X_tilde) <- c("Fast_Food","Coffee_Shops")
+fit_lmCF <- lm(y ~ sex + Fast_Food + Coffee_Shops, data = cbind(subject_data,X_tilde))
+summary(fit_lmCF)
+```

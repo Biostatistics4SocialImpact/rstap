@@ -16,9 +16,8 @@
 #' inference for a generalized linear model stap_glm incorporates spatial 
 #' as detailed in in --need to add citation --
 #'@export stap_glm
-<<<<<<< HEAD
 stap_glm <- function(formula,
-                     family = stats::gaussian(),
+                     family = gaussian(),
                      subject_data,
                      distance_data,
                      id_key = NULL,
@@ -42,6 +41,7 @@ stap_glm <- function(formula,
     crs_data <- extract_stap_components(formula,distance_data,
                                         subject_data, id_key, 
                                         max_distance)
+    original_formula <- formula
     formula <- get_stapless_formula(formula)
     family <- validate_family(family)
     validate_glm_formula(formula)
@@ -84,7 +84,9 @@ stap_glm <- function(formula,
 
     sel <- apply(Z, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
     Z <- Z[ , !sel, drop = FALSE]
-    fit <- nlist(stapfit, family, formula, subject_data,
+    fit <- nlist(stapfit, family,
+                 formula = original_formula,
+                 subject_data,
                  distance_data,
                  dists_crs = crs_data$d_mat,
                  u = crs_data$u,

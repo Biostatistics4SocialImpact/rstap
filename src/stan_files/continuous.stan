@@ -135,6 +135,6 @@ generated quantities {
       for (n in 1:len_y) mean_PPD = mean_PPD + inv_gaussian_rng(eta[n], aux);
     }
     mean_PPD = mean_PPD / len_y;
-  }
+    }
   }
 }

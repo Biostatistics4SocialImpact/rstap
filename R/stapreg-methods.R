@@ -116,11 +116,34 @@ fitted.stapreg <- function(object, ...)  {
 nobs.stapreg <- function(object, ...) {
   nrow(model.frame(object))
 }
+
+#' @export
+#' @keywords internal
+#' @param object A fitted model object
+#' @param ... Arguments to methods.
+#' @return number of spatial temporal aggregated predictors
+#' @export
+#' @seealso \code{\link{nstap.stapreg}} 
+nstap <- function(object, ...)
+    UseMethod("nstap")
+
 #' @rdname stapreg-methods
 #' @export
 nstap.stapreg <- function(object, ...)
     return(object$n_stap_var)
 
+#' @export 
+#' @keywords internal
+#' @param object a A fitted model object
+#' @param ... Arguments to methods.
+#' @return number of fixed effects- non spatial temporal aggregated predictors
+#' @export
+#' @seealso \code{\link{nfix.stapreg}}
+nfix <- function(object, ...)
+    UseMethod("nfix")
+
+#' @rdname stapreg-methods
+#' @export
 nfix.stapreg <- function(object,...)
     return(object$n_fixef_vars)
 

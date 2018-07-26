@@ -21,7 +21,7 @@
 #' from a fitted model object as a matrix, data frame, or array. The 
 #' \code{as.matrix} and \code{as.data.frame} methods merge all chains together, 
 #' whereas the \code{as.array} method keeps the chains separate.  
-#' @method as.matrix stanpeg
+#' @method as.matrix stapreg
 #' @export
 #' @templateVar stapregArg x
 #' @template args-stapreg-object

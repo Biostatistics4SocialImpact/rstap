@@ -75,7 +75,8 @@ print.stapreg <- function(x, digits = 1, ...) {
   cat("\n observations:", nobs(x))
   if (isTRUE(x$stan_function %in% 
              c("stap_glm", "stap_lm"))) {
-    cat("\n fixed predictors:  ", nfix(x))
+    cat("\n Intercept: ", rownames(x$stap_summary)[1] == "(Intercept)")
+    cat("\n fixed predictors:  ", (nfix(x) - 1*(rownames(x$stap_summary)[1] == "(Intercept)")))
     cat("\n spatial predictors: ", nstap(x))
   }
   
@@ -87,13 +88,12 @@ print.stapreg <- function(x, digits = 1, ...) {
 
   aux_nms <- .aux_name(x)
   
-  if (!used.optimizing(x)) {
     
     if (isTRUE(x$stan_function %in% c("stan_lm", "stan_aov"))) {
       aux_nms <- c("R2", "log-fit_ratio", aux_nms)
     }
-    mat <- as.matrix(x$stanfit) # don't used as.matrix.stapreg method b/c want access to mean_PPD
-    nms <- setdiff(rownames(x$stan_summary), c("log-posterior", aux_nms))
+    mat <- as.matrix(x$stapfit) # don't used as.matrix.stapreg method b/c want access to mean_PPD
+    nms <- setdiff(rownames(x$stap_summary), c("log-posterior", aux_nms))
     
     ppd_nms <- grep("^mean_PPD", nms, value = TRUE)
     nms <- setdiff(nms, ppd_nms)
@@ -101,6 +101,8 @@ print.stapreg <- function(x, digits = 1, ...) {
     ppd_mat <- mat[, ppd_nms, drop = FALSE]
     estimates <- .median_and_madsd(coef_mat)
     ppd_estimates <- .median_and_madsd(ppd_mat)
+
+    .printfr(estimates, digits, ...)
     
     if (length(aux_nms)) {
       aux_estimates <- .median_and_madsd(mat[, aux_nms, drop=FALSE])
@@ -111,8 +113,6 @@ print.stapreg <- function(x, digits = 1, ...) {
       cat("\nSample avg. posterior predictive distribution of y:\n")
       .printfr(ppd_estimates, digits, ...)
     }
-    
-  } 
   
   cat("\n------\n")
   cat("* For help interpreting the printed output see ?print.stapreg\n")
@@ -203,7 +203,7 @@ summary.stapreg <- function(object, pars = NULL, regex_pars = NULL,
   
   pars <- collect_pars(object, pars, regex_pars)
   
-    args <- list(object = object$stanfit)
+    args <- list(object = object$stapfit)
     if (!is.null(probs)) 
       args$probs <- probs
     out <- do.call("summary", args)$summary
@@ -229,9 +229,9 @@ summary.stapreg <- function(object, pars = NULL, regex_pars = NULL,
     formula = formula(object),
     posterior_sample_size = posterior_sample_size(object),
     nobs = nobs(object),
-    npreds = if (isTRUE(object$stan_function %in% c("stan_glm", "stan_glm.nb", "stan_lm")))
+    npreds = if (isTRUE(object$stan_function %in% c("stap_glm", "stap_lm")))
       length(coef(object)) else NULL,
-    ngrps = if (mer) ngrps(object) else NULL,
+    # ngrps = if (mer) ngrps(object) else NULL,
     print.digits = digits,
     priors = object$prior.info,
     class = "summary.stapreg"
@@ -247,10 +247,10 @@ print.summary.stapreg <- function(x, digits = max(1, attr(x, "print.digits")),
                                   ...) {
   atts <- attributes(x)
   cat("\nModel Info:\n")
-  cat("\n function:    ", atts$stan_function)
+  cat("\n function:    ", atts$stap_function)
   cat("\n family:      ", atts$family)
   cat("\n formula:     ", formula_string(atts$formula))
-  cat("\n algorithm:   ", atts$algorithm)
+  # cat("\n algorithm:   ", atts$algorithm)
   cat("\n priors:      ", "see help('prior_summary')")
   if (!is.null(atts$posterior_sample_size) && atts$algorithm == "sampling")
     cat("\n sample:      ", atts$posterior_sample_size, "(posterior sample size)")

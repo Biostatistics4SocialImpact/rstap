@@ -25,8 +25,8 @@
 #' @aliases posterior_interval
 #' @export
 #'
-#' @templateVar stanregArg object
-#' @template args-stanreg-object
+#' @templateVar stapregArg object
+#' @template args-stapreg-object
 #' @template args-dots-ignored
 #' @template args-pars
 #' @template args-regex-pars
@@ -81,7 +81,7 @@
 #' }
 #'
 #' @seealso
-#' \code{\link{confint.stanreg}}, which, for models fit using optimization, can
+#' \code{\link{confint.stapreg}}, which, for models fit using optimization, can
 #' be used to compute traditional confidence intervals.
 #'
 #' \code{\link{predictive_interval}} for predictive intervals.
@@ -90,19 +90,16 @@
 #' @template reference-morey
 #' 
 #' 
-posterior_interval.stanreg <-
+posterior_interval.stapreg <-
   function(object,
            prob = 0.9,
            type = "central",
            pars = NULL,
            regex_pars = NULL,
            ...) {
-    if (used.optimizing(object))
-      STOP_not_optimizing("posterior_interval")
     if (!identical(type, "central"))
       stop("Currently the only option for 'type' is 'central'.",
            call. = FALSE)
-    
     mat <- as.matrix.stapreg(object, pars = pars, regex_pars = regex_pars)
     rstantools::posterior_interval(mat, prob = prob)
   }

@@ -585,3 +585,16 @@ is.mer <- function(x) {
   }
   isTRUE(check1 && check2)
 }
+
+# test if a stapreg object has class clogit
+is_clogit <- function(object){
+    is(object,'clogit')
+}
+# Get the posterior sample size
+#
+# @param x A stapreg object
+# @return the posterior sample size (or size of sample from approximate posterior)
+posterior_sample_size <- function(x) {
+  validate_stapreg_object(x)
+  sum(pss - x$stanfit@sim$warmup2)
+}

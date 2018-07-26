@@ -94,6 +94,8 @@ stapreg <- function(object){
         stan_function = object$stan_function
       )
 
+    structure(out, class = c("stapreg", "glm","lm"))
+
 }
     
 
