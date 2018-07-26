@@ -1,10 +1,6 @@
 #' Fitting Generalized Linear STAP models
 #'
-#'@param y n length vector or n x 2 matrix of outcomes
-#'@param dists_crs q x M matrix of distances between outcome observations and
-#' environmental features where q is the number of spatial covariates, 
-#' and M is the maximum number of environmental features amongst all q features
-#' @param u crs array
+#' @param y n length vector or n x 2 matrix of outcomes
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
 #' @param subject_data
 #' @param distance_data
