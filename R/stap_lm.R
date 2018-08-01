@@ -1,4 +1,4 @@
-#' Fitting Linear STKAP models
+#' Fitting Linear STAP models 
 #'
 #'@param y vector of continuous outcomes
 #'@param Z n*p design matrix of subject specific covariates

@@ -197,7 +197,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #' summary(example_model, pars = "varying")
 #' as.data.frame(summary(example_model, pars = "varying"))
 #' 
-#' @importMethodsFrom rstan summary
+# @importMethodsFrom rstan summary
 summary.stapreg <- function(object, pars = NULL, regex_pars = NULL, 
                             probs = NULL, ..., digits = 1) {
   

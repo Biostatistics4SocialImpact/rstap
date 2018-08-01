@@ -1,6 +1,6 @@
 #' Fitting Generalized Linear STAP models
 #'
-#' @param y n length vector or n x 2 matrix of outcomes
+#' @param formula 
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
 #' @param subject_data
 #' @param distance_data
