@@ -1,12 +1,20 @@
-#' Fitting Generalized Linear STKAP models
-#'
-#'@param y n length vector or n x 2 matrix of outcomes
-#'@param Z n x p design matrix of subject specific covariates
-#'@param dists_crs q x M matrix of distances between outcome observations and
-#' environmental features where q is the number of spatial covariates,
-#'  and M is the maximum number of environmental features amongst all q features
-#'@param max_distance the upper bound of distance for which all
-#'@export stap_glm
+# Part of the rstap package for estimating stap models
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+#' @rdname stap_glm
+#' @export stap_glm
 stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
                          weights = rep(1,NROW(y)),
                          offset = rep(0, NROW(y)),
