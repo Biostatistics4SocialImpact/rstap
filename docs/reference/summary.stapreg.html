@@ -148,7 +148,7 @@ only the regression coefficients (without the intercept). <code>"alpha"</code>
 can also be used as a shortcut for <code>"(Intercept)"</code>. If the model has 
 varying intercepts and/or slopes they can be selected using <code>pars = 
 "varying"</code>.</p>
-<p>In addition, for <code>stanmvreg</code> objects there are some additional shortcuts 
+<p>In addition, for <code>stapmvreg</code> objects there are some additional shortcuts 
 available. Using <code>pars = "long"</code> will display the 
 parameter estimates for the longitudinal submodels only (excluding group-specific
 pparameters, but including auxiliary parameters).
@@ -163,7 +163,7 @@ the random effects or the auxiliary parameters.
 fixed effect regression coefficients are selected, as well as any 
 auxiliary parameters and the log posterior.</p>
 <p>If <code>pars</code> is <code>NULL</code> all parameters are selected for a <code>stapreg</code>
-object, while for a <code>stanmvreg</code> object all 
+object, while for a <code>stapmvreg</code> object all 
 fixed effect regression coefficients are selected as well as any 
 auxiliary parameters and the log posterior. See 
 <strong>Examples</strong>.</p></td>
@@ -201,12 +201,12 @@ When calling <code>summary</code>, the value of digits is stored as the
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>The <code>summary</code> method returns an object of class 
-  <code>"summary.stapreg"</code> (or <code>"summary.stanmvreg"</code>, inheriting 
+  <code>"summary.stapreg"</code> (or <code>"summary.stapmvreg"</code>, inheriting 
   <code>"summary.stapreg"</code>), which is a matrix of 
   summary statistics and 
   diagnostics, with attributes storing information for use by the
   <code>print</code> method. The <code>print</code> method for <code>summary.stapreg</code> or
-  <code>summary.stanmvreg</code> objects is called for its side effect and just returns 
+  <code>summary.stapmvreg</code> objects is called for its side effect and just returns 
   its input. The <code>as.data.frame</code> method for <code>summary.stapreg</code> 
   objects converts the matrix to a data.frame, preserving row and column 
   names but dropping the <code>print</code>-related attributes.</p>

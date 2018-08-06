@@ -98,6 +98,7 @@ bef_df &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span cl
                      <span class="dt">class =</span> <span class="st">"BEF"</span>)
 <span class="kw">rbind</span>(sub_df,bef_df) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">color =</span> class )) <span class="op">+</span>
 <span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">theme_bw</span>() <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">"Independence Configuration"</span>)</code></pre></div>
+<p><img src="STAP_Introduction_files/figure-html/initialize_data-1.png" width="700"></p>
 <p>Then suppose the relationship between the mean and the covariates is the following:</p>
 <p><span class="math display">\[
 E[Y_i] = \alpha + Z_i \delta + X_i(\theta)\beta_2\\
@@ -117,13 +118,14 @@ X &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class=
 X_tilde &lt;-<span class="st"> </span>(X<span class="op">-</span><span class="kw">mean</span>(X))<span class="op">/</span><span class="kw">sd</span>(X) ## center and scale the exposure effect
 y &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X_tilde<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)
 <span class="kw">hist</span>(y)</code></pre></div>
-<p>The exposure decay function and histogram of the <strong>standardized</strong> exposure is as follows</p>
+<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-2-1.png" width="700"> The exposure decay function and histogram of the <strong>standardized</strong> exposure is as follows</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists), <span class="dt">by =</span> <span class="fl">0.01</span>)
 X_theta_one &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span>theta)
 <span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
 <span class="kw">plot</span>(d,X_theta_one,<span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exposure Decay Function"</span>, <span class="dt">xlab =</span> <span class="st">"Distance"</span>,
      <span class="dt">ylab =</span> <span class="st">"Exposure"</span>)
 <span class="kw">hist</span>(X_tilde, <span class="dt">main =</span> <span class="st">"Marginal Standardized Exposure Distribution"</span>)</code></pre></div>
+<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <p>Then we model these data using rstap in the following manner</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as_data_frame</span>() <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -144,13 +146,44 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">1</span>) ## include all data</code></pre></div>
+                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">1</span>) ## include all data
+<span class="co">#&gt; </span>
+<span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Gradient evaluation took 0.014825 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 148.25 seconds.</span>
+<span class="co">#&gt; Adjust your expectations accordingly!</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Iteration:    1 / 2000 [  0%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  200 / 2000 [ 10%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  400 / 2000 [ 20%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  600 / 2000 [ 30%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  800 / 2000 [ 40%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1000 / 2000 [ 50%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1001 / 2000 [ 50%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1200 / 2000 [ 60%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1400 / 2000 [ 70%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1600 / 2000 [ 80%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;  Elapsed Time: 99.4754 seconds (Warm-up)</span>
+<span class="co">#&gt;                90.5299 seconds (Sampling)</span>
+<span class="co">#&gt;                190.005 seconds (Total)</span></code></pre></div>
 <p>Checking our estimates, the model captures the true values very well.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(alpha,delta,beta,theta),<span class="kw">coef</span>(fit))
 <span class="kw">rownames</span>(results) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"True"</span>,<span class="st">"Estimated"</span>)
-results</code></pre></div>
+results
+<span class="co">#&gt;           (Intercept)       sexF Fast_Food Fast_Food_spatial_scale</span>
+<span class="co">#&gt; True         22.50000 -0.8000000  1.200000               0.5000000</span>
+<span class="co">#&gt; Estimated    22.34521 -0.7833661  1.044747               0.4803684</span></code></pre></div>
 <p>standard errors…</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit<span class="op">$</span>ses</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit<span class="op">$</span>ses
+<span class="co">#&gt;             (Intercept)                    sexF               Fast_Food </span>
+<span class="co">#&gt;              0.13113708              0.19693048              0.09500435 </span>
+<span class="co">#&gt; Fast_Food_spatial_scale </span>
+<span class="co">#&gt;              0.04951344</span></code></pre></div>
 <p>We’ll take this as sufficient evidence (for this vignette) that the model works. Typical model criticism can be found in a different vignette (to be added later). Let’s now examine the case when we mis-specify the inclusion distance or superflous data is included.</p>
 <div id="mis-specified-inclusion-distance" class="section level2">
 <h2 class="hasAnchor">
@@ -160,6 +193,7 @@ results</code></pre></div>
 <a href="#non-informative-data-excluded" class="anchor"></a>Non-Informative data excluded</h3>
 <p>Note that the histogram of distances include many over 1 unit - which from the above graph we know only add “negligible” information.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(dists)</code></pre></div>
+<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <p>Keeping this in mind - let’s see what happens to our estimates when we set the exclusion distance to be 1.25 miles.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_<span class="dv">125</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">stap</span>(Fast_Food), <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
@@ -170,15 +204,47 @@ results</code></pre></div>
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> <span class="fl">1.25</span>, <span class="dt">chains =</span> <span class="dv">1</span>)</code></pre></div>
+                <span class="dt">max_distance =</span> <span class="fl">1.25</span>, <span class="dt">chains =</span> <span class="dv">1</span>)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Gradient evaluation took 0.00321 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 32.1 seconds.</span>
+<span class="co">#&gt; Adjust your expectations accordingly!</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Iteration:    1 / 2000 [  0%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  200 / 2000 [ 10%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  400 / 2000 [ 20%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  600 / 2000 [ 30%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  800 / 2000 [ 40%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1000 / 2000 [ 50%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1001 / 2000 [ 50%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1200 / 2000 [ 60%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1400 / 2000 [ 70%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1600 / 2000 [ 80%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;  Elapsed Time: 48.2797 seconds (Warm-up)</span>
+<span class="co">#&gt;                42.5774 seconds (Sampling)</span>
+<span class="co">#&gt;                90.8571 seconds (Total)</span></code></pre></div>
 <p>We excluded about half of the total data (not evenly across individuals)</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(dists<span class="op">&lt;=</span><span class="fl">1.25</span>)<span class="op">/</span><span class="kw">sum</span>(dists<span class="op">&gt;=</span><span class="dv">0</span>) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(dists<span class="op">&lt;=</span><span class="fl">1.25</span>)<span class="op">/</span><span class="kw">sum</span>(dists<span class="op">&gt;=</span><span class="dv">0</span>) 
+<span class="co">#&gt; [1] 0.4675394</span></code></pre></div>
 <p>and yet the estimates are still very good</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(alpha,delta,beta,theta),<span class="kw">coef</span>(fit_<span class="dv">125</span>))
 <span class="kw">rownames</span>(results_<span class="dv">2</span>) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"True"</span>,<span class="st">"Estimated"</span>)
-results_<span class="dv">2</span></code></pre></div>
+results_<span class="dv">2</span>
+<span class="co">#&gt;           (Intercept)      sexF Fast_Food Fast_Food_spatial_scale</span>
+<span class="co">#&gt; True         22.50000 -0.800000  1.200000               0.5000000</span>
+<span class="co">#&gt; Estimated    22.33244 -0.779633  1.041528               0.4821771</span></code></pre></div>
 <p>The variabilty of our estimates is about the same.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_<span class="dv">125</span><span class="op">$</span>ses</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_<span class="dv">125</span><span class="op">$</span>ses
+<span class="co">#&gt;             (Intercept)                    sexF               Fast_Food </span>
+<span class="co">#&gt;              0.13943999              0.19783411              0.09950886 </span>
+<span class="co">#&gt; Fast_Food_spatial_scale </span>
+<span class="co">#&gt;              0.04801633</span></code></pre></div>
 </div>
 </div>
 <div id="informative-data-excluded" class="section level2">
@@ -194,17 +260,49 @@ results_<span class="dv">2</span></code></pre></div>
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> .<span class="dv">25</span>, <span class="dt">chains =</span> <span class="dv">1</span>) </code></pre></div>
+                <span class="dt">max_distance =</span> .<span class="dv">25</span>, <span class="dt">chains =</span> <span class="dv">1</span>) 
+<span class="co">#&gt; </span>
+<span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Gradient evaluation took 0.000541 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 5.41 seconds.</span>
+<span class="co">#&gt; Adjust your expectations accordingly!</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Iteration:    1 / 2000 [  0%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  200 / 2000 [ 10%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  400 / 2000 [ 20%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  600 / 2000 [ 30%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  800 / 2000 [ 40%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1000 / 2000 [ 50%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1001 / 2000 [ 50%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1200 / 2000 [ 60%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1400 / 2000 [ 70%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1600 / 2000 [ 80%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;  Elapsed Time: 7.29269 seconds (Warm-up)</span>
+<span class="co">#&gt;                6.21436 seconds (Sampling)</span>
+<span class="co">#&gt;                13.5071 seconds (Total)</span></code></pre></div>
 <p>We can now see that our spatial scale and the corresponding effect are biased</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(alpha,delta,beta,theta),<span class="kw">coef</span>(fit_<span class="dv">25</span>))
 <span class="kw">rownames</span>(results_<span class="dv">3</span>) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"True"</span>,<span class="st">"Estimated"</span>)
-results_<span class="dv">3</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rbind</span>(fit<span class="op">$</span>ses,fit_<span class="dv">125</span><span class="op">$</span>ses,fit_<span class="dv">25</span><span class="op">$</span>ses)</code></pre></div>
+results_<span class="dv">3</span>
+<span class="co">#&gt;           (Intercept)       sexF Fast_Food Fast_Food_spatial_scale</span>
+<span class="co">#&gt; True         22.50000 -0.8000000 1.2000000                0.500000</span>
+<span class="co">#&gt; Estimated    22.31373 -0.7324332 0.8158272                1.754889</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rbind</span>(fit<span class="op">$</span>ses,fit_<span class="dv">125</span><span class="op">$</span>ses,fit_<span class="dv">25</span><span class="op">$</span>ses)
+<span class="co">#&gt;      (Intercept)      sexF  Fast_Food Fast_Food_spatial_scale</span>
+<span class="co">#&gt; [1,]   0.1311371 0.1969305 0.09500435              0.04951344</span>
+<span class="co">#&gt; [2,]   0.1394400 0.1978341 0.09950886              0.04801633</span>
+<span class="co">#&gt; [3,]   0.1259926 0.1935937 0.09008532              1.15594714</span></code></pre></div>
 <p>The bias, in addition to increased noise, is to be expected since we’re increasingly missing informative data for our spatial parameter.</p>
 <div id="inclusion-of-superflous-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#inclusion-of-superflous-data" class="anchor"></a>Inclusion of superflous data</h3>
 <p>If additional fast food restaurants were included, beyond that which were truly “needed”“, what would happen to our model estimates?</p>
+<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-14-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]),
                        <span class="kw">as.matrix</span>(<span class="kw">rbind</span>(bef_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],extra_befs[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])))
 
@@ -224,12 +322,43 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">1</span>)  ## including unneccessary data</code></pre></div>
+                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">1</span>)  ## including unneccessary data
+<span class="co">#&gt; </span>
+<span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Gradient evaluation took 0.013432 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 134.32 seconds.</span>
+<span class="co">#&gt; Adjust your expectations accordingly!</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Iteration:    1 / 2000 [  0%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  200 / 2000 [ 10%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  400 / 2000 [ 20%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  600 / 2000 [ 30%]  (Warmup)</span>
+<span class="co">#&gt; Iteration:  800 / 2000 [ 40%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1000 / 2000 [ 50%]  (Warmup)</span>
+<span class="co">#&gt; Iteration: 1001 / 2000 [ 50%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1200 / 2000 [ 60%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1400 / 2000 [ 70%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1600 / 2000 [ 80%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
+<span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;  Elapsed Time: 144.428 seconds (Warm-up)</span>
+<span class="co">#&gt;                129.851 seconds (Sampling)</span>
+<span class="co">#&gt;                274.279 seconds (Total)</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(alpha,delta,beta,theta),<span class="kw">coef</span>(fit))
 <span class="kw">rownames</span>(results) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"True"</span>,<span class="st">"Estimated"</span>)
-results</code></pre></div>
+results
+<span class="co">#&gt;           (Intercept)       sexF Fast_Food Fast_Food_spatial_scale</span>
+<span class="co">#&gt; True         22.50000 -0.8000000  1.200000               0.5000000</span>
+<span class="co">#&gt; Estimated    22.33051 -0.7806626  1.037299               0.4789469</span></code></pre></div>
 <p>standard errors…</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit<span class="op">$</span>ses</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit<span class="op">$</span>ses
+<span class="co">#&gt;             (Intercept)                    sexF               Fast_Food </span>
+<span class="co">#&gt;              0.12232304              0.18641125              0.09216908 </span>
+<span class="co">#&gt; Fast_Food_spatial_scale </span>
+<span class="co">#&gt;              0.04850020</span></code></pre></div>
 <p>Our model is still able to recover the estimates correctly - about as well as it did in the typical model setting! This is because the additional parameters only contribute an in increasingly small amount of information for reasonable choices of the spatial scale.</p>
 </div>
 </div>

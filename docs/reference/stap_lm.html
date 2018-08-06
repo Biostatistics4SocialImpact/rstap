@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fitting Linear STKAP models — stap_lm • rstap</title>
+<title>Bayesian spatial-temporal aggregated predictor(STAP) models via Stan — stap_lm • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,15 @@
 
 
 
-<meta property="og:title" content="Fitting Linear STKAP models — stap_lm" />
+<meta property="og:title" content="Bayesian spatial-temporal aggregated predictor(STAP) models via Stan — stap_lm" />
 
-<meta property="og:description" content="Fitting Linear STKAP models" />
+<meta property="og:description" content="
+Bayesian inference for linear modeling with regularizing priors on the model
+parameters that are driven by prior beliefs about \(R^2\), the proportion
+of variance in the outcome attributable to the predictors. See
+priors for an explanation of this critical point.
+stan_glm with family=&quot;gaussian&quot; also estimates a linear
+model with normally-distributed errors and allows for various other priors on" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -107,46 +113,136 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Fitting Linear STKAP models</h1>
+    <h1>Bayesian spatial-temporal aggregated predictor(STAP) models via Stan</h1>
     
     <div class="hidden name"><code>stap_lm.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Fitting Linear STKAP models</p>
+    <p><img src='figures/stanlogo.png' width="25px" alt="http://mc-stan.org/about/logo/" />
+Bayesian inference for linear modeling with regularizing priors on the model
+parameters that are driven by prior beliefs about \(R^2\), the proportion
+of variance in the outcome attributable to the predictors. See
+<code><a href='priors.html'>priors</a></code> for an explanation of this critical point.
+<code>stan_glm</code> with <code>family="gaussian"</code> also estimates a linear
+model with normally-distributed errors and allows for various other priors on</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>stap_lm</span>(<span class='no'>y</span>, <span class='no'>Z</span>, <span class='no'>dists_csr</span>, <span class='no'>u</span>, <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
-  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>25</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>), <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
-  <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>theta_one</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>1.5</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)),
-  <span class='kw'>prior_sigma</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>cauchy</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>), <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>stap_lm</span>(<span class='no'>formula</span>, <span class='no'>subject_data</span>, <span class='no'>bef_data</span>, <span class='kw'>id_key</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>max_distance</span>, <span class='no'>subset</span>,
+  <span class='no'>weights</span>, <span class='no'>na.action</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>x</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>z</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>singular.ok</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>offset</span>, <span class='no'>...</span>,
+  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>R2</a></span>(<span class='fu'>stop</span>(<span class='st'>"'location' must be specified'"</span>)), <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>y</th>
-      <td><p>vector of continuous outcomes</p></td>
+      <th>formula, subset</th>
+      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/lm'>lm</a></code>,</p></td>
     </tr>
     <tr>
-      <th>Z</th>
-      <td><p>n*p design matrix of subject specific covariates</p></td>
+      <th>na.action, singular.ok, contrasts</th>
+      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/lm'>lm</a></code>, but 
+rarely specified.</p></td>
     </tr>
     <tr>
-      <th>dists_csr</th>
-      <td><p>distance crs array</p></td>
+      <th>model, offset, weights</th>
+      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/lm'>lm</a></code>, but
+rarely specified.</p></td>
     </tr>
     <tr>
-      <th>u</th>
-      <td><p>crs index array</p></td>
+      <th>x, y</th>
+      <td><p>In <code>stan_lm</code>, logical scalars indicating whether to
+return the design matrix and response vector. In <code>stan_lm.fit or stan_lm.wfit</code>,
+a design matrix and response vector.</p></td>
     </tr>
     <tr>
-      <th>max_distance</th>
-      <td><p>inclusion distance</p></td>
+      <th>...</th>
+      <td><p>Further arguments passed to the function in the <span class="pkg">rstap</span> 
+to specify <code>iter</code>, <code>chains</code>, <code>cores</code>, <code>refresh</code>, etc.</p></td>
+    </tr>
+    <tr>
+      <th>prior</th>
+      <td><p>Must be a call to <code><a href='priors.html'>R2</a></code> with its 
+<code>location</code> argument specified or <code>NULL</code>, which would
+indicate a standard uniform prior for the \(R^2\).</p></td>
+    </tr>
+    <tr>
+      <th>prior_intercept</th>
+      <td><p>Either <code>NULL</code> (the default) or a call to
+<code><a href='priors.html'>normal</a></code>. If a <code><a href='priors.html'>normal</a></code> prior is specified
+without a <code>scale</code>, then the standard deviation is taken to be
+the marginal standard deviation of the outcome divided by the square
+root of the sample size, which is legitimate because the marginal
+standard deviation of the outcome is a primitive parameter being
+estimated.</p>
+<p><strong>Note:</strong> The prior distribution for the intercept is set so it
+applies to the value <em>when all predictors are centered</em>. If you prefer
+to specify a prior on the intercept without the predictors being
+auto-centered, then you have to omit the intercept from the
+<code><a href='http://www.rdocumentation.org/packages/stats/topics/formula'>formula</a></code> and include a column of ones as a predictor,
+in which case some element of <code>prior</code> specifies the prior on it,
+rather than <code>prior_intercept</code>. Regardless of how
+<code>prior_intercept</code> is specified, the reported <em>estimates</em> of the
+intercept always correspond to a parameterization without centered
+predictors (i.e., same as in <code>glm</code>).</p></td>
+    </tr>
+    <tr>
+      <th>adapt_delta</th>
+      <td><p>See the adapt_delta help page for details.</p></td>
+    </tr>
+    <tr>
+      <th>w</th>
+      <td><p>Same as in <code><a href='http://www.rdocumentation.org/packages/stats/topics/lmfit'>lm.wfit</a></code> but rarely specified.</p></td>
     </tr>
     </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A stapreg object is returned 
+for <code>stan_lm</code>.</p>
+<p>A stapfit object (or a slightly modified 
+  stapfit object) is returned if <code>stan_lm.fit or stan_lm.wfit</code> is called directly.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The <code>stan_lm</code> function is similar in syntax to the 
+  <code><a href='http://www.rdocumentation.org/packages/stats/topics/lm'>lm</a></code> function but rather than choosing the parameters to
+  minimize the sum of squared residuals, samples from the posterior 
+  distribution are drawn using MCMC. The <code>stan_lm</code> function 
+  has a formula-based interface and would usually be called by users but
+  the <code>stap_lm.fit</code> and <code>stap_lm.wfit</code> functions might be called 
+  by other functions that parse the data themselves and are analgoous to
+  <code><a href='http://www.rdocumentation.org/packages/stats/topics/lmfit'>lm.fit</a></code> and <code><a href='http://www.rdocumentation.org/packages/stats/topics/lmfit'>lm.wfit</a></code> respectively.</p>     
+<p>In addition to estimating <code>sigma</code> --- the standard deviation of the
+  normally-distributed errors --- this model estimates a positive parameter
+  called <code>log-fit_ratio</code>. If it is positive, the marginal posterior 
+  variance of the outcome will exceed the sample variance of the outcome
+  by a multiplicative factor equal to the square of <code>fit_ratio</code>.
+  Conversely if <code>log-fit_ratio</code> is negative, then the model underfits.
+  Given the regularizing nature of the priors, a slight underfit is good.</p>  
+<p>Finally, the posterior predictive distribution is generated with the
+  predictors fixed at their sample means. This quantity is useful for
+  checking convergence because it is reasonably normally distributed
+  and a function of all the parameters in the model.</p>
+    
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Lewandowski, D., Kurowicka D., and Joe, H. (2009). Generating random
+correlation matrices based on vines and extended onion method. 
+<em>Journal of Multivariate Analysis</em>. <strong>100</strong>(9), 1989--2001.</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p>The vignettes for <code>stap_lm</code>, which has more
+thorough descriptions and examples.
+<a href='https://biostatistics4socialimpact.github.io'>https://biostatistics4socialimpact.github.io</a></p>
+<p>Also see <code><a href='stap_glm.html'>stap_glm</a></code>, which --- if <code>family =
+gaussian(link="identity")</code> --- also estimates a stap linear model with
+normally-distributed errors but specifies different priors.</p></div>
     
 
   </div>
@@ -154,7 +250,15 @@
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
+
+      <li><a href="#references">References</a></li>
+
+      <li><a href="#see-also">See also</a></li>
+          </ul>
 
   </div>
 </div>
