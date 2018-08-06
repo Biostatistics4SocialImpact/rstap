@@ -13,6 +13,7 @@
 \alias{exponential}
 \alias{log_normal}
 \alias{beta_prior}
+\alias{R2}
 \title{Prior distributions and options}
 \usage{
 normal(location = 0, scale = NULL, autoscale = TRUE)
@@ -36,6 +37,8 @@ exponential(rate = 1, autoscale = TRUE)
 log_normal(location = 0, scale = 1)
 
 beta_prior(alpha = 1, beta = 1)
+
+R2(location = NULL, what = c("mode", "mean", "median", "log"))
 }
 \arguments{
 \item{location}{Prior location. In most cases, this is the prior mean, but

@@ -2,24 +2,107 @@
 % Please edit documentation in R/stap_lm.R
 \name{stap_lm}
 \alias{stap_lm}
-\title{Fitting Linear STKAP models}
+\title{Bayesian spatial-temporal aggregated predictor(STAP) models via Stan}
 \usage{
-stap_lm(y, Z, dists_csr, u, max_distance = 3, prior = normal(),
-  prior_intercept = normal(location = 25, scale = 5), prior_stap = normal(),
-  prior_theta = list(theta_one = normal(location = 1.5, scale = 0.5)),
-  prior_sigma = cauchy(location = 0, scale = 5), ...)
+stap_lm(formula, subject_data, bef_data, id_key = NULL, max_distance, subset,
+  weights, na.action, model = TRUE, x = FALSE, y = FALSE, z = FALSE,
+  singular.ok = TRUE, contrasts = NULL, offset, ...,
+  prior = R2(stop("'location' must be specified'")), prior_intercept = NULL,
+  adapt_delta = NULL)
 }
 \arguments{
-\item{y}{vector of continuous outcomes}
+\item{formula, subset}{Same as \code{\link[stats]{lm}},}
 
-\item{Z}{n*p design matrix of subject specific covariates}
+\item{na.action, singular.ok, contrasts}{Same as \code{\link[stats]{lm}}, but 
+rarely specified.}
 
-\item{dists_csr}{distance crs array}
+\item{model, offset, weights}{Same as \code{\link[stats]{lm}}, but
+rarely specified.}
 
-\item{u}{crs index array}
+\item{x, y}{In \code{stan_lm}, logical scalars indicating whether to
+return the design matrix and response vector. In \code{stan_lm.fit or stan_lm.wfit},
+a design matrix and response vector.}
 
-\item{max_distance}{inclusion distance}
+\item{...}{Further arguments passed to the function in the \pkg{rstap} 
+to specify \code{iter}, \code{chains}, \code{cores}, \code{refresh}, etc.}
+
+\item{prior}{Must be a call to \code{\link{R2}} with its 
+\code{location} argument specified or \code{NULL}, which would
+indicate a standard uniform prior for the \eqn{R^2}.}
+
+\item{prior_intercept}{Either \code{NULL} (the default) or a call to
+\code{\link{normal}}. If a \code{\link{normal}} prior is specified
+without a \code{scale}, then the standard deviation is taken to be
+the marginal standard deviation of the outcome divided by the square
+root of the sample size, which is legitimate because the marginal
+standard deviation of the outcome is a primitive parameter being
+estimated.
+
+\strong{Note:} The prior distribution for the intercept is set so it
+applies to the value \emph{when all predictors are centered}. If you prefer
+to specify a prior on the intercept without the predictors being
+auto-centered, then you have to omit the intercept from the
+\code{\link[stats]{formula}} and include a column of ones as a predictor,
+in which case some element of \code{prior} specifies the prior on it,
+rather than \code{prior_intercept}. Regardless of how
+\code{prior_intercept} is specified, the reported \emph{estimates} of the
+intercept always correspond to a parameterization without centered
+predictors (i.e., same as in \code{glm}).}
+
+\item{adapt_delta}{See the \link{adapt_delta} help page for details.}
+
+\item{w}{Same as in \code{\link[stats]{lm.wfit}} but rarely specified.}
+}
+\value{
+A \link[=stapreg-objects]{stapreg} object is returned 
+for \code{stan_lm}.
+
+A \link[=stapfit-class]{stapfit} object (or a slightly modified 
+  stapfit object) is returned if \code{stan_lm.fit or stan_lm.wfit} is called directly.
 }
 \description{
-Fitting Linear STKAP models
+\if{html}{\figure{stanlogo.png}{options: width="25px" alt="http://mc-stan.org/about/logo/"}}
+Bayesian inference for linear modeling with regularizing priors on the model
+parameters that are driven by prior beliefs about \eqn{R^2}, the proportion
+of variance in the outcome attributable to the predictors. See
+\code{\link{priors}} for an explanation of this critical point.
+\code{\link{stan_glm}} with \code{family="gaussian"} also estimates a linear
+model with normally-distributed errors and allows for various other priors on
+}
+\details{
+The \code{stan_lm} function is similar in syntax to the 
+  \code{\link[stats]{lm}} function but rather than choosing the parameters to
+  minimize the sum of squared residuals, samples from the posterior 
+  distribution are drawn using MCMC. The \code{stan_lm} function 
+  has a formula-based interface and would usually be called by users but
+  the \code{stap_lm.fit} and \code{stap_lm.wfit} functions might be called 
+  by other functions that parse the data themselves and are analgoous to
+  \code{\link[stats]{lm.fit}} and \code{\link[stats]{lm.wfit}} respectively.
+     
+  In addition to estimating \code{sigma} --- the standard deviation of the
+  normally-distributed errors --- this model estimates a positive parameter
+  called \code{log-fit_ratio}. If it is positive, the marginal posterior 
+  variance of the outcome will exceed the sample variance of the outcome
+  by a multiplicative factor equal to the square of \code{fit_ratio}.
+  Conversely if \code{log-fit_ratio} is negative, then the model underfits.
+  Given the regularizing nature of the priors, a slight underfit is good.
+  
+  Finally, the posterior predictive distribution is generated with the
+  predictors fixed at their sample means. This quantity is useful for
+  checking convergence because it is reasonably normally distributed
+  and a function of all the parameters in the model.
+}
+\references{
+Lewandowski, D., Kurowicka D., and Joe, H. (2009). Generating random
+correlation matrices based on vines and extended onion method. 
+\emph{Journal of Multivariate Analysis}. \strong{100}(9), 1989--2001.
+}
+\seealso{
+The vignettes for \code{stap_lm}, which has more
+thorough descriptions and examples.
+\url{https://biostatistics4socialimpact.github.io}
+
+Also see \code{\link{stap_glm}}, which --- if \code{family =
+gaussian(link="identity")} --- also estimates a stap linear model with
+normally-distributed errors but specifies different priors.
 }

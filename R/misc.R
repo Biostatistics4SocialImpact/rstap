@@ -154,7 +154,7 @@ validate_data <- function(data, if_missing = NULL) {
 extract_stap_components <- function(formula, distance_data, subject_data,
                                     id_key, max_distance){
     dcol_ix <- validate_distancedata(distance_data,max_distance)
-    stap_covs <- all.names(formula)[which(all.names(formula)=='stap')+1]
+    stap_covs <- all.names(formula)[which(all.names(formula)=="stap")+1]
     stap_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
     if(!all(stap_col_ics))
         stop("The stap_covariates must all be in (only) one column

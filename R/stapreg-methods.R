@@ -117,6 +117,7 @@ nobs.stapreg <- function(object, ...) {
   nrow(model.frame(object))
 }
 
+#' Retrieves number of Spatial-temporal aggregated predictors 
 #' @export
 #' @keywords internal
 #' @param object A fitted model object

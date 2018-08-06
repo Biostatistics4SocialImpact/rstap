@@ -3,4 +3,5 @@ pkgdown: 1.1.0
 pkgdown_sha: ~
 articles:
   STAP_Introduction: STAP_Introduction.html
+  STAP_Spatial_Correlation: STAP_Spatial_Correlation.html
 

@@ -42,7 +42,7 @@
 #' @param global_df,global_scale Optional arguments for the hierarchical
 #'   shrinkage priors. See the \emph{Hierarchical shrinkage family} section
 #'   below.
-#' @param what A character string among \code{'mode'} (the default),
+#' @param what  A character string among \code{'mode'} (the default),
 #'   \code{'mean'}, \code{'median'}, or \code{'log'} indicating how the
 #'   \code{location} parameter is interpreted in the \code{LKJ} case. If
 #'   \code{'log'}, then \code{location} is interpreted as the expected
@@ -304,6 +304,14 @@ beta_prior <- function(alpha = 1, beta = 1){
     nlist(dist = "beta",location = alpha, scale = beta, df = NA)  
 }
 
+#' @rdname priors
+#' @export
+R2 <- function(location = NULL, what = c("mode", "mean", "median", "log")) {
+  what <- match.arg(what)
+  validate_R2_location(location, what)
+  list(dist = "R2", location = location, what = what, df = 0, scale = 0)
+}
+
 
 # internal ------------------------------------------------------------------------
 
@@ -320,4 +328,38 @@ validate_parameter_value <- function(x) {
             stop (nm, "should be positive", .call = FALSE)
     }
     invisible(TRUE)
+}
+
+# Throw informative error if 'location' isn't valid for the particular 'what' 
+# specified or isn't the right length.
+#
+# @param location,what User's location and what arguments to R2()
+# @return Either an error is thrown or TRUE is returned invisibly.
+#
+validate_R2_location <- function(location = NULL, what) {
+  stopifnot(is.numeric(location))
+  if (length(location) > 1)
+    stop(
+      "The 'R2' function only accepts a single value for 'location', ",
+      "which applies to the prior R^2. ",
+      "If you are trying to put different priors on different coefficients ", 
+      "rather than specify a joint prior via 'R2', you can use stan_glm ",
+      "which accepts a wider variety of priors, many of which allow ", 
+      "specifying arguments as vectors.", 
+      call. = FALSE
+    )
+  
+  if (what == "log") {
+    if (location >= 0)
+      stop("If 'what' is 'log' then location must be negative.", call. = FALSE)
+  } else if (what == "mode") {
+    if (location <= 0 || location > 1)
+      stop("If 'what' is 'mode', location must be in (0,1].", 
+           call. = FALSE)
+  } else { # "mean", "median"
+    if (location <= 0 || location >= 1)
+      stop("If 'what' is 'mean' or 'median', location must be in (0,1).", 
+           call. = FALSE)
+  }
+  invisible(TRUE)
 }

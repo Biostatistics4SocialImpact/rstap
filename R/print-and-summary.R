@@ -30,13 +30,9 @@
 #' @return Returns \code{x}, invisibly.
 #' @details 
 #' \subsection{Point estimates}{
-#' Regardless of the estimation algorithm, point estimates are medians computed 
-#' from simulations. For models fit using MCMC (\code{"sampling"}) the posterior
-#' sample is used.  optimization (\code{"optimizing"}), the simulations are
-#' generated from the asymptotic Gaussian sampling distribution of the
-#' parameters. For the \code{"meanfield"} and \code{"fullrank"} variational
-#' approximations, draws from the variational approximation to the posterior are
-#' used. In all cases, the point estimates reported are the same as the values
+#' Point estimates are medians computed from simulations.
+#' For models fit using MCMC (\code{"sampling"}) the posterior
+#' sample is used.  The point estimates reported are the same as the values
 #' returned by \code{\link[=coef.stapreg]{coef}}.
 #' }
 #' \subsection{Uncertainty estimates (MAD_SD)}{
@@ -66,7 +62,7 @@
 #' }
 #' }
 #' 
-#' @seealso \code{\link{summary.stapreg}}, \code{\link{stanreg-methods}}
+#' @seealso \code{\link{summary.stapreg}}, \code{\link{stapreg-methods}}
 #' 
 print.stapreg <- function(x, digits = 1, ...) {
   cat(x$stap_function)
@@ -142,7 +138,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #'   varying intercepts and/or slopes they can be selected using \code{pars = 
 #'   "varying"}.
 #'   
-#'   In addition, for \code{stanmvreg} objects there are some additional shortcuts 
+#'   In addition, for \code{stapmvreg} objects there are some additional shortcuts 
 #'   available. Using \code{pars = "long"} will display the 
 #'   parameter estimates for the longitudinal submodels only (excluding group-specific
 #'   pparameters, but including auxiliary parameters).
@@ -158,7 +154,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #'   auxiliary parameters and the log posterior.   
 #'   
 #'   If \code{pars} is \code{NULL} all parameters are selected for a \code{stapreg}
-#'   object, while for a \code{stanmvreg} object all 
+#'   object, while for a \code{stapmvreg} object all 
 #'   fixed effect regression coefficients are selected as well as any 
 #'   auxiliary parameters and the log posterior. See 
 #'   \strong{Examples}.
@@ -170,12 +166,12 @@ print.stapreg <- function(x, digits = 1, ...) {
 #'   \code{"print.digits"} attribute of the returned object.
 #'   
 #' @return The \code{summary} method returns an object of class 
-#'   \code{"summary.stapreg"} (or \code{"summary.stanmvreg"}, inheriting 
+#'   \code{"summary.stapreg"} (or \code{"summary.stapmvreg"}, inheriting 
 #'   \code{"summary.stapreg"}), which is a matrix of 
 #'   summary statistics and 
 #'   diagnostics, with attributes storing information for use by the
 #'   \code{print} method. The \code{print} method for \code{summary.stapreg} or
-#'   \code{summary.stanmvreg} objects is called for its side effect and just returns 
+#'   \code{summary.stapmvreg} objects is called for its side effect and just returns 
 #'   its input. The \code{as.data.frame} method for \code{summary.stapreg} 
 #'   objects converts the matrix to a data.frame, preserving row and column 
 #'   names but dropping the \code{print}-related attributes.
@@ -183,21 +179,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #' @seealso \code{\link{prior_summary}} to extract or print a summary of the 
 #'   priors used for a particular model.
 #' 
-#' @examples
-#' if (!exists("example_model")) example(example_model) 
-#' summary(example_model, probs = c(0.1, 0.9))
-#' 
-#' # These produce the same output for this example, 
-#' # but the second method can be used for any model
-#' summary(example_model, pars = c("(Intercept)", "size", 
-#'                                 paste0("period", 2:4)))
-#' summary(example_model, pars = c("alpha", "beta"))
-#' 
-#' # Only show parameters varying by group
-#' summary(example_model, pars = "varying")
-#' as.data.frame(summary(example_model, pars = "varying"))
-#' 
-# @importMethodsFrom rstan summary
+#' @importMethodsFrom rstan summary
 summary.stapreg <- function(object, pars = NULL, regex_pars = NULL, 
                             probs = NULL, ..., digits = 1) {
   
@@ -329,7 +311,7 @@ allow_special_parnames <- function(object, pars) {
 
 # Family name with link in parenthesis 
 # @param x stapreg object
-# @param ... Optionally include m to specify which submodel for stanmvreg models
+# @param ... Optionally include m to specify which submodel for stapmvreg models
 family_plus_link <- function(x, ...) {
   fam <- family(x, ...)
   if (is.character(fam)) {
