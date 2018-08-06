@@ -7,6 +7,12 @@ names of the objects in the list}
 \usage{
 nlist(...)
 }
+\arguments{
+\item{...}{Objects to include in the list.}
+}
+\value{
+A named list.
+}
 \description{
 create a named list using specified names or, if names are omitted using the
 names of the objects in the list

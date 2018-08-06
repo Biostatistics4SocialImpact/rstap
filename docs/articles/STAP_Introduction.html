@@ -75,7 +75,6 @@
       <h1>STAP Introduction</h1>
                         <h4 class="author">Adam Peterson</h4>
             
-            <h4 class="date">2018-08-06</h4>
       
       
       <div class="hidden name"><code>STAP_Introduction.Rmd</code></div>
@@ -84,59 +83,97 @@
 
     
     
-<div id="basic-set-up" class="section level1">
+<div id="motivation" class="section level1">
 <h1 class="hasAnchor">
-<a href="#basic-set-up" class="anchor"></a>Basic Set-Up</h1>
+<a href="#motivation" class="anchor"></a>Motivation</h1>
+<p>The purpose of this document is to show how to use the <code>rstap</code> package including, critically, what kind of data it is suited for modeling and the assumptions made therein. We’ll begin by loading in the appropriate libraries, including, the <code>rstap</code> package for modeling these kinds of data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(tidyr)
+<span class="kw">library</span>(rstap)</code></pre></div>
+<p>A typical data structure will involve subjects and features at different locations and/or times.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1214</span>)
 num_subj &lt;-<span class="st"> </span><span class="fl">5.5E2</span>
 num_bef &lt;-<span class="st"> </span><span class="fl">1.5E2</span>
-sub_df &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_subj, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="fl">2.0</span>),
+sub_df &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_subj, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="fl">2.0</span>),
                      <span class="dt">y =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_subj, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="fl">2.0</span>),
                      <span class="dt">class =</span> <span class="st">"Subject"</span>)
-bef_df &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_bef, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="fl">3.0</span>),
+bef_df &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_bef, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="fl">3.0</span>),
                      <span class="dt">y =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_bef, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="fl">3.0</span>),
                      <span class="dt">class =</span> <span class="st">"BEF"</span>)
-<span class="kw">rbind</span>(sub_df,bef_df) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">color =</span> class )) <span class="op">+</span>
-<span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">theme_bw</span>() <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">"Independence Configuration"</span>)</code></pre></div>
+<span class="kw">rbind</span>(sub_df,bef_df) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">color =</span> class )) <span class="op">+</span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_point">geom_point</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Independence Configuration"</span>)</code></pre></div>
 <p><img src="STAP_Introduction_files/figure-html/initialize_data-1.png" width="700"></p>
-<p>Then suppose the relationship between the mean and the covariates is the following:</p>
+<p><code>rstap</code> models data assuming the relationship between the mean and the covariates is the following:</p>
 <p><span class="math display">\[
 E[Y_i] = \alpha + Z_i \delta + X_i(\theta)\beta_2\\
-X_i(\theta) = \sum_{d \in \mathcal{D}_i} \text{erfc}(\frac{d}{\theta})
-\]</span></p>
-<p>Here we use the following fixed parameters:</p>
+X_i(\theta) = \sum_{d \in \mathcal{D}_i} \text{w}(\frac{d}{\theta})
+\]</span> <span class="math inline">\(w\)</span> is a real-valued function such that <span class="math inline">\(w:\mathbb{R} \to [0,1]\)</span>. Either monotonically decreasing or increasing depending on whether one is modeling a spatial or temporal relationship between the features and subjects, respectively. Currently only the complementary error function is implemented in <code>rstap</code>, though others are in development.</p>
+<p>For this document we use the following fixed parameters to simulate our dataset:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">alpha &lt;-<span class="st"> </span><span class="fl">22.5</span>
 Z &lt;-<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">n =</span> num_subj, <span class="dt">prob =</span> .<span class="dv">45</span>, <span class="dt">size =</span> <span class="dv">1</span>)
 delta &lt;-<span class="st"> </span><span class="op">-</span>.<span class="dv">8</span>
 theta &lt;-<span class="st"> </span>.<span class="dv">5</span>
 beta &lt;-<span class="st"> </span><span class="fl">1.2</span>
 sigma &lt;-<span class="st"> </span><span class="fl">2.3</span></code></pre></div>
-<p>supposing we use <strong>only</strong> the data we used to generate the outcome, then this results in the following dataset</p>
+<p>supposing we use <strong>all</strong> the features simulated in the space, then this results in the following dataset, with the following marginal distribution of the outcome, <span class="math inline">\(y\)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]),
                        <span class="kw">as.matrix</span>(bef_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]))
 X &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(x<span class="op">/</span>theta)))
 X_tilde &lt;-<span class="st"> </span>(X<span class="op">-</span><span class="kw">mean</span>(X))<span class="op">/</span><span class="kw">sd</span>(X) ## center and scale the exposure effect
 y &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X_tilde<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)
 <span class="kw">hist</span>(y)</code></pre></div>
-<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-2-1.png" width="700"> The exposure decay function and histogram of the <strong>standardized</strong> exposure is as follows</p>
+<p><img src="STAP_Introduction_files/figure-html/dists_df_1-1.png" width="700"></p>
+<p>The exposure decay function and histogram of the <strong>standardized</strong> exposure is as follows</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists), <span class="dt">by =</span> <span class="fl">0.01</span>)
 X_theta_one &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span>theta)
 <span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
 <span class="kw">plot</span>(d,X_theta_one,<span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exposure Decay Function"</span>, <span class="dt">xlab =</span> <span class="st">"Distance"</span>,
      <span class="dt">ylab =</span> <span class="st">"Exposure"</span>)
 <span class="kw">hist</span>(X_tilde, <span class="dt">main =</span> <span class="st">"Marginal Standardized Exposure Distribution"</span>)</code></pre></div>
-<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
-<p>Then we model these data using rstap in the following manner</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as_data_frame</span>() <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">gather</span>(<span class="kw">contains</span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
-
-subject_data &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj,
+<p><img src="STAP_Introduction_files/figure-html/exposure_1-1.png" width="700"></p>
+<p>We then set-up the two dataframes needed for stap to model these data. The first is a fairly typical data frame with the outcome, covariates and subject ID. This is the same kind of dataset that could be used with a function like <code>lm()</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subject_data &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj,
                            <span class="dt">y =</span> y,
                            <span class="dt">sex =</span> <span class="kw">factor</span>(Z,<span class="dt">labels=</span><span class="kw">c</span>(<span class="st">"M"</span>,<span class="st">"F"</span>)))
+subject_data
+<span class="co">#&gt; # A tibble: 550 x 3</span>
+<span class="co">#&gt;    subj_id     y sex  </span>
+<span class="co">#&gt;      &lt;int&gt; &lt;dbl&gt; &lt;fct&gt;</span>
+<span class="co">#&gt;  1       1  18.5 M    </span>
+<span class="co">#&gt;  2       2  22.6 M    </span>
+<span class="co">#&gt;  3       3  19.8 F    </span>
+<span class="co">#&gt;  4       4  21.2 M    </span>
+<span class="co">#&gt;  5       5  23.7 M    </span>
+<span class="co">#&gt;  6       6  25.2 F    </span>
+<span class="co">#&gt;  7       7  22.4 M    </span>
+<span class="co">#&gt;  8       8  24.5 M    </span>
+<span class="co">#&gt;  9       9  22.9 F    </span>
+<span class="co">#&gt; 10      10  22.6 F    </span>
+<span class="co">#&gt; # ... with 540 more rows</span></code></pre></div>
+<p>The distance dataframe contains the corresponding subject id to pair with each built environment feature in the chosen space. Note that the Built Environment Features are labeled as “Fast_Food” for this example - this will be important syntactically for the <code><a href="../reference/stap_glm.html">stap_glm()</a></code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
 
-fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">stap</span>(Fast_Food),
+distance_data
+<span class="co">#&gt; # A tibble: 82,500 x 3</span>
+<span class="co">#&gt;    subj_id BEF       Distance</span>
+<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;</span>
+<span class="co">#&gt;  1       1 Fast_Food    1.02 </span>
+<span class="co">#&gt;  2       2 Fast_Food    0.660</span>
+<span class="co">#&gt;  3       3 Fast_Food    0.926</span>
+<span class="co">#&gt;  4       4 Fast_Food    0.744</span>
+<span class="co">#&gt;  5       5 Fast_Food    1.34 </span>
+<span class="co">#&gt;  6       6 Fast_Food    1.18 </span>
+<span class="co">#&gt;  7       7 Fast_Food    0.959</span>
+<span class="co">#&gt;  8       8 Fast_Food    1.43 </span>
+<span class="co">#&gt;  9       9 Fast_Food    1.16 </span>
+<span class="co">#&gt; 10      10 Fast_Food    1.30 </span>
+<span class="co">#&gt; # ... with 82,490 more rows</span></code></pre></div>
+<p>These data are then modeled with rstap in the following manner - note the placement of “Fast_Food” and <code>stap()</code>, designating the rows labeled as Fast_Food in the distance_data as the appropriate ones to model as an exposure outcome with these data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">stap</span>(Fast_Food),
                 <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
@@ -150,8 +187,8 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
 <span class="co">#&gt; </span>
 <span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.014825 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 148.25 seconds.</span>
+<span class="co">#&gt; Gradient evaluation took 0.012399 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 123.99 seconds.</span>
 <span class="co">#&gt; Adjust your expectations accordingly!</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; </span>
@@ -168,9 +205,9 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
 <span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
 <span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 99.4754 seconds (Warm-up)</span>
-<span class="co">#&gt;                90.5299 seconds (Sampling)</span>
-<span class="co">#&gt;                190.005 seconds (Total)</span></code></pre></div>
+<span class="co">#&gt;  Elapsed Time: 98.2327 seconds (Warm-up)</span>
+<span class="co">#&gt;                86.4915 seconds (Sampling)</span>
+<span class="co">#&gt;                184.724 seconds (Total)</span></code></pre></div>
 <p>Checking our estimates, the model captures the true values very well.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(alpha,delta,beta,theta),<span class="kw">coef</span>(fit))
 <span class="kw">rownames</span>(results) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"True"</span>,<span class="st">"Estimated"</span>)
@@ -179,7 +216,7 @@ results
 <span class="co">#&gt; True         22.50000 -0.8000000  1.200000               0.5000000</span>
 <span class="co">#&gt; Estimated    22.34521 -0.7833661  1.044747               0.4803684</span></code></pre></div>
 <p>standard errors…</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit<span class="op">$</span>ses
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/se.html">se</a></span>(fit)
 <span class="co">#&gt;             (Intercept)                    sexF               Fast_Food </span>
 <span class="co">#&gt;              0.13113708              0.19693048              0.09500435 </span>
 <span class="co">#&gt; Fast_Food_spatial_scale </span>
@@ -193,7 +230,7 @@ results
 <a href="#non-informative-data-excluded" class="anchor"></a>Non-Informative data excluded</h3>
 <p>Note that the histogram of distances include many over 1 unit - which from the above graph we know only add “negligible” information.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(dists)</code></pre></div>
-<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p><img src="STAP_Introduction_files/figure-html/dists_hist-1.png" width="700"></p>
 <p>Keeping this in mind - let’s see what happens to our estimates when we set the exclusion distance to be 1.25 miles.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_<span class="dv">125</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">stap</span>(Fast_Food), <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
@@ -208,8 +245,8 @@ results
 <span class="co">#&gt; </span>
 <span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.00321 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 32.1 seconds.</span>
+<span class="co">#&gt; Gradient evaluation took 0.003493 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 34.93 seconds.</span>
 <span class="co">#&gt; Adjust your expectations accordingly!</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; </span>
@@ -226,9 +263,9 @@ results
 <span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
 <span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 48.2797 seconds (Warm-up)</span>
-<span class="co">#&gt;                42.5774 seconds (Sampling)</span>
-<span class="co">#&gt;                90.8571 seconds (Total)</span></code></pre></div>
+<span class="co">#&gt;  Elapsed Time: 48.8625 seconds (Warm-up)</span>
+<span class="co">#&gt;                43.331 seconds (Sampling)</span>
+<span class="co">#&gt;                92.1935 seconds (Total)</span></code></pre></div>
 <p>We excluded about half of the total data (not evenly across individuals)</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(dists<span class="op">&lt;=</span><span class="fl">1.25</span>)<span class="op">/</span><span class="kw">sum</span>(dists<span class="op">&gt;=</span><span class="dv">0</span>) 
 <span class="co">#&gt; [1] 0.4675394</span></code></pre></div>
@@ -240,7 +277,7 @@ results_<span class="dv">2</span>
 <span class="co">#&gt; True         22.50000 -0.800000  1.200000               0.5000000</span>
 <span class="co">#&gt; Estimated    22.33244 -0.779633  1.041528               0.4821771</span></code></pre></div>
 <p>The variabilty of our estimates is about the same.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_<span class="dv">125</span><span class="op">$</span>ses
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/se.html">se</a></span>(fit_<span class="dv">125</span>)
 <span class="co">#&gt;             (Intercept)                    sexF               Fast_Food </span>
 <span class="co">#&gt;              0.13943999              0.19783411              0.09950886 </span>
 <span class="co">#&gt; Fast_Food_spatial_scale </span>
@@ -264,8 +301,8 @@ results_<span class="dv">2</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.000541 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 5.41 seconds.</span>
+<span class="co">#&gt; Gradient evaluation took 0.000466 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 4.66 seconds.</span>
 <span class="co">#&gt; Adjust your expectations accordingly!</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; </span>
@@ -282,9 +319,9 @@ results_<span class="dv">2</span>
 <span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
 <span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 7.29269 seconds (Warm-up)</span>
-<span class="co">#&gt;                6.21436 seconds (Sampling)</span>
-<span class="co">#&gt;                13.5071 seconds (Total)</span></code></pre></div>
+<span class="co">#&gt;  Elapsed Time: 6.83186 seconds (Warm-up)</span>
+<span class="co">#&gt;                5.7159 seconds (Sampling)</span>
+<span class="co">#&gt;                12.5478 seconds (Total)</span></code></pre></div>
 <p>We can now see that our spatial scale and the corresponding effect are biased</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(alpha,delta,beta,theta),<span class="kw">coef</span>(fit_<span class="dv">25</span>))
 <span class="kw">rownames</span>(results_<span class="dv">3</span>) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"True"</span>,<span class="st">"Estimated"</span>)
@@ -301,15 +338,15 @@ results_<span class="dv">3</span>
 <div id="inclusion-of-superflous-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#inclusion-of-superflous-data" class="anchor"></a>Inclusion of superflous data</h3>
-<p>If additional fast food restaurants were included, beyond that which were truly “needed”“, what would happen to our model estimates?</p>
-<p><img src="STAP_Introduction_files/figure-html/unnamed-chunk-14-1.png" width="700"></p>
+<p>If additional fast food restaurants were included, beyond that which were truly “needed”“, what would happen to our model estimates? Is this equivalent to the non-informative data exclusion?</p>
+<p><img src="STAP_Introduction_files/figure-html/extra_befs-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]),
                        <span class="kw">as.matrix</span>(<span class="kw">rbind</span>(bef_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],extra_befs[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])))
 
-distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as_data_frame</span>() <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span>tidyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw">contains</span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
+distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span>tidyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
 
 
 fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">stap</span>(Fast_Food),
@@ -326,8 +363,8 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
 <span class="co">#&gt; </span>
 <span class="co">#&gt; SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.013432 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 134.32 seconds.</span>
+<span class="co">#&gt; Gradient evaluation took 0.016868 seconds</span>
+<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 168.68 seconds.</span>
 <span class="co">#&gt; Adjust your expectations accordingly!</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; </span>
@@ -344,9 +381,9 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
 <span class="co">#&gt; Iteration: 1800 / 2000 [ 90%]  (Sampling)</span>
 <span class="co">#&gt; Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 144.428 seconds (Warm-up)</span>
-<span class="co">#&gt;                129.851 seconds (Sampling)</span>
-<span class="co">#&gt;                274.279 seconds (Total)</span></code></pre></div>
+<span class="co">#&gt;  Elapsed Time: 142.466 seconds (Warm-up)</span>
+<span class="co">#&gt;                131.2 seconds (Sampling)</span>
+<span class="co">#&gt;                273.666 seconds (Total)</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(alpha,delta,beta,theta),<span class="kw">coef</span>(fit))
 <span class="kw">rownames</span>(results) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"True"</span>,<span class="st">"Estimated"</span>)
 results
@@ -354,7 +391,7 @@ results
 <span class="co">#&gt; True         22.50000 -0.8000000  1.200000               0.5000000</span>
 <span class="co">#&gt; Estimated    22.33051 -0.7806626  1.037299               0.4789469</span></code></pre></div>
 <p>standard errors…</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit<span class="op">$</span>ses
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/se.html">se</a></span>(fit)
 <span class="co">#&gt;             (Intercept)                    sexF               Fast_Food </span>
 <span class="co">#&gt;              0.12232304              0.18641125              0.09216908 </span>
 <span class="co">#&gt; Fast_Food_spatial_scale </span>
@@ -365,7 +402,8 @@ results
 <div id="caveats" class="section level2">
 <h2 class="hasAnchor">
 <a href="#caveats" class="anchor"></a>Caveats</h2>
-<p>It is important to note the limitations of these simulations. To begin with, the exposure covariate <span class="math inline">\(\tilde{X}\)</span> is an <strong>unknown</strong> function of the distances between the subjects and the businesses and the spatial scale. Thus are simulations do not represent the probably more realistic scenarios in which: (1) the businesses and subjects’ locations are correlated, resulting in a more highly skewed <span class="math inline">\(\tilde{X}\)</span> distribution and possible collinearity or (2) The decay function is mis-specified or (3) The prior does not place high probability on the true spatial scale.</p>
+<p>It is important to note the limitations of these simulations. To begin with, the exposure covariate <span class="math inline">\(\tilde{X}\)</span> is an <strong>unknown</strong> function of the distances between the subjects and the businesses and the spatial scale. Thus these simulations do not represent the probably more realistic scenarios in which:<br>
+1. The businesses and subjects’ locations are correlated within and between features, resulting in a more highly skewed <span class="math inline">\(\tilde{X}\)</span> distribution and possible collinearity issues or 2. The decay function is mis-specified or 3. The prior does not place high probability on the true spatial scale in these settings.</p>
 <p>These areas for potential problems will be the subject of future vignettes.</p>
 </div>
 </div>
@@ -377,7 +415,7 @@ results
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li>
-<a href="#basic-set-up">Basic Set-Up</a><ul class="nav nav-pills nav-stacked">
+<a href="#motivation">Motivation</a><ul class="nav nav-pills nav-stacked">
 <li><a href="#mis-specified-inclusion-distance">Mis-Specified Inclusion Distance</a></li>
       <li><a href="#informative-data-excluded">Informative data excluded</a></li>
       <li><a href="#caveats">Caveats</a></li>

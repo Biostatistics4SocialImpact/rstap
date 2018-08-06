@@ -6,6 +6,9 @@
 \usage{
 validate_family(f)
 }
+\arguments{
+\item{f}{the \code{family} argument specified by user (or default)}
+}
 \value{
 If no error is thrown than either \code{f} itself is returned
 (if already a family) or the family object created from \code{f} is 

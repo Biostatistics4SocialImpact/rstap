@@ -1,6 +1,6 @@
 #' The 'rstap' package.
 #' 
-#' @description A DESCRIPTION OF THE PACKAGE
+#' @description rstap is a package that implements spatial-temporal aggregated predictor functions in R. This allows for the modeling of features impact on measured subjects that can be related either through space or time.
 #' 
 #' @docType package
 #' @name rstap-package
