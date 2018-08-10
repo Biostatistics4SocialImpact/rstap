@@ -1,0 +1,78 @@
+context("test-extraction functions")
+
+f1 <- y ~ sex + Age + stap(Coffee_Shops)
+f2 <- y ~ tap_log(Con_Stores,erf) + sex + Age + stap(Coffee_Shops)
+l2 <- list(list(covariate = "Con_Stores",
+                stap_type = "temporal",
+                stap_code = c("Con_Stores"=1),
+                weight_function = list("spatial" = "none",
+                                       "temporal" = "erf"),
+                weight_code = c(0,1),
+                log_switch = c("tap_log"=1)),
+           list(covariate = "Coffee_Shops",
+                stap_type = "spatial-temporal",
+                stap_code = c("Coffee_Shops"=2),
+                weight_function = list("spatial" = "cerf",
+                                       "temporal" = "erf"),
+                weight_code = c(2,1),
+                log_switch = c("stap"=0)))
+
+test_that("extract_stap_data correctly creates stap information lists",{
+  expect_equal(extract_stap_data(f1),list(list(covariate = "Coffee_Shops",
+                                               stap_type = "spatial-temporal",
+                                               stap_code = c("Coffee_Shops"=2),
+                                               weight_function = list("spatial" = "cerf",
+                                                                      "temporal" = "erf"),
+                                               weight_code = c(2,1),
+                                               log_switch = c("stap"=0))))
+  expect_equal(extract_stap_data(f2),l2)
+})
+test_that("extract_csr_data correctly errors when no distance or time data are given",{
+    expect_error(extract_csr_data(formula = y ~ X,
+                                         id_key = 'subj_id',
+                                         max_distance = 3))
+})
+
+
+
+
+
+context("test internal coding functions")
+f1 <- y ~ sex + stap(Fast_Food)
+f2 <- y ~ Age + stap(Fast_Food) + sap(Coffee_Shops)
+f3 <- y ~ Age + stap(Fast_Food,cerf,exp) + sex + tap(Coffee_Shops)
+m3 <- rbind(c(2,3),c(0,1))
+a1 <- c("Fast_Food"=2)
+a2 <- c(a1,"Coffee_Shops"=0)
+a3 <- c("Fast_Food"=2,"Coffee_Shops"=1)
+
+test_that("correctly assigns weights",{
+    expect_equal(get_weight_code(all.names(f1),'Fast_Food',c(2)),
+                 matrix(c(2,1),nrow=1))
+    expect_equal(get_weight_code(all.names(f2),c('Fast_Food',"Coffee_Shops"),c(2,0)),
+                 matrix(c(c(2,2),c(1,0)),nrow=2))
+    expect_equal(get_weight_code(all.names(f3),c("Fast_Food","Coffee_Shops"),c(2,1)),
+                 m3)
+})
+test_that("correctly assigns stap coding",{
+    expect_equal(get_stap_code(all.names(f1),'Fast_Food'),a1)
+    expect_equal(get_stap_code(all.names(f2),c("Fast_Food","Coffee_Shops")),a2)
+    expect_equal(get_stap_code(all.names(f3),c("Fast_Food","Coffee_Shops")),a3)
+})
+
+test_that("weight_switch works",{
+    expect_equal(weight_switch(0),"none")
+    expect_equal(weight_switch(1),"erf")
+    expect_equal(weight_switch(2),"cerf")
+    expect_equal(weight_switch(3),"exp")
+    expect_equal(weight_switch(4),"cexp")
+})
+
+test_that("get_weight_name works",{
+    expect_equal(get_weight_name(c(0,1)),list('spatial' = 'none',
+                                              'temporal' = 'erf'))
+    expect_equal(get_weight_name(c(2,0)),list("spatial" = "cerf",
+                                              "temporal" = "none"))
+    expect_equal(get_weight_name(c(2,3)), list("spatial" = "cerf",
+                                               "temporal" = "exp"))
+})

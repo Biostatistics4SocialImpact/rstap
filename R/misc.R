@@ -142,65 +142,19 @@ validate_data <- function(data, if_missing = NULL) {
     drop_redundant_dims(data)
 }
 
-# extract_stap_components
-#
-# extract stap components from formula and create crs matrices
-# 
-# @param formula that designates model expression including stap covariates 
-# @param distance_data
-# @return If no error is thrown a list with the crs data matrix, index matrix u
-#           and corresponding covariate names is returned
-#
-extract_stap_components <- function(formula, distance_data, subject_data,
-                                    id_key, max_distance){
-    dcol_ix <- validate_distancedata(distance_data,max_distance)
-    stap_covs <- all.names(formula)[which(all.names(formula)=='stap')+1]
-    stap_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
-    if(!all(stap_col_ics))
-        stop("The stap_covariates must all be in (only) one column
-             of the distance dataframe as a character or factor variable.
-             see `?stap_glm`")
-    stap_col <- colnames(distance_data)[stap_col_ics[1]]
-    dcol <- colnames(distance_data)[dcol_ix]
-    ##ensure subjects that have zero exposure are included
-    ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
-                                                                   distance_data[,dcol]<= max_distance)),])
-    if(any(lapply(ddata,nrow)==0)){
-        missing <- stap_covs[which(sapply(ddata,nrow)==0)]
-        stap_covs <- stap_covs[which(sapply(ddata,nrow)!=0)]
-        print(paste("The following stap_covariates are not present in distance_data:",
-              paste(missing,collapse = ', ')))
-        print("These will be omitted from the analysis")
-        ddata <- lapply(ddata,function(x) if(nrow(x)!=0) x)
-        ddata[sapply(ddata,is.null)] <- NULL
-    }
-    M <- max(sapply(ddata, nrow))
-    mddata <- lapply(ddata,function(y) merge(subject_data[,id_key], y, by = eval(id_key),
-                                            all.x = T) )
-    d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
-    d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                    nrow = length(stap_covs), ncol = M)
-    rownames(d_mat) <- stap_covs
-    freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
-                                         data = x, addNA = TRUE)[,1])
-    u <- lapply(freq,function(x) cbind(
-        replace(dplyr::lag(cumsum(x)),
-                is.na(dplyr::lag(cumsum(x))),0)+1,
-                cumsum(x)))
-    u <- abind(u)
-    return(list(d_mat = d_mat, u = u))
-}
-# Validate distance_data
-#
-# Make sure that data is a data frame. 
-#
-# @param distance_data User's distance_data argument
-# @return If no error is thrown, distance_column is returned
-#
+
+#' Validate distance_data
+#'
+#' Make sure that data is a data frame. 
+#'
+#' @param distance_data User's distance_data argument
+#' @return If no error is thrown, the column index
+#' for the distance data is returned. If no distance_data is supplied NULL type returned.
 validate_distancedata <- function(distance_data, max_distance ) {
-    if(missing(distance_data) || is.null(distance_data) || 
-       !is.data.frame(distance_data)) 
-        stop("distance_data dataframe must be supplied to function")
+    if(missing(distance_data)|| is.null(distance_data))
+        return(NULL)
+    if(!is.data.frame(distance_data)) 
+        stop("if distance_data is supplied it must be supplied as a  dataframe")
     num_dbl <- sum(sapply(1:ncol(distance_data),
                       function(x) all(is.double(as.matrix(distance_data[,x])))))
     if(num_dbl!=1)
@@ -211,6 +165,26 @@ validate_distancedata <- function(distance_data, max_distance ) {
     return(dcol_ix)
 }
 
+#' Validate time_data
+#'
+#' Make sure that time_data is a data frame, return time column index.
+#' 
+#' @param time_data User's time_data argument
+#' @return If no error is thrown, the index corresponding to the column
+#' holding the time data is returned. If no time_data is supplied NULL type returned.
+validate_timedata <- function(time_data){
+    if(missing(time_data) || is.null(time_data))
+        return(NULL)
+    if(!is.data.frame(time_data))
+        stop("time_data dataframe must be supplied to function")
+
+    num_dbl <- sum(sapply(1:ncol(time_data),
+                      function(x) all(is.double(as.matrix(time_data[,x])))))
+    if(num_dbl!=1)
+        stop("time_data should be a data frame with only one numeric column - see `?stap_glm'")
+    tcol_ix <- sum(sapply(1:ncol(time_data), function(x) all(is.double(as.matrix(time_data[,x])))*x))
+    return(tcol_ix)
+}
 
 # get_stapless_formula
 #
@@ -220,20 +194,27 @@ validate_distancedata <- function(distance_data, max_distance ) {
 # @return formula without ~ stap() components
 #
 get_stapless_formula <- function(f){
-    stap_ics <- which(all.names(f)=='stap')
-    if(!length(stap_ics))
-        stop("No Stap Covariates designated in formula")
-    stap_nms <- all.names(f)[stap_ics+1]
-    formula_components <- all.vars(f)[!(all.vars(f)%in%stap_nms)]
-    new_f <- paste(paste0(formula_components[1],' ~ '),formula_components[2:length(formula_components)],collapse = '+')
-    return(as.formula(new_f))
+    stap_ics <- which(all.names(f)%in% c("stap","stap_log"))
+    sap_ics <- which(all.names(f) %in% c("sap","sap_log"))
+    tap_ics <- which(all.names(f) %in% c("tap","tap_log"))
+    if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
+        stop("No covariates designated as 'stap','sap',or 'tap'  in formula")
+    stap_nms <- all.names(f)[stap_ics + 1]
+    sap_nms <- all.names(f)[sap_ics + 1]
+    tap_nms <- all.names(f)[tap_ics + 1]
+    formula_components <- all.vars(f)[!(all.vars(f)%in%c(stap_nms,sap_nms,tap_nms))]
+    new_f1 <- paste0(formula_components[1],' ~ ')    
+    new_f2 <- paste(formula_components[2:length(formula_components)],collapse = "+")
+    new_f <- paste0(new_f1,new_f2)
+    return(as.formula(new_f, env = environment(f)))
 }
 
 # Throw a warning if 'data' argument to modeling function is missing
-warn_data_arg_missing <- function() {
-    warning(
+stop_data_arg_missing <- function() {
+    stop(
         "Omitting the 'data' argument is not allowed in rstap",
-        "This is because some post-estimation functions (in particular 'update', 'loo', 'kfold') ", 
+        "This is because some pre-estimation merging of bef_data and",
+        "post-estimation functions (in particular 'update', 'loo', 'kfold') ", 
         "are not guaranteed to work properly unless 'data' is specified as a data frame.",
         call. = FALSE
     )

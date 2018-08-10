@@ -6,7 +6,7 @@
 
 This is an R package that fits spatial temporal aggregated predictor models   
 using [Stan](http://mc-stan.org) (via the **rstan** package) for the back-end
-estimation. The primary target audience is researchers interested in the effect of the built environment features (BEFs) on human health, though other
+estimation. The primary target audience is researchers interested in the effect of built environment features (BEFs) on human health, though other
 applications are possible.
 
 **Please Note** This package is still in development. Download and use with extreme caution. 
