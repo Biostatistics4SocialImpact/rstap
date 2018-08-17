@@ -117,6 +117,7 @@ nobs.stapreg <- function(object, ...) {
   nrow(model.frame(object))
 }
 
+#' Retrieves number of Spatial-temporal aggregated predictors 
 #' @export
 #' @keywords internal
 #' @param object A fitted model object
@@ -244,7 +245,6 @@ ranef.stapreg <- function(object, ...) {
 
 #' @rdname stapreg-methods
 #' @export
-#' @export sigma
 #' @rawNamespace if(getRversion()>='3.3.0') importFrom(stats, sigma) else
 #'   importFrom(lme4,sigma)
 #'

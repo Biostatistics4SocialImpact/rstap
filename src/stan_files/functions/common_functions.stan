@@ -330,29 +330,13 @@
    * @param stap_code 0-2 code indicating what kind of spatial-temporal exposure to aggregate
    * @param w weight function array
    */ 
-  real assign_exposure(int log_switch, int stap_code, int[] w, int[,] u_s, int[,] u_t, vector dists, vector times, real theta_s, real theta_t, int q, int n){
+  real assign_exposure(int log_switch, int[] w, int[,] u, vector time_dists, real theta, int q, int n){
 
       real out;
-      if(stap_code == 0){
-          if(u_s[n,(q*2)-1] > u_s[n,(q*2)])
-              return(0);
-          else
-              out = sum(get_weights(dists[u_s[n,(q*2)-1] :  u_s[n,(q*2)]],w[1]));
-      }
-      else if(stap_code == 1){
-          if(u_t[n,(q*2)-1] > u_t[n,(q*2)])
-              return(0);
-          else
-              out = sum(get_weights(times[u_t[n,(q*2)-1] :  u_t[n,(q*2)]],w[2]));
-      }
-      else{
-          if(u_t[n,(q*2)-1] > u_t[n,(q*2)])
-            return(0); // shouldn't matter which u_array checked since the same number of buildings are relevant under each
-          else{
-              out = sum(get_weights(dists[u_s[n,(q*2)-1] :  u_s[n,(q*2)]],w[1]));
-              out =  out + sum(get_weights(times[u_t[n,(q*2)-1] :  u_t[n,(q*2)]],w[2]));
-      }
-      }
+      if(u[n,(q*2)-1] > u[n,(q*2)])
+          return(0);
+      else
+          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta) ,w[1]));
       if(log_switch == 1)
         return(log(out));
       else

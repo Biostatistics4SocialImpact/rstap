@@ -1,16 +1,16 @@
 #' Fitting Generalized Linear STAP models
 #'
-#' @param formula 
+#' @param formula
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
 #' @param subject_data
 #' @param distance_data
 #' @param time_data
 #' @param id_key name of column to join on between subject_data and bef_data
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
-#' @param weights 
-#' @details The \code{stap_glm} function is similar in syntax to 
+#' @param weights
+#' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
-#' inference for a generalized linear model stap_glm incorporates spatial 
+#' inference for a generalized linear model stap_glm incorporates spatial
 #' as detailed in in --need to add citation --
 #'@export stap_glm
 stap_glm <- function(formula,
@@ -37,9 +37,6 @@ stap_glm <- function(formula,
                      prior_aux = cauchy(location = 0L, scale = 5L),
                      adapt_delta = NULL){
     stap_data <- extract_stap_data(formula)
-    Q_t <- sum(sapply(stap_data,function(x) x$stap_type =='temporal'))
-    Q_s <- sum(sapply(stap_data,function(x) x$stap_type =='spatial'))
-    Q_st <- sum(sapply(stap_data,function(x) x$stap_type =='spatial-temporal'))
     crs_data <- extract_crs_data(stap_data,
                                  distance_data,
                                  time_data,
@@ -58,9 +55,9 @@ stap_glm <- function(formula,
     mf <- mf[c(1L,m)]
     mf$data <- subject_data
     mf$drop.unused.levels <- TRUE
-    
+
     mf[[1L]] <- as.name("model.frame")
-    mf <- eval(mf, parent.frame()) 
+    mf <- eval(mf, parent.frame())
     mf <- check_constant_vars(mf)
     mt <- attr(mf, "terms")
     Y <- array1D_check(model.response(mf, type = "any"))
@@ -74,11 +71,13 @@ stap_glm <- function(formula,
         Y <- cbind(y1, y0 = weights - y1)
         weights <- double(0)
     }
-    stapfit <- stap_glm.fit(z = Z, y = Y, weights = weights,
-                            dists_crs = stap_data$d_mat, u_s = stap_data$u_s,
-                            times_crs = stap_data$t_mat, u_t = stap_data$u_t,
-                            weight_functions = stap_data$w,
-                            stap_code = stap_data$stap_code,
+    stapfit <- stap_glm.fit(y = Y, z = Z, 
+                            dists_crs = crs_data$d_mat,
+                            u_s = crs_data$u_s,
+                            times_crs = crs_data$t_mat,
+                            u_t = crs_data$u_t,
+                            stap_data = stap_data,
+                            weights = weights,
                             max_distance = max_distance,
                             offset = offset, family = family,
                             prior = prior,
@@ -94,9 +93,12 @@ stap_glm <- function(formula,
     fit <- nlist(stapfit, family,
                  formula = original_formula,
                  subject_data,
-                 bef_data,
+                 distance_data,
+                 time_data,
                  dists_crs = crs_data$d_mat,
-                 u = crs_data$u,
+                 times_crs = crs_data$t_mat,
+                 u_s = crs_data$u_s,
+                 u_t = crs_data$u_t,
                  offset, weights, z = Z, y = Y,
                  model = mf,  terms = mt, call,
                  na.action = attr(mf, "na.action"),

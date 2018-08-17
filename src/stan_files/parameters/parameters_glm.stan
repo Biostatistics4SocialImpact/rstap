@@ -7,4 +7,3 @@
   real<lower=0> one_over_lambda_stap[prior_dist_for_stap == 6];
   real<lower=0,upper=max_distance> theta_s[Q_s+Q_st]; //scale for spatial weight function
   real<lower=0,upper=max_time> theta_t[Q_t+Q_st];//scale for temporal weight function
-

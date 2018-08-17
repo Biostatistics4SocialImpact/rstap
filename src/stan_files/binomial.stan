@@ -22,7 +22,7 @@ transformed data {
 }
 parameters {
     real<upper=(link == 4 ? 0.0 : positive_infinity())> gamma[has_intercept];
-  // declares z_beta,z_delta,theta,X, X_tilde
+  // declares z_beta,z_delta,theta_s,theta_t,X, X_tilde
 #include /parameters/parameters_glm.stan
 }
 transformed parameters {

@@ -87,6 +87,9 @@
     <li>
       <a href="../articles/STAP_Introduction.html">STAP Introduction</a>
     </li>
+    <li>
+      <a href="../articles/STAP_Spatial_Correlation.html">STAP-Spatial_Correlation</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -145,7 +148,7 @@ only the regression coefficients (without the intercept). <code>"alpha"</code>
 can also be used as a shortcut for <code>"(Intercept)"</code>. If the model has 
 varying intercepts and/or slopes they can be selected using <code>pars = 
 "varying"</code>.</p>
-<p>In addition, for <code>stanmvreg</code> objects there are some additional shortcuts 
+<p>In addition, for <code>stapmvreg</code> objects there are some additional shortcuts 
 available. Using <code>pars = "long"</code> will display the 
 parameter estimates for the longitudinal submodels only (excluding group-specific
 pparameters, but including auxiliary parameters).
@@ -160,7 +163,7 @@ the random effects or the auxiliary parameters.
 fixed effect regression coefficients are selected, as well as any 
 auxiliary parameters and the log posterior.</p>
 <p>If <code>pars</code> is <code>NULL</code> all parameters are selected for a <code>stapreg</code>
-object, while for a <code>stanmvreg</code> object all 
+object, while for a <code>stapmvreg</code> object all 
 fixed effect regression coefficients are selected as well as any 
 auxiliary parameters and the log posterior. See 
 <strong>Examples</strong>.</p></td>
@@ -198,12 +201,12 @@ When calling <code>summary</code>, the value of digits is stored as the
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>The <code>summary</code> method returns an object of class 
-  <code>"summary.stapreg"</code> (or <code>"summary.stanmvreg"</code>, inheriting 
+  <code>"summary.stapreg"</code> (or <code>"summary.stapmvreg"</code>, inheriting 
   <code>"summary.stapreg"</code>), which is a matrix of 
   summary statistics and 
   diagnostics, with attributes storing information for use by the
   <code>print</code> method. The <code>print</code> method for <code>summary.stapreg</code> or
-  <code>summary.stanmvreg</code> objects is called for its side effect and just returns 
+  <code>summary.stapmvreg</code> objects is called for its side effect and just returns 
   its input. The <code>as.data.frame</code> method for <code>summary.stapreg</code> 
   objects converts the matrix to a data.frame, preserving row and column 
   names but dropping the <code>print</code>-related attributes.</p>
@@ -214,15 +217,6 @@ When calling <code>summary</code>, the value of digits is stored as the
   priors used for a particular model.</p></div>
     
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (!<span class='fu'>exists</span>(<span class='st'>"example_model"</span>)) <span class='fu'>example</span>(<span class='no'>example_model</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: no help found for ‘example_model’</span></div><div class='input'><span class='fu'>summary</span>(<span class='no'>example_model</span>, <span class='kw'>probs</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>0.1</span>, <span class='fl'>0.9</span>))</div><div class='output co'>#&gt; <span class='error'>Error in summary(example_model, probs = c(0.1, 0.9)): object 'example_model' not found</span></div><div class='input'>
-<span class='co'># These produce the same output for this example, </span>
-<span class='co'># but the second method can be used for any model</span>
-<span class='fu'>summary</span>(<span class='no'>example_model</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"(Intercept)"</span>, <span class='st'>"size"</span>,
-                                <span class='fu'>paste0</span>(<span class='st'>"period"</span>, <span class='fl'>2</span>:<span class='fl'>4</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in summary(example_model, pars = c("(Intercept)", "size", paste0("period",     2:4))): object 'example_model' not found</span></div><div class='input'><span class='fu'>summary</span>(<span class='no'>example_model</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"alpha"</span>, <span class='st'>"beta"</span>))</div><div class='output co'>#&gt; <span class='error'>Error in summary(example_model, pars = c("alpha", "beta")): object 'example_model' not found</span></div><div class='input'>
-<span class='co'># Only show parameters varying by group</span>
-<span class='fu'>summary</span>(<span class='no'>example_model</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>"varying"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in summary(example_model, pars = "varying"): object 'example_model' not found</span></div><div class='input'><span class='fu'>as.data.frame</span>(<span class='fu'>summary</span>(<span class='no'>example_model</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>"varying"</span>))</div><div class='output co'>#&gt; <span class='error'>Error in summary(example_model, pars = "varying"): object 'example_model' not found</span></div><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -232,9 +226,7 @@ When calling <code>summary</code>, the value of digits is stored as the
       <li><a href="#value">Value</a></li>
 
       <li><a href="#see-also">See also</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+          </ul>
 
   </div>
 </div>

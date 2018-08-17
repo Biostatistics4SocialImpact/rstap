@@ -16,23 +16,23 @@
 
 #' Fitted model objects 
 #' 
-#' The \pkg{rstanarm} model-fitting functions return an object of class 
-#' \code{'stanreg'}, which is a list containing at a minimum the components listed 
-#' below. Each \code{stanreg} object will also have additional classes (e.g. 'glm')
+#' The \pkg{rstap} model-fitting functions return an object of class 
+#' \code{'stapreg'}, which is a list containing at a minimum the components listed 
+#' below. Each \code{stapreg} object will also have additional classes (e.g. 'glm')
 #' and several additional components depending on the model and estimation 
 #' algorithm. \cr
 #' \cr
 #' 
-#' @name stanreg-objects 
+#' @name stapreg-objects 
 #'   
-#' @section Elements for \code{stanreg} objects:   
+#' @section Elements for \code{stapreg} objects:   
 #' \describe{
 #'   \item{\code{coefficients}}{
-#'   Point estimates, as described in \code{\link{print.stanreg}}.
+#'   Point estimates, as described in \code{\link{print.stapreg}}.
 #'   }
 #'   \item{\code{ses}}{
 #'   Standard errors based on \code{\link[stats]{mad}}, as described in
-#'   \code{\link{print.stanreg}}.
+#'   \code{\link{print.stapreg}}.
 #'   }
 #'   \item{\code{residuals}}{
 #'   Residuals of type \code{'response'}.
@@ -66,15 +66,12 @@
 #'   \item{\code{data,offset,weights}}{
 #'   The \code{data}, \code{offset}, and \code{weights} arguments.
 #'   }
-#'   \item{\code{algorithm}}{
-#'   The estimation method used.
-#'   }
 #'   \item{\code{prior.info}}{
 #'   A list with information about the prior distributions used.
 #'   }
-#'   \item{\code{stanfit,stan_summary}}{
-#'   The object of \code{\link[rstan]{stanfit-class}} returned by RStan and a
-#'   matrix of various summary statistics from the stanfit object.
+#'   \item{\code{stapfit,stan_summary}}{
+#'   The object of \code{\link[rstan]{stapfit-class}} returned by RStan and a
+#'   matrix of various summary statistics from the stapfit object.
 #'   }
 #'   \item{\code{rstan_version}}{
 #'   The version of the \pkg{rstan} package that was used to fit the model.

@@ -89,6 +89,9 @@ and diagnostics use the summary method." />
     <li>
       <a href="../articles/STAP_Introduction.html">STAP Introduction</a>
     </li>
+    <li>
+      <a href="../articles/STAP_Spatial_Correlation.html">STAP-Spatial_Correlation</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -149,13 +152,9 @@ and diagnostics use the <code><a href='summary.stapreg.html'>summary</a></code> 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <h3>Point estimates</h3>
-    Regardless of the estimation algorithm, point estimates are medians computed 
-from simulations. For models fit using MCMC (<code>"sampling"</code>) the posterior
-sample is used.  optimization (<code>"optimizing"</code>), the simulations are
-generated from the asymptotic Gaussian sampling distribution of the
-parameters. For the <code>"meanfield"</code> and <code>"fullrank"</code> variational
-approximations, draws from the variational approximation to the posterior are
-used. In all cases, the point estimates reported are the same as the values
+    Point estimates are medians computed from simulations.
+For models fit using MCMC (<code>"sampling"</code>) the posterior
+sample is used.  The point estimates reported are the same as the values
 returned by <code><a href='stapreg-methods.html'>coef</a></code>.
     <h3>Uncertainty estimates (MAD_SD)</h3>
     The standard deviations reported (labeled <code>MAD_SD</code> in the print output)
@@ -182,7 +181,7 @@ group).</p></li>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='summary.stapreg.html'>summary.stapreg</a></code>, <code>stanreg-methods</code></p></div>
+    <div class='dont-index'><p><code><a href='summary.stapreg.html'>summary.stapreg</a></code>, <code><a href='stapreg-methods.html'>stapreg-methods</a></code></p></div>
     
 
   </div>

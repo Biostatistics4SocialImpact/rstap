@@ -278,7 +278,7 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
             replace(dplyr::lag(cumsum(x)),
                     is.na(dplyr::lag(cumsum(x))),0)+1,
                     cumsum(x)))
-        u_s <- abind(u)
+        u_s <- abind::abind(u)
         dimnames(u_s) <- NULL
         return(list(d_mat = d_mat, t_mat = NA, u_t = NA, u_s = u_s))
     } else{
@@ -335,7 +335,7 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
                                             replace(dplyr::lag(cumsum(x)),
                                                     is.na(dplyr::lag(cumsum(x))),0) +1,
                                             cumsum(x)))
-        u_t <- abind(u_t)
+        u_t <- abind::abind(u_t)
         dimnames(u_t) <- NULL
         
 
@@ -352,7 +352,7 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
                                             replace(dplyr::lag(cumsum(x)),
                                             is.na(dplyr::lag(cumsum(x))),0) + 1,
                                             cumsum(x)))
-        u_s <- abind(u_s)
+        u_s <- abind::abind(u_s)
         dimnames(u_s) <- NULL
         return(list(d_mat = d_mat, t_mat = t_mat, u_s = u_s, u_t = u_t))
     }
