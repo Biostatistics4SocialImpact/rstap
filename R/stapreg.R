@@ -14,11 +14,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Create a stapreg object
-#
-# @param object A list provided by one of the \code{stap_*} modeling functions.
-# @return A stanreg object
-#
+#' Create a stapreg object
+#'
+#' @param object A list provided by one of the \code{stap_*} modeling functions.
+#' @return A stanreg object
+#'
 stapreg <- function(object){
 
     stapfit <- object$stapfit

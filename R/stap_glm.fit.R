@@ -1,21 +1,16 @@
-# Part of the rstap package for estimating stap models
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 3
-# of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-#' @rdname stap_glm
-#' @export stap_glm
-stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
+#' Fitting Generalized Linear STKAP models
+#'
+#'@param y n length vector or n x 2 matrix of outcomes
+#'@param Z n x p design matrix of subject specific covariates
+#'@param dists_crs q x M matrix of distances between outcome observations and
+#' environmental features where q is the number of spatial covariates,
+#'  and M is the maximum number of environmental features amongst all q features
+#'@param max_distance the upper bound of distance for which all
+#'@export stap_glm
+stap_glm.fit <- function(y, z, dists_crs, u_s,
+                         times_crs, u_t,
+                         stap_data,
+                         max_distance = 3L,
                          weights = rep(1,NROW(y)),
                          offset = rep(0, NROW(y)),
                          family = stats::gaussian(),
@@ -35,48 +30,42 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         stop("'family' must be one of ", paste(supported_families, collapse = ', '))
     if(max_distance < max(dists_crs))
         stop("max_distance must be the maximum possible distance amongst all distances in dists_crs")
-    if(max(u) != ncol(dists_crs)){
-      ix <- which(u==max(u), arr.ind = T)
-      if(length(dim(u))==2)
-        if(any(u[ix[,1],1]<=u[ix[,1],2]))
-          stop("Maximum index value of u must be equivalent to the number of columns in the distance matrix")
-      if(any(u[ix[,1],ix[,2],1]<= u[ix[,1],ix[,2],2]))
-        stop("Maximum index value of u must be equivalent to the number of columns in the distance matrix")
-    }
+    ## need to insert "check u" function here to make sure dimensions are correct for the crs data and corresponding index
+    ## conditional on stap condition
     supported_links <- supported_glm_links(supported_families[fam])
     link <- which(supported_links == family$link)
     if(!length(link))
-        stop("'link' must be one of", paste( supported_links, collapse = ', '))
+        # stop("'link' must be one of", paste( supported_links, collapse = ', '))
     if (binom_y_prop(y, family, weights))
         stop("To specify 'y' as proportion of successes and 'weights' as ",
              "number of trials please use stan_glm rather than calling ",
              "stan_glm.fit directly.")
-    
+
     y <- validate_glm_outcome_support(y,family)
     if(is.binomial(family$family) && NCOL(y) == 2L){
         trials <- as.integer(y[,1L] + y[,2L])
         y <- as.integer(y[,1L])
     }
-    
+
     # useless assignments to pass R CMD check
-    has_intercept <- 
+    has_intercept <-
         prior_df <- prior_df_for_intercept <- prior_df_for_aux  <-
-        prior_dist <- prior_dist_for_intercept <- prior_dist_for_aux <- prior_mean <- 
+        prior_dist <- prior_dist_for_intercept <- prior_dist_for_aux <- prior_mean <-
         prior_mean_for_intercept <- prior_mean_for_aux <- prior_scale <-
-        prior_scale_for_intercept <- prior_scale_for_aux <- prior_autoscale <- 
+        prior_scale_for_intercept <- prior_scale_for_aux <- prior_autoscale <-
         prior_autoscale_for_intercept <- prior_autoscale_for_aux <- NULL
-    
+
     z_stuff <- center_z(z)
 
     for (i in names(z_stuff)) # ztemp, zbar, has_intercept
         assign(i, z_stuff[[i]])
     nvars <- ncol(ztemp)
-    
-    ok_dists <- nlist("normal", student_t = "t", "cauchy", 
+
+    ok_dists <- nlist("normal", student_t = "t", "cauchy",
                       "laplace", "lasso", "product_normal")
     ok_intercept_dists <- ok_dists[1:3]
     ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
-    
+
     prior_stuff <- handle_glm_prior(
         prior,
         nvars,
@@ -84,10 +73,10 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         default_scale = 2.5,
         ok_dists = ok_dists
     )
-    
+
     for (i in names(prior_stuff))
         assign(i, prior_stuff[[i]])
-    
+
     prior_intercept_stuff <- handle_glm_prior(
         prior_intercept,
         nvars = 1,
@@ -95,14 +84,14 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         link = family$link,
         ok_dists = ok_intercept_dists
     )
-    
+
     names(prior_intercept_stuff) <- paste0(names(prior_intercept_stuff), "_for_intercept")
     for (i in names(prior_intercept_stuff))
         assign(i, prior_intercept_stuff[[i]])
-    
+
     prior_stap_stuff <- handle_glm_prior(
         prior_stap,
-        nvars = nrow(dists_crs),
+        nvars = length(stap_data),
         link = family$link,
         default_scale = 2.5,
         ok_dists = ok_dists
@@ -110,7 +99,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     names(prior_stap_stuff) <- paste0(names(prior_stap_stuff), "_for_stap")
     for(i in names(prior_stap_stuff))
         assign(i, prior_stap_stuff[[i]])
-    
+
     prior_aux_stuff <-
         handle_glm_prior(
             prior_aux,
@@ -124,11 +113,11 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     if (is.null(prior_aux)) {
         prior_aux_stuff$prior_scale_for_aux <- Inf
     }
-    for (i in names(prior_aux_stuff)) 
+    for (i in names(prior_aux_stuff))
         assign(i, prior_aux_stuff[[i]])
-    
+
     #prior_{dist, mean, scale, df, dist_name, autoscale}_for_theta
-    prior_theta_stuff <- 
+    prior_theta_stuff <-
         handle_glm_prior(
             prior_theta,
             nvars = nrow(dists_crs),
@@ -139,8 +128,8 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     names(prior_theta_stuff) <- paste0(names(prior_theta_stuff),"_for_theta")
     for(i in names(prior_theta_stuff))
         assign(i, prior_theta_stuff[[i]])
-    
-    
+
+
     famname <- supported_families[fam]
     is_bernoulli <- is.binomial(famname) && all(y %in% 0:1)
     is_nb <- is.nb(famname)
@@ -149,7 +138,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     is_ig <- is.ig(famname)
     is_beta <- is.beta(famname)
     is_continuous <- is_gaussian || is_gamma || is_ig || is_beta
-    
+
     # require intercept for certain family and link combinations
     if (!has_intercept) {
         linkname <- supported_links[link]
@@ -157,22 +146,22 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
             is_gamma && linkname == "inverse" ||
             is.binomial(famname) && linkname == "log"
         if (needs_intercept)
-            stop("To use this combination of family and link ", 
+            stop("To use this combination of family and link ",
                  "the model must have an intercept.")
     }
-    
+
     if (is_gaussian) {
         ss <- sd(y)
-        if (prior_dist > 0L && prior_autoscale) 
+        if (prior_dist > 0L && prior_autoscale)
             prior_scale <- ss * prior_scale
-        if (prior_dist_for_intercept > 0L && prior_autoscale_for_intercept) 
+        if (prior_dist_for_intercept > 0L && prior_autoscale_for_intercept)
             prior_scale_for_intercept <-  ss * prior_scale_for_intercept
         if (prior_dist_for_aux > 0L && prior_autoscale_for_aux)
             prior_scale_for_aux <- ss * prior_scale_for_aux
     }
     if (prior_dist > 0L && prior_autoscale) {
         min_prior_scale <- 1e-12
-        prior_scale <- pmax(min_prior_scale, prior_scale / 
+        prior_scale <- pmax(min_prior_scale, prior_scale /
                                 apply(ztemp, 2L, FUN = function(x) {
                                     num.categories <- length(unique(x))
                                     z.scale <- 1
@@ -184,26 +173,45 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
                                     return(z.scale)
                                 }))
     }
-    prior_scale <- 
+    prior_scale <-
         as.array(pmin(.Machine$double.xmax, prior_scale))
-    prior_scale_for_intercept <- 
+    prior_scale_for_intercept <-
         min(.Machine$double.xmax, prior_scale_for_intercept)
-    
+
     if (length(weights) > 0 && all(weights == 1)) weights <- double()
     if (length(offset)  > 0 && all(offset  == 0)) offset  <- double()
-    
+    if(all(is.na(u_s))){
+        u_s <- array(double(),dim=c(0,0))
+        dists_crs <- array(double(),dim=c(0,0))
+        max_distance <- 0 
+    }
+    if((is.na(u_t))){
+        u_t <- array(double(),dim=c(0,0))
+        times_crs <- array(double(),dim=c(0,0))
+        max_time <- 0 
+    }
+
     # create entries in the data block of the .stan file
     standata <- nlist(
         N = nrow(ztemp),
         K = ncol(ztemp),
-        Q = nrow(dists_crs),
+        Q = length(stap_data),
+        Q_s = sum(sapply(stap_data, function(x) x$stap_type == 'spatial')),
+        Q_t = sum(sapply(stap_data, function(x) x$stap_type == 'temporal')),
+        Q_st = sum(sapply(stap_data, function(x) x$stap_type == 'spatial-temporal')),
+        w = t(sapply(stap_data, function(x) x$weight_code)),
+        log_ar = array(sapply(stap_data, function(x) x$log_switch), dim = length(stap_data)),
+        stap_code = array(sapply(stap_data, function(x) x$stap_code), dim = length(stap_data)),
         M = ncol(dists_crs),
         zbar = as.array(zbar),
-        family = stan_family_number(famname), 
+        family = stan_family_number(famname),
         link,
-        max_distance = max_distance/pracma::erfcinv(0.975),
-        u_array = u,
+        max_distance = max_distance / pracma::erfcinv(0.975),
+        max_time = max_time / pracma::erfcinv(0.975),
+        u_s = u_s,
+        u_t = u_t,
         dists_crs = dists_crs,
+        times_crs = times_crs,
         has_weights = length(weights) > 0,
         has_offset = length(offset) > 0,
         has_intercept,
@@ -214,11 +222,11 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         prior_dist_for_intercept,
         prior_scale_for_intercept = c(prior_scale_for_intercept),
         prior_mean_for_intercept = c(prior_mean_for_intercept),
-        prior_df_for_intercept = c(prior_df_for_intercept), 
-        prior_dist_for_stap,prior_mean_for_stap,
+        prior_df_for_intercept = c(prior_df_for_intercept),
+        prior_dist_for_stap, prior_mean_for_stap,
         prior_scale_for_stap = array(prior_scale_for_stap),
         prior_df_for_stap,
-        prior_dist_for_theta, 
+        prior_dist_for_theta,
         prior_scale_for_theta = array(prior_scale_for_theta),
         prior_mean_for_theta = array(prior_mean_for_theta),
         prior_df_for_theta = array(prior_df_for_theta),
@@ -230,7 +238,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     #make a copy of user specification before modifying 'group' (used for keeping
     # track of priors)
     user_covariance <- if (!length(group)) NULL else group[["decov"]]
-    
+
     if (length(group) && length(group$flist)) {
         if (length(group$strata)) {
             # standata$clogit <- TRUE
@@ -289,10 +297,10 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         # standata$shape <- as.array(maybe_broadcast(decov$shape, t))
         # standata$scale <- as.array(maybe_broadcast(decov$scale, t))
         # standata$len_concentration <- sum(p[p > 1])
-        # standata$concentration <- 
+        # standata$concentration <-
         #     as.array(maybe_broadcast(decov$concentration, sum(p[p > 1])))
         # standata$len_regularization <- sum(p > 1)
-        # standata$regularization <- 
+        # standata$regularization <-
         #     as.array(maybe_broadcast(decov$regularization, sum(p > 1)))
         # standata$special_case <- all(sapply(group$cnms, FUN = function(x) {
         #     length(x) == 1 && x == "(Intercept)" }))
@@ -304,7 +312,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
             #                      as.integer(group$strata)[y == 0])
         }
         ## to be added later when group terms implemented
-        # standata$t <- 0L 
+        # standata$t <- 0L
         # standata$p <- integer(0)
         # standata$l <- integer(0)
         # standata$q <- 0L
@@ -329,8 +337,8 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         # standata$input <- double()
         # standata$Dose <- double()
     }
-    
-    
+
+
     if (!is_bernoulli) {
         standata$Z <- array(ztemp, dim = dim(ztemp))
         # standata$nnz_Z <- 0L
@@ -344,7 +352,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         # standata$S <- S
         # standata$smooth_map <- smooth_map
     }
-    
+
     if (is_continuous) {
         standata$ub_y <- Inf
         standata$lb_y <- if (is_gaussian) -Inf else 0
@@ -354,8 +362,8 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         standata$len_y <- length(y)
         stanfit <- stanmodels$continuous
     } else if (is.binomial(famname)) {
-        standata$prior_scale_for_aux <- 
-            if (!length(group) || prior_scale_for_aux == Inf) 
+        standata$prior_scale_for_aux <-
+            if (!length(group) || prior_scale_for_aux == Inf)
                 0 else prior_scale_for_aux
         standata$prior_mean_for_aux <- 0
         standata$prior_df_for_aux <- 0
@@ -365,7 +373,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
             standata$N <- c(sum(y0), sum(y1))
             standata$X0 <- array(ztemp[y0, , drop = FALSE], dim = c(1, sum(y0), ncol(ztemp)))
             standata$X1 <- array(ztemp[y1, , drop = FALSE], dim = c(1, sum(y1), ncol(ztemp)))
-            standata$nnz_X0 = 0L 
+            standata$nnz_X0 = 0L
             standata$w_X0 = double(0)
             standata$v_X0 = integer(0)
             standata$u_X0 = integer(0)
@@ -373,9 +381,9 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
             standata$w_X1 = double(0)
             standata$v_X1 = integer(0)
             standata$u_X1 = integer(0)
-            if (length(weights)) { 
+            if (length(weights)) {
                 # nocov start
-                # this code is unused because weights are interpreted as number of 
+                # this code is unused because weights are interpreted as number of
                 # trials for binomial glms
                 standata$weights0 <- weights[y0]
                 standata$weights1 <- weights[y1]
@@ -414,7 +422,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         # family already checked above
         stop(paste(famname, "is not supported."))
     } # nocov end
-    
+
     prior_info <- summarize_glm_prior(
         user_prior = prior_stuff,
         user_prior_intercept = prior_intercept_stuff,
@@ -426,27 +434,28 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         adjusted_prior_aux_scale = prior_scale_for_aux,
         family = family
     )
-    
-    pars <- c(if (has_intercept) "alpha", 
+
+    pars <- c(if (has_intercept) "alpha",
               "delta",
               "beta",
-              "theta",
+              "theta_s",
+              "theta_t",
               if (is_continuous | is_nb) "aux",
               "mean_PPD")
-    
+
     sampling_args <- set_sampling_args(
-        object = stanfit, 
-        prior = prior, 
-        user_dots = list(...), 
-        user_adapt_delta = adapt_delta, 
-        data = standata, 
-        pars = pars, 
+        object = stanfit,
+        prior = prior,
+        user_dots = list(...),
+        user_adapt_delta = adapt_delta,
+        data = standata,
+        pars = pars,
         show_messages = FALSE)
-    
+
     stapfit <- do.call(sampling, sampling_args)
     check <- try(check_stanfit(stapfit))
     if (!isTRUE(check)) return(standata)
-    new_names <- c(if (has_intercept) "(Intercept)", 
+    new_names <- c(if (has_intercept) "(Intercept)",
                    colnames(ztemp),
                    rownames(dists_crs),
                    paste0(rownames(dists_crs),'_spatial_scale'),
@@ -458,7 +467,7 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
                    "log-posterior")
     stapfit@sim$fnames_oi <- new_names
     return(structure(stapfit, prior.info = prior_info))
-    
+
 }
 
 # internal ---------------------------------------------------------------------------------------------------------
@@ -493,7 +502,7 @@ stan_family_number <- function(famname) {
 }
 
 # Add extra level _NEW_ to each group
-# 
+#
 # @param Ztlist ranef indicator matrices
 # @param cnms group$cnms
 # @param flist group$flist
@@ -503,7 +512,7 @@ pad_reTrms <- function(Ztlist, cnms, flist) {
     p <- sapply(cnms, FUN = length)
     n <- ncol(Ztlist[[1]])
     for (i in attr(flist, "assign")) {
-        levels(flist[[i]]) <- c(gsub(" ", "_", levels(flist[[i]])), 
+        levels(flist[[i]]) <- c(gsub(" ", "_", levels(flist[[i]])),
                                 paste0("_NEW_", names(flist)[i]))
     }
     for (i in 1:length(p)) {
@@ -517,7 +526,7 @@ pad_reTrms <- function(Ztlist, cnms, flist) {
 #
 # @param x A matrix or array (e.g. the posterior sample or matrix of summary
 #   stats)
-# @param columns Do the columns (TRUE) or rows (FALSE) correspond to the 
+# @param columns Do the columns (TRUE) or rows (FALSE) correspond to the
 #   variables?
 unpad_reTrms <- function(x, ...) UseMethod("unpad_reTrms")
 unpad_reTrms.default <- function(x, ...) {
@@ -531,15 +540,15 @@ unpad_reTrms.array <- function(x, columns = TRUE, ...) {
     ndim <- length(dim(x))
     if (ndim > 3)
         stop("'x' should be a matrix or 3-D array")
-    
-    nms <- if (columns) 
+
+    nms <- if (columns)
         last_dimnames(x) else rownames(x)
     keep <- !grepl("_NEW_", nms, fixed = TRUE)
     if (length(dim(x)) == 2) {
-        x_keep <- if (columns) 
+        x_keep <- if (columns)
             x[, keep, drop = FALSE] else x[keep, , drop = FALSE]
     } else {
-        x_keep <- if (columns) 
+        x_keep <- if (columns)
             x[, , keep, drop = FALSE] else x[keep, , , drop = FALSE]
     }
     return(x_keep)
@@ -556,38 +565,38 @@ make_b_nms <- function(group, m = NULL, stub = "Long") {
         if (length(nms_i) == 1) {
             b_nms <- c(b_nms, paste0(m_stub, nms_i, ":", levels(group$flist[[nm]])))
         } else {
-            b_nms <- c(b_nms, c(t(sapply(paste0(m_stub, nms_i), paste0, ":", 
+            b_nms <- c(b_nms, c(t(sapply(paste0(m_stub, nms_i), paste0, ":",
                                          levels(group$flist[[nm]])))))
         }
     }
-    return(b_nms)  
+    return(b_nms)
 }
 
 
 # Create "prior.info" attribute needed for prior_summary()
 #
-# @param user_* The user's prior, prior_intercept, prior_covariance, and 
+# @param user_* The user's prior, prior_intercept, prior_covariance, and
 #   prior_aux specifications. For prior and prior_intercept these should be
 #   passed in after broadcasting the df/location/scale arguments if necessary.
 # @param has_intercept T/F, does model have an intercept?
 # @param has_predictors T/F, does model have predictors?
 # @param adjusted_prior_*_scale adjusted scales computed if using autoscaled priors
 # @param family Family object.
-# @return A named list with components 'prior', 'prior_intercept', and possibly 
+# @return A named list with components 'prior', 'prior_intercept', and possibly
 #   'prior_covariance' and 'prior_aux' each of which itself is a list
 #   containing the needed values for prior_summary.
 summarize_glm_prior <-
     function(user_prior,
              user_prior_intercept,
              user_prior_aux,
-             has_intercept, 
+             has_intercept,
              has_predictors,
              adjusted_prior_scale,
-             adjusted_prior_intercept_scale, 
+             adjusted_prior_intercept_scale,
              adjusted_prior_aux_scale,
              family) {
         rescaled_coef <-
-            user_prior$prior_autoscale && 
+            user_prior$prior_autoscale &&
             has_predictors &&
             !is.na(user_prior$prior_dist_name) &&
             !all(user_prior$prior_scale == adjusted_prior_scale)
@@ -599,7 +608,7 @@ summarize_glm_prior <-
         rescaled_aux <- user_prior_aux$prior_autoscale_for_aux &&
             !is.na(user_prior_aux$prior_dist_name_for_aux) &&
             (user_prior_aux$prior_scale_for_aux != adjusted_prior_aux_scale)
-        
+
         if (has_predictors && user_prior$prior_dist_name %in% "t") {
             if (all(user_prior$prior_df == 1)) {
                 user_prior$prior_dist_name <- "cauchy"
@@ -623,7 +632,7 @@ summarize_glm_prior <-
             }
         }
         prior_list <- list(
-            prior = 
+            prior =
                 if (!has_predictors) NULL else with(user_prior, list(
                     dist = prior_dist_name,
                     location = prior_mean,
@@ -634,7 +643,7 @@ summarize_glm_prior <-
                              ("student_t", "hs", "hs_plus", "lasso", "product_normal"))
                         prior_df else NULL
                 )),
-            prior_intercept = 
+            prior_intercept =
                 if (!has_intercept) NULL else with(user_prior_intercept, list(
                     dist = prior_dist_name_for_intercept,
                     location = prior_mean_for_intercept,
@@ -645,28 +654,28 @@ summarize_glm_prior <-
                         prior_df_for_intercept else NULL
                 ))
         )
-        
+
         aux_name <- .rename_aux(family)
-        prior_list$prior_aux <- if (is.na(aux_name)) 
+        prior_list$prior_aux <- if (is.na(aux_name))
             NULL else with(user_prior_aux, list(
                 dist = prior_dist_name_for_aux,
-                location = if (!is.na(prior_dist_name_for_aux) && 
+                location = if (!is.na(prior_dist_name_for_aux) &&
                                prior_dist_name_for_aux != "exponential")
                     prior_mean_for_aux else NULL,
-                scale = if (!is.na(prior_dist_name_for_aux) && 
+                scale = if (!is.na(prior_dist_name_for_aux) &&
                             prior_dist_name_for_aux != "exponential")
                     prior_scale_for_aux else NULL,
                 adjusted_scale = if (rescaled_aux)
                     adjusted_prior_aux_scale else NULL,
-                df = if (!is.na(prior_dist_name_for_aux) && 
+                df = if (!is.na(prior_dist_name_for_aux) &&
                          prior_dist_name_for_aux %in% "student_t")
-                    prior_df_for_aux else NULL, 
-                rate = if (!is.na(prior_dist_name_for_aux) && 
+                    prior_df_for_aux else NULL,
+                rate = if (!is.na(prior_dist_name_for_aux) &&
                            prior_dist_name_for_aux %in% "exponential")
                     1 / prior_scale_for_aux else NULL,
                 aux_name = aux_name
             ))
-        
+
         return(prior_list)
     }
 
@@ -675,7 +684,7 @@ summarize_glm_prior <-
     fam <- family$family
     if (is.gaussian(fam)) "sigma" else
         if (is.gamma(fam)) "shape" else
-            if (is.ig(fam)) "lambda" else 
+            if (is.ig(fam)) "lambda" else
                 if (is.nb(fam)) "reciprocal_dispersion" else NA
 }
 # Verify that outcome values match support implied by family object

@@ -4,11 +4,12 @@
 \alias{stap_glm.fit}
 \title{Fitting Generalized Linear STKAP models}
 \usage{
-stap_glm.fit(y, z, dists_crs, u, max_distance = 3L, weights = rep(1,
-  NROW(y)), offset = rep(0, NROW(y)), family = stats::gaussian(), ...,
-  prior = normal(), prior_intercept = normal(), prior_stap = normal(),
-  group = list(), prior_theta = list(theta_one = normal()),
-  prior_aux = cauchy(location = 0L, scale = 5L), adapt_delta = NULL)
+stap_glm.fit(y, z, dists_crs, u_s, times_crs, u_t, stap_data,
+  max_distance = 3L, weights = rep(1, NROW(y)), offset = rep(0, NROW(y)),
+  family = stats::gaussian(), ..., prior = normal(),
+  prior_intercept = normal(), prior_stap = normal(), group = list(),
+  prior_theta = list(theta_one = normal()), prior_aux = cauchy(location =
+  0L, scale = 5L), adapt_delta = NULL)
 }
 \arguments{
 \item{y}{n length vector or n x 2 matrix of outcomes}

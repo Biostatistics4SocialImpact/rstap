@@ -15,21 +15,21 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#' Set arguments for sampling 
-#'
-#' Prepare a list of arguments to use with \code{rstan::sampling} via
-#' \code{do.call}.
-#'
-#' @param object The stanfit object to use for sampling.
-#' @param user_dots The contents of \code{...} from the user's call to
-#'   the \code{stan_*} modeling function.
-#' @param user_adapt_delta The value for \code{adapt_delta} specified by the
-#'   user.
-#' @param prior Prior distribution list (can be NULL).
-#' @param ... Other arguments to \code{\link[rstan]{sampling}} not coming from
-#'   \code{user_dots} (e.g. \code{data}, \code{pars}, \code{init}, etc.)
-#' @return A list of arguments to use for the \code{args} argument for 
-#'   \code{do.call(sampling, args)}.
+# Set arguments for sampling 
+#
+# Prepare a list of arguments to use with \code{rstan::sampling} via
+# \code{do.call}.
+#
+# @param object The stanfit object to use for sampling.
+# @param user_dots The contents of \code{...} from the user's call to
+#   the \code{stan_*} modeling function.
+# @param user_adapt_delta The value for \code{adapt_delta} specified by the
+#   user.
+# @param prior Prior distribution list (can be NULL).
+# @param ... Other arguments to \code{\link[rstan]{sampling}} not coming from
+#   \code{user_dots} (e.g. \code{data}, \code{pars}, \code{init}, etc.)
+# @return A list of arguments to use for the \code{args} argument for 
+#   \code{do.call(sampling, args)}.
 set_sampling_args <- function(object, prior, user_dots = list(), 
                               user_adapt_delta = NULL, ...) {
   args <- list(object = object, ...)
@@ -67,9 +67,9 @@ set_sampling_args <- function(object, prior, user_dots = list(),
 
 #' create a named list using specified names or, if names are omitted using the
 #' names of the objects in the list
-#'
-#' @param ... Objects to include in the list.
-#' @return A named list.
+#
+# @param ... Objects to include in the list.
+# @return A named list.
 nlist <- function(...){
     m <- match.call()
     out <- list(...)
@@ -89,7 +89,7 @@ nlist <- function(...){
 
 
 
-#' Convert 2-level factor to 0/1
+# Convert 2-level factor to 0/1
 fac2bin <- function(y) {
   if (!is.factor(y)) 
     stop("Bug found: non-factor as input to fac2bin.", 
@@ -101,10 +101,10 @@ fac2bin <- function(y) {
 }
 
 
-#' Check for stap_glmer syntax in formula for non-glmer models
-#'
-#' @param f the model \code{formula}.
-#' @return Nothin is returned but an error might be thrown
+# Check for stap_glmer syntax in formula for non-glmer models
+#
+# @param f the model \code{formula}.
+# @return Nothin is returned but an error might be thrown
 validate_glm_formula <- function(f) {
     if (any(grepl("\\|", f)))
         stop("Using '|' in model formula not allowed. ",
@@ -114,17 +114,17 @@ validate_glm_formula <- function(f) {
              report bug")
 }
 
-#' Validate data argument
-#'
-#' Make sure that, if specified, data is a data frame. If data is not missing
-#' then dimension reduction is also performed on variables (i.e., a one column
-#' matrix inside a data frame is converted to a vector).
-#'
-#' @param data User's data argument
-#' @param if_missing Object to return if data is missing/null
-#' @return If no error is thrown, data itself is returned if not missing/null,
-#'   otherwise if_missing is returned.
-#'
+# Validate data argument
+#
+# Make sure that, if specified, data is a data frame. If data is not missing
+# then dimension reduction is also performed on variables (i.e., a one column
+# matrix inside a data frame is converted to a vector).
+#
+# @param data User's data argument
+# @param if_missing Object to return if data is missing/null
+# @return If no error is thrown, data itself is returned if not missing/null,
+#   otherwise if_missing is returned.
+#
 drop_redundant_dims <- function(data) {
     drop_dim <- sapply(data, function(v) is.matrix(v) && NCOL(v) == 1)
     data[, drop_dim] <- lapply(data[, drop_dim, drop=FALSE], drop)
@@ -142,109 +142,90 @@ validate_data <- function(data, if_missing = NULL) {
     drop_redundant_dims(data)
 }
 
-#' extract_stap_components
-#'
-#' extract stap components from formula and create crs matrices
-#' 
-#' @param formula that designates model expression including stap covariates 
-#' @param distance_data
-#' @return If no error is thrown a list with the crs data matrix, index matrix u
-#'           and corresponding covariate names is returned
-#'
-extract_stap_components <- function(formula, distance_data, subject_data,
-                                    id_key, max_distance){
-    dcol_ix <- validate_distancedata(distance_data,max_distance)
-    stap_covs <- all.names(formula)[which(all.names(formula)=="stap")+1]
-    stap_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
-    if(!all(stap_col_ics))
-        stop("The stap_covariates must all be in (only) one column
-             of the distance dataframe as a character or factor variable.
-             see `?stap_glm`")
-    stap_col <- colnames(distance_data)[stap_col_ics[1]]
-    dcol <- colnames(distance_data)[dcol_ix]
-    ##ensure subjects that have zero exposure are included
-    ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
-                                                                   distance_data[,dcol]<= max_distance)),])
-    if(any(lapply(ddata,nrow)==0)){
-        missing <- stap_covs[which(sapply(ddata,nrow)==0)]
-        stap_covs <- stap_covs[which(sapply(ddata,nrow)!=0)]
-        print(paste("The following stap_covariates are not present in distance_data:",
-              paste(missing,collapse = ', ')))
-        print("These will be omitted from the analysis")
-        ddata <- lapply(ddata,function(x) if(nrow(x)!=0) x)
-        ddata[sapply(ddata,is.null)] <- NULL
-    }
-    M <- max(sapply(ddata, nrow))
-    mddata <- lapply(ddata,function(y) merge(subject_data[,id_key], y, by = eval(id_key),
-                                            all.x = T) )
-    d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
-    d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                    nrow = length(stap_covs), ncol = M)
-    rownames(d_mat) <- stap_covs
-    freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
-                                         data = x, addNA = TRUE)[,1])
-    u <- lapply(freq,function(x) cbind(
-        replace(dplyr::lag(cumsum(x)),
-                is.na(dplyr::lag(cumsum(x))),0)+1,
-                cumsum(x)))
-    u <- abind(u)
-    return(list(d_mat = d_mat, u = u))
-}
 
-#' Validate bef data 
+#' Validate distance_data
 #'
-#' Make sure that bef_data is a data frame. 
+#' Make sure that data is a data frame. 
 #'
-#' @param bef_data User's distance or time data  argument
-#' @return If no error is thrown, distance_column is returned
-#
-validate_distancedata <- function(bef_data, max_distance ) {
-    if(missing(bef_data) || is.null(bef_data) || 
-       !is.data.frame(bef_data)) 
-        stop("bef_data dataframe must be supplied to function")
-    num_dbl <- sum(sapply(1:ncol(bef_data),
-                      function(x) all(is.double(as.matrix(bef_data[,x])))))
+#' @param distance_data User's distance_data argument
+#' @return If no error is thrown, the column index
+#' for the distance data is returned. If no distance_data is supplied NULL type returned.
+validate_distancedata <- function(distance_data, max_distance ) {
+    if(missing(distance_data)|| is.null(distance_data))
+        return(NULL)
+    if(!is.data.frame(distance_data)) 
+        stop("if distance_data is supplied it must be supplied as a  dataframe")
+    num_dbl <- sum(sapply(1:ncol(distance_data),
+                      function(x) all(is.double(as.matrix(distance_data[,x])))))
     if(num_dbl!=1)
-        stop("bef_data should be a data frame with only one numeric column - see `?stap_glm`")
-    dcol_ix <- sum(sapply(1:ncol(bef_data), function(x) all(is.double(as.matrix(bef_data[,x])))*x))
-    if(sum(bef_data[,dcol_ix]<=max_distance)==0) 
+        stop("distance_data should be a data frame with only one numeric column - see `?stap_glm`")
+    dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x])))*x))
+    if(sum(distance_data[,dcol_ix]<=max_distance)==0) 
         stop("exclusion distance results in no BEFs included in the model")
     return(dcol_ix)
 }
 
+#' Validate time_data
+#'
+#' Make sure that time_data is a data frame, return time column index.
+#' 
+#' @param time_data User's time_data argument
+#' @return If no error is thrown, the index corresponding to the column
+#' holding the time data is returned. If no time_data is supplied NULL type returned.
+validate_timedata <- function(time_data){
+    if(missing(time_data) || is.null(time_data))
+        return(NULL)
+    else if(!is.data.frame(time_data))
+        stop("time_data dataframe must be supplied to function")
 
-#' get_stapless_formula
-#'
-#' Get formula for typical covariates
-#'
-#' @param f formula from stap_glm
-#' @return formula without ~ stap() components
-get_stapless_formula <- function(f){
-    stap_ics <- which(all.names(f)=='stap')
-    if(!length(stap_ics))
-        stop("No Stap Covariates designated in formula")
-    stap_nms <- all.names(f)[stap_ics+1]
-    formula_components <- all.vars(f)[!(all.vars(f)%in%stap_nms)]
-    new_f <- paste(paste0(formula_components[1],' ~ '),formula_components[2:length(formula_components)],collapse = '+')
-    return(as.formula(new_f))
+    num_dbl <- sum(sapply(1:ncol(time_data),
+                      function(x) all(is.double(as.matrix(time_data[,x])))))
+    if(num_dbl!=1)
+        stop("time_data should be a data frame with only one numeric column - see `?stap_glm'")
+    tcol_ix <- sum(sapply(1:ncol(time_data), function(x) all(is.double(as.matrix(time_data[,x])))*x))
+    return(tcol_ix)
 }
 
-#' Throw a warning if 'data' argument to modeling function is missing
-warn_data_arg_missing <- function() {
-    warning(
+# get_stapless_formula
+#
+# Get formula for typical covariates
+#
+# @param f formula from stap_glm
+# @return formula without ~ stap() components
+#
+get_stapless_formula <- function(f){
+    stap_ics <- which(all.names(f)%in% c("stap","stap_log"))
+    sap_ics <- which(all.names(f) %in% c("sap","sap_log"))
+    tap_ics <- which(all.names(f) %in% c("tap","tap_log"))
+    if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
+        stop("No covariates designated as 'stap','sap',or 'tap'  in formula")
+    stap_nms <- all.names(f)[stap_ics + 1]
+    sap_nms <- all.names(f)[sap_ics + 1]
+    tap_nms <- all.names(f)[tap_ics + 1]
+    formula_components <- all.vars(f)[!(all.vars(f)%in%c(stap_nms,sap_nms,tap_nms))]
+    new_f1 <- paste0(formula_components[1],' ~ ')    
+    new_f2 <- paste(formula_components[2:length(formula_components)],collapse = "+")
+    new_f <- paste0(new_f1,new_f2)
+    return(as.formula(new_f, env = environment(f)))
+}
+
+# Throw a warning if 'data' argument to modeling function is missing
+stop_data_arg_missing <- function() {
+    stop(
         "Omitting the 'data' argument is not allowed in rstap",
-        "This is because some post-estimation functions (in particular 'update', 'loo', 'kfold') ", 
+        "This is because some pre-estimation merging of bef_data and",
+        "post-estimation functions (in particular 'update', 'loo', 'kfold') ", 
         "are not guaranteed to work properly unless 'data' is specified as a data frame.",
         call. = FALSE
     )
 }
 
-#' Check if any variables in a model frame are constants
-#' (the exception is that a constant variable of all 1's is allowed)
-#' 
-#' @param mf A model frame or model matrix
-#' @return If no constant variables are found mf is returned, otherwise an error
-#' is thrown.
+# Check if any variables in a model frame are constants
+# (the exception is that a constant variable of all 1's is allowed)
+# 
+# @param mf A model frame or model matrix
+# @return If no constant variables are found mf is returned, otherwise an error
+#   is thrown.
 check_constant_vars <- function(mf) {
     # don't check if columns are constant for binomial
     mf1 <- if (NCOL(mf[, 1]) == 2) mf[, -1, drop=FALSE] else mf
@@ -261,11 +242,11 @@ check_constant_vars <- function(mf) {
     return(mf)
 }
 
-#' Check weights argument
-#' 
-#' @param w The \code{weights} argument specified by user or the result of
-#'   calling \code{model.weights} on a model frame.
-#' @return If no error is thrown then \code{w} is returned.
+# Check weights argument
+# 
+# @param w The \code{weights} argument specified by user or the result of
+#   calling \code{model.weights} on a model frame.
+# @return If no error is thrown then \code{w} is returned.
 validate_weights <- function(w) {
     if (missing(w) || is.null(w)) {
         w <- double(0)
@@ -280,12 +261,12 @@ validate_weights <- function(w) {
     return(w)
 }
 
-#' Check offset argument
-#'
-#' @param o The \code{offset} argument specified by user or the result of calling
-#'   \code{model.offset} on a model frame.
-#' @param y The result of calling \code{model.response} on a model frame.
-#' @return If no error is thrown then \code{o} is returned.
+# Check offset argument
+#
+# @param o The \code{offset} argument specified by user or the result of calling
+#   \code{model.offset} on a model frame.
+# @param y The result of calling \code{model.response} on a model frame.
+# @return If no error is thrown then \code{o} is returned.
 validate_offset <- function(o, y) {
     if (is.null(o)) {
         o <- double(0)
@@ -299,9 +280,9 @@ validate_offset <- function(o, y) {
 
 
 #' Check family argument
-#'
-#' @param f the \code{family} argument specified by user (or default)
-#' @return If no error is thrown than either \code{f} itself is returned
+#
+# @param f the \code{family} argument specified by user (or default)
+#'@return If no error is thrown than either \code{f} itself is returned
 #' (if already a family) or the family object created from \code{f} is 
 #' returned if \code{f} a string or function. Code adapted from \pkg{rstanarm}.
 validate_family <-  function(f) {
@@ -595,6 +576,7 @@ is_clogit <- function(object){
 # @param x A stapreg object
 # @return the posterior sample size (or size of sample from approximate posterior)
 posterior_sample_size <- function(x) {
-  validate_stapreg_object(x)
+ validate_stapreg_object(x)
+ pss <- x$stanfit@sim$n_save
   sum(pss - x$stanfit@sim$warmup2)
 }

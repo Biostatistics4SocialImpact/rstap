@@ -268,21 +268,6 @@
     return V;
   }
 
-  /** 
-  * faster version of csr_matrix_times_vector
-  * declared here and defined in C++
-  *
-  * @param m Integer number of rows
-  * @param n Integer number of columns
-  * @param w Vector (see reference manual)
-  * @param v Integer array (see reference manual)
-  * @param u Integer array (see reference manual)
-  * @param b Vector that is multiplied from the left by the CSR matrix
-  * @return A vector that is the product of the CSR matrix and b
-  */
-  vector csr_matrix_times_vector2(int m, int n, vector w, 
-                                  int[] v, int[] u, vector b);
-
   /**
    * Calculate lower bound on intercept
    *
@@ -318,4 +303,47 @@
     if (family == 4 && link == 5) return 0;
     return positive_infinity();
   }
+
+   /** 
+    * Calculate weight function
+    *
+    * @param exposure the subject's distances or times with a class of BEF divided by the appropriate scale
+    * @param w integer coding the appropriate weight function
+    * @return  exposure evaluated with the corresponding weight function
+    */ 
+    vector get_weights(vector exposure, int w){
+        if(w == 1)
+            return(erf(exposure));
+        else if(w == 2)
+            return(erfc(exposure));
+        else if(w == 3)
+            return(1-exp(-exposure));
+        else 
+            return(exp(-exposure));
+    }
+
+  /**
+   * Assign appropriate exposure to covariate based upon 
+   * possible log transform and selected weight function
+   *
+   * @param log_switch binary indicator indicating whether or not to log transform exposure weights
+   * @param stap_code 0-2 code indicating what kind of spatial-temporal exposure to aggregate
+   * @param w weight function array
+   */ 
+  real assign_exposure(int log_switch, int[] w, int[,] u, vector time_dists, real theta, int q, int n){
+
+      real out;
+      if(u[n,(q*2)-1] > u[n,(q*2)])
+          return(0);
+      else
+          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta) ,w[1]));
+      if(log_switch == 1)
+        return(log(out));
+      else
+        return(out);
+}
+      
+
+
+
 
