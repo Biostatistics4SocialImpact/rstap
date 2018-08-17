@@ -15,9 +15,9 @@
 #'@export stap_glm
 stap_glm <- function(formula,
                      family = gaussian(),
-                     subject_data,
-                     distance_data,
-                     time_data,
+                     subject_data = NULL,
+                     distance_data = NULL,
+                     time_data = NULL,
                      id_key = NULL,
                      max_distance,
                      weights,
@@ -37,13 +37,14 @@ stap_glm <- function(formula,
                      prior_aux = cauchy(location = 0L, scale = 5L),
                      adapt_delta = NULL){
     stap_data <- extract_stap_data(formula)
-    Q_t <- lapply(stap_data,function(x) x$stap_type =='temporal')
-    Q_s <- lapply(stap_data,function(x) x$stap_type =='spatial')
-    Q_st <- lapply(stap_data,function(x) x$stap_type =='spatial-temporal')
+    Q_t <- sum(sapply(stap_data,function(x) x$stap_type =='temporal'))
+    Q_s <- sum(sapply(stap_data,function(x) x$stap_type =='spatial'))
+    Q_st <- sum(sapply(stap_data,function(x) x$stap_type =='spatial-temporal'))
     crs_data <- extract_crs_data(stap_data,
                                  distance_data,
                                  time_data,
-                                 id_key)
+                                 id_key,
+                                 max_distance)
     original_formula <- formula
     stapless_formula <- get_stapless_formula(formula)
     family <- validate_family(family)

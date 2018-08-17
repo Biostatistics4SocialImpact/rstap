@@ -7,7 +7,10 @@
 #'  and M is the maximum number of environmental features amongst all q features
 #'@param max_distance the upper bound of distance for which all
 #'@export stap_glm
-stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
+stap_glm.fit <- function(y, z, dists_crs, u_s,
+                         times_crs, u_t,
+                         weight_functions,
+                         max_distance = 3L,
                          weights = rep(1,NROW(y)),
                          offset = rep(0, NROW(y)),
                          family = stats::gaussian(),
@@ -27,14 +30,8 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         stop("'family' must be one of ", paste(supported_families, collapse = ', '))
     if(max_distance < max(dists_crs))
         stop("max_distance must be the maximum possible distance amongst all distances in dists_crs")
-    if(max(u) != ncol(dists_crs)){
-      ix <- which(u==max(u), arr.ind = T)
-      if(length(dim(u))==2)
-        if(any(u[ix[,1],1]<=u[ix[,1],2]))
-          stop("Maximum index value of u must be equivalent to the number of columns in the distance matrix")
-      if(any(u[ix[,1],ix[,2],1]<= u[ix[,1],ix[,2],2]))
-        stop("Maximum index value of u must be equivalent to the number of columns in the distance matrix")
-    }
+    ## need to insert "check u" function here to make sure dimensions are correct for the crs data and corresponding index
+    ## conditional on stap condition
     supported_links <- supported_glm_links(supported_families[fam])
     link <- which(supported_links == family$link)
     if(!length(link))
@@ -183,7 +180,11 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
     
     if (length(weights) > 0 && all(weights == 1)) weights <- double()
     if (length(offset)  > 0 && all(offset  == 0)) offset  <- double()
-    
+    if(is.na(u_s)) u_s <- double()
+    if(is.na(u_t)) u_t <- double()
+    if(is.na(dists_crs)) dists_crs <- double()
+    if(is.na(times_crs)) times_crs <- double()
+
     # create entries in the data block of the .stan file
     standata <- nlist(
         N = nrow(ztemp),
@@ -194,8 +195,10 @@ stap_glm.fit <- function(y, z, dists_crs, u, max_distance = 3L,
         family = stan_family_number(famname), 
         link,
         max_distance = max_distance/pracma::erfcinv(0.975),
-        u_array = u,
+        u_s =  u_s,
+        u_t = u_t,
         dists_crs = dists_crs,
+        times_crs = times_crs,
         has_weights = length(weights) > 0,
         has_offset = length(offset) > 0,
         has_intercept,

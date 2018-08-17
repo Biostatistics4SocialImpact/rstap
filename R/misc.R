@@ -175,7 +175,7 @@ validate_distancedata <- function(distance_data, max_distance ) {
 validate_timedata <- function(time_data){
     if(missing(time_data) || is.null(time_data))
         return(NULL)
-    if(!is.data.frame(time_data))
+    else if(!is.data.frame(time_data))
         stop("time_data dataframe must be supplied to function")
 
     num_dbl <- sum(sapply(1:ncol(time_data),
@@ -576,6 +576,7 @@ is_clogit <- function(object){
 # @param x A stapreg object
 # @return the posterior sample size (or size of sample from approximate posterior)
 posterior_sample_size <- function(x) {
-  validate_stapreg_object(x)
+ validate_stapreg_object(x)
+ pss <- x$stanfit@sim$n_save
   sum(pss - x$stanfit@sim$warmup2)
 }

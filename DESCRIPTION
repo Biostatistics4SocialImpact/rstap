@@ -1,8 +1,10 @@
 Package: rstap
 Version: 0.0.0.9000
 Title: Spatiotemporal Aggregated Predictor Models via Bayesian Inference 
-Description: What the package does (one paragraph).
+Description: A package to estimate the latent spatial and/or temporal scale at which features in the environment surrounding a subject impact them.
 Authors@R: person("Adam", "Peterson", , "atpvyc@umich.edu", c("aut", "cre"))
+URL: https://biostatistics4socialimpact.github.io/rstap
+BugReports: https://github.com/biostatistics4socialimpact/rstap/issues
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
