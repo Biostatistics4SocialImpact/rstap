@@ -2,12 +2,12 @@
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -22,9 +22,9 @@
 #' @templateVar armRef (Ch. 3-6)
 #' @templateVar pkg stats
 #' @templateVar pkgfun glm
-#' @templateVar sameargs offset,weights 
+#' @templateVar sameargs offset,weights
 #' @templateVar rareargs na.action,contrasts
-#' @templateVar fun stap_glm 
+#' @templateVar fun stap_glm
 #' @templateVar fitfun stan_glm.fit
 #' @template return-stapreg-object
 #' @template return-stapfit-object
@@ -39,30 +39,30 @@
 #' @template args-adapt_delta
 #' @template reference-gelman-hill
 #' @template reference-muth
-#' 
-#' @param family Same as \code{\link[stats]{glm}}, except negative binomial GLMs
-#'   are also possible using the \code{\link{neg_binomial_2}} family object.
-#' @param y In \code{stap_glm}, logical scalar indicating whether to
-#'   return the response vector. In \code{stan_glm.fit}, a response vector.
-#' @param x In \code{stap_glm}, logical scalar indicating whether to
-#'   return the design matrix. In \code{stan_glm.fit}, a design matrix.
-
-#' @details The \code{stan_glm} function is similar in syntax to 
-#'   \code{\link[stats]{glm}} but rather than performing maximum likelihood 
-#'   estimation of generalized linear models, full Bayesian estimation is 
-#'   performed (if \code{algorithm} is \code{"sampling"}) via MCMC. The Bayesian
-#'   model adds priors (independent by default) on the coefficients of the GLM.
-#'   The \code{stan_glm} function calls the workhorse \code{stan_glm.fit}
-#'   function, but it is also possible to call the latter directly.
-#'   
-#'   
-#' @seealso The various vignettes for \code{stap_glm} at
+#'
+#'
+#' @param formula
+#' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
+#' @param subject_data
+#' @param distance_data
+#' @param time_data
+#' @param id_key name of column to join on between subject_data and bef_data
+#' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
+#' @param weights
+#' @details The \code{stap_glm} function is similar in syntax to
+#' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
+#' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
+#' as detailed in in --need to add citation --
+#' #' @seealso The various vignettes for \code{stap_glm} at
 #'   \url{https:biostatistics4socialimpact.github.io/rstap/articles}
-#' 
+#'
+#'@export stap_glm
+
 stap_glm <- function(formula,
                      family = gaussian(),
                      subject_data,
                      distance_data,
+                     time_data,
                      id_key = NULL,
                      max_distance,
                      weights,
@@ -78,28 +78,33 @@ stap_glm <- function(formula,
                      prior = normal(),
                      prior_intercept = normal(),
                      prior_stap = normal(),
-                     prior_theta = normal(location = max_distance/2, scale = 10),
+                     prior_theta = normal(location = 30, scale = 10),
                      prior_aux = cauchy(location = 0L, scale = 5L),
                      adapt_delta = NULL){
-    crs_data <- extract_stap_components(formula,distance_data,
-                                        subject_data, id_key, 
-                                        max_distance)
+    stap_data <- extract_stap_data(formula)
+    Q_t <- lapply(stap_data,function(x) x$stap_type =='temporal')
+    Q_s <- lapply(stap_data,function(x) x$stap_type =='spatial')
+    Q_st <- lapply(stap_data,function(x) x$stap_type =='spatial-temporal')
+    crs_data <- extract_crs_data(stap_data,
+                                 distance_data,
+                                 time_data,
+                                 id_key)
     original_formula <- formula
-    formula <- get_stapless_formula(formula)
+    stapless_formula <- get_stapless_formula(formula)
     family <- validate_family(family)
     validate_glm_formula(formula)
-    subject_data <- validate_data(subject_data, if_missing = environment(formula))
+    subject_data <- validate_data(subject_data, if_missing = environment(stapless_formula))
     call <- match.call(expand.dots = TRUE)
     mf <-  match.call(expand.dots = FALSE)
-    mf$formula <- formula
+    mf$formula <- stapless_formula
     m <- match(c("formula","subset", "weights", "na.action", "offset"),
                table = names(mf), nomatch=0L)
     mf <- mf[c(1L,m)]
     mf$data <- subject_data
     mf$drop.unused.levels <- TRUE
-    
+
     mf[[1L]] <- as.name("model.frame")
-    mf <- eval(mf, parent.frame()) 
+    mf <- eval(mf, parent.frame())
     mf <- check_constant_vars(mf)
     mt <- attr(mf, "terms")
     Y <- array1D_check(model.response(mf, type = "any"))
@@ -114,7 +119,10 @@ stap_glm <- function(formula,
         weights <- double(0)
     }
     stapfit <- stap_glm.fit(z = Z, y = Y, weights = weights,
-                            dists_crs = crs_data$d_mat, u = crs_data$u,
+                            dists_crs = stap_data$d_mat, u_s = stap_data$u_s,
+                            times_crs = stap_data$t_mat, u_t = stap_data$u_t,
+                            weight_functions = stap_data$w,
+                            stap_code = stap_data$stap_code,
                             max_distance = max_distance,
                             offset = offset, family = family,
                             prior = prior,
@@ -130,7 +138,7 @@ stap_glm <- function(formula,
     fit <- nlist(stapfit, family,
                  formula = original_formula,
                  subject_data,
-                 distance_data,
+                 bef_data,
                  dists_crs = crs_data$d_mat,
                  u = crs_data$u,
                  offset, weights, z = Z, y = Y,
