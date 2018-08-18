@@ -28,13 +28,14 @@ stapreg <- function(object){
     nvars <- ncol(Z) + 2*nrow(object$dists_crs)
     n_stap_vars <- nrow(object$dists_crs)
     n_fixef_vars <- ncol(Z)
+    stap_data <- object$stap_data
     nobs <- NROW(y)
     ynames <- if(is.matrix(y)) rownames(y) else names(y)
     stap_summary <- make_stap_summary(stapfit)
     coefs <- stap_summary[1:nvars, "50%"]
     sc_coefs <- coefs[grep("_scale",names(coefs))]
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
-    X <- calculate_stap_X(object$dists_crs,object$u,
+    X <- calculate_stap_X(object$dists_crs,object$u_s, ## Need to adjust this to accomodate tap and stap covariates too
                                 stanmat[,names(sc_coefs),drop = F])
     X_tilde <- array(NA,dim=dim(X))
     for(n_ix in 1:dim(X)[1]) X_tilde[n_ix,,] <- as.matrix(scale(X[n_ix,,]))
@@ -86,6 +87,7 @@ stapreg <- function(object){
         algorithm = object$algorithm,
         stap_summary,  
         stapfit = stapfit,
+        stap_data = stap_data,
         rstan_version = utils::packageVersion("rstan"),
         call = object$call, 
         # sometimes 'call' is no good (e.g. if using do.call(stap_glm, args)) so

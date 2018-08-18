@@ -134,12 +134,13 @@ extract_stap_data <- function(formula){
     stap_code <- get_stap_code(all_names,stap_covs)
     weight_code <- get_weight_code(all_names,stap_covs,stap_code)
     log_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_log",x))*1
-    lapply(1:length(stap_covs),function(x) list(covariate = stap_covs[x],
+    out <- lapply(1:length(stap_covs),function(x) list(covariate = stap_covs[x],
                                                     stap_type = get_stap_name(stap_code[x]),
                                                     stap_code = stap_code[x],
                                                     weight_function = get_weight_name(weight_code[x,]),
                                                     weight_code = weight_code[x,],
                                                     log_switch = log_code[x]))
+    stap_data(out)
 }
 
 get_weight_name <- function(code){
@@ -207,11 +208,9 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
     if(is.null(dcol_ix) & is.null(tcol_ix))
         stop("Neither distance_data, nor time_data submitted to function",",at least one is neccessary for rstap functions")
 
-    d_only <- all(sapply(stap_data,function(x) x$stap_type=='spatial'))
-    t_only <- all(sapply(stap_data,function(x) x$stap_type=='temporal'))
 
-    if(t_only){
-        stap_covs <- sapply(stap_data,function(x) x$covariate)
+    if(stap_data$t_only){
+        stap_covs <- stap_data$covariates
         t_col_ics <- apply(time_data, 1, function(x) which( x %in% stap_covs))
         if(!all(t_col_ics)) stop("Stap covariates must all be in (only) one column
                                  of the distance dataframe as a character or factor variable.
@@ -244,8 +243,8 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
         u_t <- abind::abind(u_t)
         dimnames(u_t) <- NULL
         return(list(d_mat = NA, t_mat = t_mat, u_t = u_t, u_s = NA))
-     }else if(d_only){
-        stap_covs <- sapply(stap_data,function(x) x$covariate)
+     }else if(stap_data$d_only){
+         stap_covs <- stap_data$covariates
         d_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
         if(!all(d_col_ics)) stop("Stap - of any kind - covariates must all be in (only) one column
                                  of the distance dataframe as a character or factor variable.
@@ -282,9 +281,9 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
         dimnames(u_s) <- NULL
         return(list(d_mat = d_mat, t_mat = NA, u_t = NA, u_s = u_s))
     } else{
-        sap_covs <- sapply(stap_data,function(x) if(x$stap_code %in% c(0,2)) x$covariate)
-        tap_covs <- sapply(stap_data,function(x) if(x$stap_code %in% c(1,2)) x$covariate)
-        stap_covs_only <- sapply(stap_data, function(x) if(x$stap_glm == 2) x$covariate)
+        sap_covs <- sap_covs(stap_data) 
+        tap_covs <- tap_covs(stap_data)
+        stap_covs_only <- stap_covs(stap_data)
         d_col_ics <- apply(distance_data, 1, function(x) which(x %in% sap_covs))
         t_col_ics <- apply(time_data, 1, function(x) which(x %in% tap_covs))
         if(!all(d_col_ics) && !all(t_col_ics) && !all(dst_col_ics) && !all(tst_col_ics))
