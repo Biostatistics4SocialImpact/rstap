@@ -252,7 +252,7 @@ get_stapless_formula <- function(f){
     tap_nms <- all.names(f)[tap_ics + 1]
     formula_components <- all.vars(f)[!(all.vars(f)%in%c(stap_nms,sap_nms,tap_nms))]
     if(grepl("cbind",all.names(f))[2]){
-        new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], " ~ ")
+        new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
         ix <- 3
     }
     else{
