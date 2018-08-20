@@ -1,4 +1,45 @@
-#' Fitting Generalized Linear STAP models
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+#' Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan
+#'
+#' \if{html}{\figure{stanlogo.png}{options: width="25px" alt="http://mc-stan.org/about/logo/"}}
+#' Generalized linear modeling with optional prior distributions for the
+#' coefficients, intercept, and auxiliary parameters.
+#'
+#' @export
+#' @templateVar armRef (Ch. 3-6)
+#' @templateVar pkg stats
+#' @templateVar pkgfun glm
+#' @templateVar sameargs offset,weights
+#' @templateVar rareargs na.action,contrasts
+#' @templateVar fun stap_glm
+#' @templateVar fitfun stan_glm.fit
+#' @template return-stapreg-object
+#' @template return-stapfit-object
+#' @template see-also
+#' @template args-formula-data-subset
+#' @template args-same-as
+#' @template args-same-as-rarely
+#' @template args-dots
+#' @template args-prior_intercept
+#' @template args-priors
+#' @template args-prior_aux
+#' @template args-adapt_delta
+#' @template reference-gelman-hill
+#' @template reference-muth
+#'
 #'
 #' @param formula
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
@@ -10,8 +51,11 @@
 #' @param weights
 #' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
-#' inference for a generalized linear model stap_glm incorporates spatial
+#' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
 #' as detailed in in --need to add citation --
+#' @seealso The various vignettes for \code{stap_glm} at
+#'   \url{https:biostatistics4socialimpact.github.io/rstap/articles}
+#'
 #'@export stap_glm
 stap_glm <- function(formula,
                      family = gaussian(),
