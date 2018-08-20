@@ -191,21 +191,6 @@ extract_stap_components <- function(formula, distance_data, subject_data,
     return(list(d_mat = d_mat, u = u))
 }
 
-#' Validate bef data
-#'
-#' Make sure that bef_data is a data frame.
-#'
-#' @param bef_data User's distance or time data  argument
-#' @return If no error is thrown, distance_column is returned
-#
-validate_distancedata <- function(bef_data, max_distance ) {
-    if(missing(bef_data) || is.null(bef_data) ||
-       !is.data.frame(bef_data))
-        stop("bef_data dataframe must be supplied to function")
-    num_dbl <- sum(sapply(1:ncol(bef_data),
-                      function(x) all(is.double(as.matrix(bef_data[,x])))))
-}
-
 #' Validate distance_data
 #'
 #' Make sure that data is a data frame.
@@ -216,8 +201,8 @@ validate_distancedata <- function(bef_data, max_distance ) {
 validate_distancedata <- function(distance_data, max_distance ) {
     if(missing(distance_data)|| is.null(distance_data))
         return(NULL)
-    if(!is.data.frame(distance_data))
-        stop("if distance_data is supplied it must be supplied as a  dataframe")
+    if(!is.data.frame(distance_data) || any(is.na(distance_data)))
+        stop("if distance_data is supplied it must be supplied as a dataframe with no NA values")
     num_dbl <- sum(sapply(1:ncol(distance_data),
                       function(x) all(is.double(as.matrix(distance_data[,x])))))
     if(num_dbl!=1)
@@ -266,8 +251,15 @@ get_stapless_formula <- function(f){
     sap_nms <- all.names(f)[sap_ics + 1]
     tap_nms <- all.names(f)[tap_ics + 1]
     formula_components <- all.vars(f)[!(all.vars(f)%in%c(stap_nms,sap_nms,tap_nms))]
-    new_f1 <- paste0(formula_components[1],' ~ ')
-    new_f2 <- paste(formula_components[2:length(formula_components)],collapse = "+")
+    if(grepl("cbind",all.names(f))[2]){
+        new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], " ~ ")
+        ix <- 3
+    }
+    else{
+        new_f1 <- paste0(formula_components[1],' ~ ')
+        ix <- 2
+    }
+    new_f2 <- paste(formula_components[ix:length(formula_components)],collapse = "+")
     new_f <- paste0(new_f1,new_f2)
     return(as.formula(new_f, env = environment(f)))
 }
