@@ -22,6 +22,7 @@
 stapreg <- function(object){
 
     stapfit <- object$stapfit
+    stap_data <- object$stap_data
     family <- object$family
     y <- object$y
     Z <- object$z
@@ -33,43 +34,46 @@ stapreg <- function(object){
     ynames <- if(is.matrix(y)) rownames(y) else names(y)
     stap_summary <- make_stap_summary(stapfit)
     coefs <- stap_summary[1:nvars, "50%"]
-    sc_coefs <- coefs[grep("_scale",names(coefs))]
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
-    X <- calculate_stap_X(object$dists_crs,object$u_s, ## Need to adjust this to accomodate tap and stap covariates too
-                                stanmat[,names(sc_coefs),drop = F])
-    X_tilde <- array(NA,dim=dim(X))
+    X <- calculate_stap_X(object$dists_crs, object$times_crs,
+                          object$u_s, object$u_t,
+                          stanmat[,which(grepl("_scale",names(coefs))),drop=F],
+                          stap_data)
+    X_tilde <- array(NA, dim(X))
     for(n_ix in 1:dim(X)[1]) X_tilde[n_ix,,] <- as.matrix(scale(X[n_ix,,]))
     colnames(stanmat) <- c(colnames(Z),
-                           rownames(object$dists_crs),
-                           paste0(rownames(object$dists_crs),'_spatial_scale'))
+                           coef_names(stap_data))
     ses <- apply(stanmat, 2L, mad)
     covmat <- cov(stanmat)
     check_rhats(stap_summary[,"Rhat"])
-    delta_beta <- coefs[grep("_scale",names(coefs),invert = TRUE)]
-    
+    delta_beta <- coefs[grep("_scale",names(coefs),invert= TRUE)]
 
-    # linear predictor, fitted values
-    eta <- linear_predictor(delta_beta, cbind(Z,apply(X_tilde,c(2,3),median)), object$offset)
+
+   #linear predictor, fitted values 
+    eta <- linear_predictor(delta_beta, cbind(Z,apply(X_tilde,c(2,3),median)),object$offset)
     mu <- family$linkinv(eta)
-    
-    if (NCOL(y) == 2L) {
-        #residuals of type 'response', (glm which does 'deviance' residuals by default)
-        residuals <- y[,1L] / rowSums(y) - mu
+
+
+    if(NCOL(y) == 2L){
+        # residuals of type 'response', (glm which does deviance residuals by default)
+        residuals <- y[,1L]/ rowSums(y) - mu
     } else {
         ytmp <- if(is.factor(y)) fac2bin(y) else y
         residuals <- ytmp - mu
-    } 
+    }
     names(eta) <- names(mu) <- names(residuals) <- ynames
+    
+
     out <- nlist(
         coefficients = coefs, 
         ses = ses,
         fitted.values = mu,
         linear.predictors = eta,
-        residuals, 
+        residuals,
         covmat,
         y,
         x = X,
-        x_tilde = X_tilde,
+        X_tilde = X_tilde,
         z = Z,
         n_stap_vars = n_stap_vars,
         n_fixef_vars = n_fixef_vars,
@@ -99,21 +103,53 @@ stapreg <- function(object){
     structure(out, class = c("stapreg", "glm","lm"))
 
 }
+
+calculate_stap_X <- function(dists_crs, times_crs, u_s, u_t, scales, stap_data){
+
+    n <- nrow(u_s)
+    q <- stap_data$Q
+    X <- array(NA,dim=c(nrow(scales), n, q))
+    stap_code <- stap_data$stap_code
     
 
-# stapreg-internal --------------------------------------------------------
-
-calculate_stap_X <- function(dists_crs, u, scales){
-    ags <- expand.grid(n_ix = 1:nrow(u), q_ix = nrow(dists_crs))
-    X <- array(NA,dim=c(nrow(scales),nrow(u),nrow(dists_crs)))
-    for(n_ix in 1:nrow(u)){
-        for(q_ix in 1:nrow(dists_crs)){
-            if(u[n_ix,(q_ix*2)-1]>u[n_ix,(q_ix*2)])
-                X[,n_ix,q_ix] <- 0
-            else
-                X[,n_ix,q_ix] <- sapply(scales[,q_ix], 
-                                        function(z) sum(pracma::erfc(dists_crs[u[n_ix,(q_ix*2)-1]:u[n_ix,(q_ix*2)]]/z)))
+    cnt_s <- 1
+    cnt_t <- 1
+    scl_ix <- 1
+    for(q_ix in 1:q){
+        for(n_ix in 1:n){
+            if(stap_code[q_ix] == 0)
+                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s], scales[,scl_ix], stap_data$log_switch[q_ix], 
+                                               stap_data$weight_mats[q_ix,1],n_ix,cnt_s)
+            else if(stap_code[q_ix] == 1)
+                X[,n_ix,q_ix] <- assign_weight(u_t, times_crs[cnt_t], scales[,scl_ix], stap_data$log_switch[q_ix], 
+                                               stap_data$weight_mats[q_ix,2],n_ix,cnt_t)
+            else{
+                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s], scales[,scl_ix], stap_data$log_switch[q_ix],
+                                               stap_data$weight_mats[q_ix,1],n_ix,cnt_s)
+                scl_ix <- scl_ix + 1
+                X[,n_ix,q_ix] <- X[,n_ix,q_ix] * assign_weight(u_t, times_crs[cnt_t], scales[,scl_ix], stap_data$log_switch[q_ix],
+                                               stap_data$weight_mats[q_ix,2],n_ix,cnt_t)
+            }
         }
-    }
+        scl_ix <- scl_ix + 1
+        if(stap_code[q_ix] == 0 || stap_code[q_ix] == 2)
+            cnt_s <- cnt_s + 1
+        else if(stap_code[q_ix] == 1 || stap_code[q_ix] == 2)
+            cnt_t <- cnt_t + 1
+   }
    return(X) 
+}
+
+
+assign_weight <- function(u, crs_data, scales, log_code, weight_code,n,q){
+
+    w <- get_weight_function(weight_code)
+    if(u[n,(q*2)-1]>u[n,(q *2)])
+        return(0)
+    else
+        out <- sapply(scales, function(z) w(crs_data[u[n,(q*2)-1]:u[n,(q*2)]],z)) 
+    if(log_code)
+        return(log(sum(out)))
+    else
+        return(sum(out))
 }

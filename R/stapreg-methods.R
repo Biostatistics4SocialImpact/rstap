@@ -62,7 +62,7 @@
 #'    \code{\link[=summary.stapreg]{summary}}, and \code{\link{prior_summary}} 
 #'    methods for stapreg objects for information on the fitted model.
 #'  \item \code{\link{launch_shinystan}} to use the ShinyStan GUI to explore a
-#'    fitted \pkg{rstanarm} model.
+#'    fitted \pkg{rstap} model.
 #'  \item The \code{\link[=plot.stapreg]{plot}} method to plot estimates and
 #'    diagnostics.
 #'  \item The \code{\link{pp_check}} method for graphical posterior predictive
@@ -108,7 +108,23 @@ confint.stapreg <- function(object, parm, level = 0.95, ...) {
 #' @rdname stapreg-methods
 #' @export
 fitted.stapreg <- function(object, ...)  {
-  object$fitted.values
+
+    object$stap_data
+    
+    ## calculate X_tilde's here 
+    delta_beta <- object$coefficients[grep("_scale",names(object$coefficients),invert = TRUE)]
+    # linear predictor, fitted values
+    eta <- linear_predictor(delta_beta, cbind(Z,apply(X_tilde,c(2,3),median)), object$offset)
+    mu <- family$linkinv(eta)
+    
+    if (NCOL(y) == 2L) {
+        #residuals of type 'response', (glm which does 'deviance' residuals by default)
+        residuals <- y[,1L] / rowSums(y) - mu
+    } else {
+        ytmp <- if(is.factor(y)) fac2bin(y) else y
+        residuals <- ytmp - mu
+    } 
+    names(eta) <- names(mu) <- names(residuals) <- ynames
 }
 
 #' @rdname stapreg-methods
@@ -457,3 +473,4 @@ formula_mer <- function (x, fixed.only = FALSE, random.only = FALSE, ...) {
   
   return(form)
 }
+

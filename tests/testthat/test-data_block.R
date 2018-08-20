@@ -6,6 +6,7 @@ m3 <- rbind(c(2,3),c(0,1))
 a1 <- c("Fast_Food"=2)
 a2 <- c(a1,"Coffee_Shops"=0)
 a3 <- c("Fast_Food"=2,"Coffee_Shops"=1)
+
 test_that("correctly assigns weights",{
     expect_equal(get_weight_code(all.names(f1),'Fast_Food',c(2)),
                  matrix(c(2,1),nrow=1))
@@ -37,34 +38,12 @@ test_that("get_weight_name works",{
     expect_equal(get_weight_name(c(2,3)), list("spatial" = "cerf",
                                                "temporal" = "exp"))
 })
+
 context("test stap data extraction functions")
 
 f1 <- y ~ sex + Age + stap(Coffee_Shops)
 f2 <- y ~ tap_log(Con_Stores,erf) + sex + Age + stap(Coffee_Shops)
-l2 <- list(list(covariate = "Con_Stores",
-                stap_type = "temporal",
-                stap_code = c("Con_Stores"=1),
-                weight_function = list("spatial" = "none",
-                                       "temporal" = "erf"),
-                weight_code = c(0,1),
-                log_switch = c("tap_log"=1)),
-           list(covariate = "Coffee_Shops",
-                stap_type = "spatial-temporal", stap_code = c("Coffee_Shops"=2),
-                weight_function = list("spatial" = "cerf",
-                                       "temporal" = "erf"),
-                weight_code = c(2,1),
-                log_switch = c("stap"=0)))
 
-test_that("extract_stap_data correctly creates stap information lists",{
-  expect_equal(extract_stap_data(f1),list(list(covariate = "Coffee_Shops",
-                                               stap_type = "spatial-temporal",
-                                               stap_code = c("Coffee_Shops"=2),
-                                               weight_function = list("spatial" = "cerf",
-                                                                      "temporal" = "erf"),
-                                               weight_code = c(2,1),
-                                               log_switch = c("stap"=0))))
-  expect_equal(extract_stap_data(f2),l2)
-})
 
 f1 <- BMI ~ Age +  sap(Coffee_Shops)
 f2 <- BMI ~ Age + tap(Coffee_Shops)
@@ -94,7 +73,9 @@ test_that("extract_crs_data correctly errors when no distance or time data are g
 })
 
 test_that("extract_crs_data correctly extracts data",{
-    expect_equal(extract_crs_data(stap_data_1,subj_data, distance_data,
+    expect_equal(extract_crs_data(stap_data_1,subject_data = subj_data,
+                                  distance_data = distance_data,
+                                  time_data = NULL,
                                   id_key = 'subj_id',
                                   max_distance = max(distance_data$dist)),
                  a1)

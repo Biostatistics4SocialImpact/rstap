@@ -580,3 +580,13 @@ posterior_sample_size <- function(x) {
  pss <- x$stanfit@sim$n_save
   sum(pss - x$stanfit@sim$warmup2)
 }
+
+paste_scale <- function(names)
+    paste0(names,"_scale")
+
+get_weight_function <- function(weight_code){
+    switch(weight_code,function(x,y) { pracma::erf(x/y)} ,
+           function(x,y){ pracma::erfc(x/y)},
+           function(x,y){ exp(x/y)},
+           function(x,y){1- exp(x/y)})
+}

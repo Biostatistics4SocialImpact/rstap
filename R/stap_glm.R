@@ -38,6 +38,7 @@ stap_glm <- function(formula,
                      adapt_delta = NULL){
     stap_data <- extract_stap_data(formula)
     crs_data <- extract_crs_data(stap_data,
+                                 subject_data,
                                  distance_data,
                                  time_data,
                                  id_key,
@@ -92,6 +93,7 @@ stap_glm <- function(formula,
     Z <- Z[ , !sel, drop = FALSE]
     fit <- nlist(stapfit, family,
                  formula = original_formula,
+                 stap_data = stap_data,
                  subject_data,
                  distance_data,
                  time_data,

@@ -196,12 +196,13 @@ get_stap_code <- function(all_names,stap_covs){
 
 #' extract crs data
 #'
-#' @param stap_data_
+#' @param stap_data
+#' @param subject_data
 #' @param distance_data
 #' @param time_data
 #' @param id_key
 #' @param max_distance
-extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_distance){
+extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, id_key, max_distance){
 
     dcol_ix <- validate_distancedata(distance_data,max_distance)
     tcol_ix <- validate_timedata(time_data)
@@ -295,7 +296,7 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
         tcol <- colnames(time_data)[tcol_ix]
 
         ##ensure subjects that have zero exposure are included
-        ddata <- lapply(setdiff(sap_covs,stap_covs_only), function(x) distance_data[which((distance_data[,stap_col] == x &
+        ddata <- lapply(union(sap_covs,stap_covs_only), function(x) distance_data[which((distance_data[,stap_col] == x &
                                                                                            distance_data[,dcol] <= max_distance)),])
         if(any(lapply(ddata,nrow)==0)){
             missing <- stap_covs[which(sapply(ddata,nrow)==0)]
@@ -307,7 +308,7 @@ extract_crs_data <- function(stap_data, distance_data, time_data, id_key, max_di
             ddata[sapply(ddata,is.null)] <- NULL
         }
 
-        tdata <- lapply(setdiff(tap_covs,stap_covs_only), function(x) time_data[which(time_data[,stap_col] == x),])
+        tdata <- lapply(union(tap_covs,stap_covs_only), function(x) time_data[which(time_data[,stap_col] == x),])
 
         if(any(lapply(tdata,nrow)==0)){
            missing <- stap_covs[which(sapply(tdata,nrow)==0)]
