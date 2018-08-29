@@ -26,10 +26,8 @@ stapreg <- function(object){
     family <- object$family
     y <- object$y
     Z <- object$z
-    nvars <- ncol(Z) + 2*nrow(object$dists_crs)
-    n_stap_vars <- nrow(object$dists_crs)
+    nvars <- ncol(Z) + stap_data$Q_s*2 + stap_data $Q_t*2 +stap_data$Q_st*3
     n_fixef_vars <- ncol(Z)
-    stap_data <- object$stap_data
     nobs <- NROW(y)
     ynames <- if(is.matrix(y)) rownames(y) else names(y)
     stap_summary <- make_stap_summary(stapfit)
@@ -75,7 +73,6 @@ stapreg <- function(object){
         x = X,
         X_tilde = X_tilde,
         z = Z,
-        n_stap_vars = n_stap_vars,
         n_fixef_vars = n_fixef_vars,
         model = object$model, 
         data = object$data, 
@@ -118,16 +115,16 @@ calculate_stap_X <- function(dists_crs, times_crs, u_s, u_t, scales, stap_data){
     for(q_ix in 1:q){
         for(n_ix in 1:n){
             if(stap_code[q_ix] == 0)
-                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s], scales[,scl_ix], stap_data$log_switch[q_ix], 
+                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s,], scales[,scl_ix], stap_data$log_switch[q_ix], 
                                                stap_data$weight_mats[q_ix,1],n_ix,cnt_s)
             else if(stap_code[q_ix] == 1)
-                X[,n_ix,q_ix] <- assign_weight(u_t, times_crs[cnt_t], scales[,scl_ix], stap_data$log_switch[q_ix], 
+                X[,n_ix,q_ix] <- assign_weight(u_t, times_crs[cnt_t,], scales[,scl_ix], stap_data$log_switch[q_ix], 
                                                stap_data$weight_mats[q_ix,2],n_ix,cnt_t)
             else{
-                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s], scales[,scl_ix], stap_data$log_switch[q_ix],
+                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s,], scales[,scl_ix], stap_data$log_switch[q_ix],
                                                stap_data$weight_mats[q_ix,1],n_ix,cnt_s)
                 scl_ix <- scl_ix + 1
-                X[,n_ix,q_ix] <- X[,n_ix,q_ix] * assign_weight(u_t, times_crs[cnt_t], scales[,scl_ix], stap_data$log_switch[q_ix],
+                X[,n_ix,q_ix] <- X[,n_ix,q_ix] * assign_weight(u_t, times_crs[cnt_t,], scales[,scl_ix], stap_data$log_switch[q_ix],
                                                stap_data$weight_mats[q_ix,2],n_ix,cnt_t)
             }
         }

@@ -196,8 +196,8 @@ get_stap_code <- function(all_names,stap_covs){
 
 #' extract crs data
 #'
-#' @param stap_data
-#' @param subject_data
+#' @param stap_data the stap data object extracted from the formula
+#' @param subject_data 
 #' @param distance_data
 #' @param time_data
 #' @param id_key
@@ -212,7 +212,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
 
     if(stap_data$t_only){
         stap_covs <- stap_data$covariates
-        t_col_ics <- apply(time_data, 1, function(x) which( x %in% stap_covs))
+        t_col_ics <- unlist(apply(time_data, 1, function(x) which( x %in% stap_covs)))
         if(!all(t_col_ics)) stop("Stap covariates must all be in (only) one column
                                  of the distance dataframe as a character or factor variable.
                                  See '?stap_glm'")
@@ -229,24 +229,24 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
            tdata[sapply(tdata,is.null)] <- NULL
        }
         M <- max(sapply(tdata,nrow))
-        mddata <- lapply(tdata,function(y) merge(subject_data[,id_key, drop = F], y, by = eval(id_key),
+        mtdata <- lapply(tdata,function(y) merge(subject_data[,id_key, drop = F], y, by = eval(id_key),
                                                  all.x = T))
-        t_mat <- lapply(mddata,function(x) x[!is.na(x[,tcol]),tcol])
+        t_mat <- lapply(mtdata,function(x) x[!is.na(x[,tcol]),tcol])
         t_mat <- matrix(Reduce(rbind,lapply(t_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
                         nrow = length(stap_covs), ncol = M)
         rownames(t_mat) <- stap_covs
-        freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
-                                                 data = x, addNA = TRUE)[,1])
+        freq <- lapply(1:length(mtdata), function(x) xtabs(~ get(id_key) + get(stap_col),
+                                                 data = mtdata[[x]], addNA = TRUE)[,stap_covs[x]])
         u_t <- lapply(freq,function(x) cbind(
                                              replace(dplyr::lag(cumsum(x)),
                                              is.na(dplyr::lag(cumsum(x))),0)+1,
                                              cumsum(x)))
         u_t <- abind::abind(u_t)
         dimnames(u_t) <- NULL
-        return(list(d_mat = NA, t_mat = t_mat, u_t = u_t, u_s = NA))
+        return(list(d_mat = NA, t_mat = t_mat, u_s = NA, u_t = u_t ))
      }else if(stap_data$d_only){
          stap_covs <- stap_data$covariates
-        d_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
+         d_col_ics <- unlist(apply(distance_data, 1, function(x) which(x %in% stap_covs)))
         if(!all(d_col_ics)) stop("Stap - of any kind - covariates must all be in (only) one column
                                  of the distance dataframe as a character or factor variable.
                                  See '?stap_glm'")
@@ -266,27 +266,30 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
             ddata[sapply(ddata,is.null)] <- NULL
         }
         M <- max(sapply(ddata, nrow))
-        mddata <- lapply(ddata,function(y) merge(subject_data[,id_key, drop = F], y, by = eval(id_key),
+        mddata <- lapply(ddata,function(y) merge(subject_data[,id_key, drop = F] , y, by = eval(id_key),
                                                 all.x = T) )
         d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
         d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
                         nrow = length(stap_covs), ncol = M)
         rownames(d_mat) <- stap_covs
-        freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
-                                             data = x, addNA = TRUE)[,1])
+        freq <- lapply(1:length(mddata), function(x) xtabs(~ get(id_key) + get(stap_col),
+                                             data = mddata[[x]], addNA = TRUE)[,stap_covs[x]])
         u <- lapply(freq,function(x) cbind(
             replace(dplyr::lag(cumsum(x)),
                     is.na(dplyr::lag(cumsum(x))),0)+1,
                     cumsum(x)))
         u_s <- abind::abind(u)
         dimnames(u_s) <- NULL
-        return(list(d_mat = d_mat, t_mat = NA, u_t = NA, u_s = u_s))
+        return(list(d_mat = d_mat, t_mat = NA,  u_s = u_s, u_t = NA))
     } else{
         sap_covs <- sap_covs(stap_data) 
         tap_covs <- tap_covs(stap_data)
-        stap_covs_only <- stap_covs(stap_data)
-        d_col_ics <- apply(distance_data, 1, function(x) which(x %in% sap_covs))
-        t_col_ics <- apply(time_data, 1, function(x) which(x %in% tap_covs))
+        stap_covs <- stap_covs(stap_data)
+        
+        d_col_ics <- unlist(apply(distance_data, 1,
+                                  function(x) which(x %in% c(sap_covs,stap_covs))))
+        t_col_ics <- unlist(apply(time_data, 1,
+                                  function(x) which(x %in% c(stap_covs,tap_covs))))
         if(!all(d_col_ics) && !all(t_col_ics) && !all(dst_col_ics) && !all(tst_col_ics))
             stop("Stap covariates - of any kind - must all be in (only) one column
                  of the distance dataframe as a character or factor variable. See '?stap_glm'")
@@ -296,11 +299,12 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         tcol <- colnames(time_data)[tcol_ix]
 
         ##ensure subjects that have zero exposure are included
-        ddata <- lapply(union(sap_covs,stap_covs_only), function(x) distance_data[which((distance_data[,stap_col] == x &
+        ddata <- lapply(union(sap_covs,stap_covs), function(x) distance_data[which((distance_data[,stap_dcol] == x &
                                                                                            distance_data[,dcol] <= max_distance)),])
+        
         if(any(lapply(ddata,nrow)==0)){
-            missing <- stap_covs[which(sapply(ddata,nrow)==0)]
-            stap_covs <- stap_covs[which(sapply(ddata,nrow)!=0)]
+            missing <- union(sap_covs,stap_covs)[which(sapply(ddata,nrow)==0)]
+            stap_covs <- union(sap_covs,stap_covs)[which(sapply(ddata,nrow)!=0)]
             print(paste("The following stap_covariates are not present in distance_data:",
                   paste(missing,collapse = ', ')))
             print("These will be omitted from the analysis")
@@ -308,7 +312,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
             ddata[sapply(ddata,is.null)] <- NULL
         }
 
-        tdata <- lapply(union(tap_covs,stap_covs_only), function(x) time_data[which(time_data[,stap_col] == x),])
+        tdata <- lapply(union(tap_covs,stap_covs), function(x) time_data[which(time_data[,stap_tcol] == x),])
 
         if(any(lapply(tdata,nrow)==0)){
            missing <- stap_covs[which(sapply(tdata,nrow)==0)]
@@ -321,16 +325,16 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
        }
         M <-  max(sapply(tdata,nrow))
         if(M != max(sapply(ddata,nrow)))
-            stop("Something wrong")
+            stop("Something wrong please report bug")
 
-        mtdata <- lapply(tdata, function(x) merge(subject_data[,id_key, drop=F], y, by = eval(id_key),
+        mtdata <- lapply(tdata, function(x) merge(subject_data[,id_key, drop =F], x, by = eval(id_key),
                                                   all.x = T) )
-        t_mat <- lapply(mtdata, function(x) x[!is.na(x[,tcol]),tcol, drop = F])
-        t_mat <- matrix(Reduce(rbind,lapply(t_mat, function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                        nrow= length(tap_covs), ncol = M)
-        rownames(t_mat) <- tap_covs
-        freq <- lapply(mtdata, function(x) xtabs(~ get(id_key) + get(stap_col), 
-                                                 data = x, addNA = TRUE)[,1])
+        t_mat <- lapply(mtdata, function(x) x[!is.na(x[,tcol]),tcol])
+        t_mat <- matrix(Reduce(rbind,lapply(t_mat, function(x) if(length(x)!=M) rbind(x,rep(0,M-length(x))) else x)),
+                        nrow= length(union(stap_covs,tap_covs)), ncol = M)
+        rownames(t_mat) <- union(tap_covs,stap_covs)
+        freq <- lapply(1:length(mtdata), function(x) xtabs(~ get(id_key) + get(stap_tcol), 
+                                                 data = mtdata[[x]], addNA = TRUE)[,union(tap_covs,stap_covs)[x]])
         u_t <- lapply(freq, function(x) cbind(
                                             replace(dplyr::lag(cumsum(x)),
                                                     is.na(dplyr::lag(cumsum(x))),0) +1,
@@ -339,15 +343,16 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         dimnames(u_t) <- NULL
         
 
+        
         mddata <- lapply(ddata, function(y) merge(subject_data[,id_key, drop = F], y, by = eval(id_key),
                                                  all.x = T))
 
-        d_mat <- lapply(mdata, function(x) x[!is.na(x[,dcol]),dcol, drop = F])
+        d_mat <- lapply(mddata, function(x) x[!is.na(x[,dcol]),dcol])
         d_mat <- matrix(Reduce(rbind,lapply(d_mat, function(x) if (length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                        nrow = length(sap_covs), ncol = M)
-        rownames(d_mat) <- sap_covs
-        freq <- lapply(mddata, function(x) xtabs(~get(id_key) + get(stap_col),
-                                                 data= x, addNA = TRUE)[,1])
+                        nrow = length(union(sap_covs,stap_covs)), ncol = M)
+        rownames(d_mat) <- union(sap_covs,stap_covs)
+        freq <- lapply(1:length(mddata), function(x) xtabs(~get(id_key) + get(stap_dcol),
+                                                 data = mddata[[x]], addNA = TRUE)[,union(sap_covs,stap_covs)[x] ])
         u_s <- lapply(freq, function(x) cbind(
                                             replace(dplyr::lag(cumsum(x)),
                                             is.na(dplyr::lag(cumsum(x))),0) + 1,

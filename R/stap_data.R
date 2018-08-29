@@ -79,6 +79,9 @@ any_tap <- function(x)
 any_stap <- function(x)
     UseMethod("any_stap")
 
+#' @export
+check_dups <- function(x)
+    UseMethod("check_dups")
 
 #' @export
 sap_covs.stap_data <- function(object)
@@ -117,7 +120,27 @@ coef_names.stap_data <- function(object){
     as.vector(sapply(1:object$Q,function(z) get_name(object$stap_code[z],object$covariates[z])))
 }
 
-
+#' @export
+check_dups.stap_data <- function(object){
+    sap <- sap_covs(object)
+    tap <- tap_covs(object)
+    stap <- stap_covs(object)
+    if(length(sap) != length(unique(sap)))
+        stop("A BEF may only be given one kind of stap specification
+             either (exclusively) stap or tap or sap")
+    else if(length(tap) != length(unique(tap)))
+        stop("A BEF may only be given one kind of stap specification
+             either (exclusively) stap or tap or sap")
+    else if(length(stap) != length(unique(stap)))
+       stop("A BEF may only be given one kind of stap specification
+             either (exclusively) stap or tap or sap")
+    else if(!all.equal(union(sap,stap),c(sap,stap)))
+       stop("A BEF may only be given one kind of stap specification
+             either (exclusively) stap or tap or sap")
+    else if(!all.equal(union(tap,stap),c(tap,stap)))
+        stop("A BEF may only be given one kind of stap specification
+             either (exclusively) stap or tap or sap")
+}
 #' @export
 coef_names.default <- function(object)
     warning("coef_names is only used for stap_data classes")

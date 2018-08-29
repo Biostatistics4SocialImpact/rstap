@@ -80,6 +80,7 @@ stap_glm <- function(formula,
                      prior_aux = cauchy(location = 0L, scale = 5L),
                      adapt_delta = NULL){
     stap_data <- extract_stap_data(formula)
+    check_dups(stap_data)
     crs_data <- extract_crs_data(stap_data,
                                  subject_data,
                                  distance_data,

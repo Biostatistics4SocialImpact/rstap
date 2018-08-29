@@ -21,7 +21,7 @@
         }
             if(stap_code[q_ix] == 0 || stap_code[q_ix] == 2)
                 cnt_s = cnt_s + 1;
-            else if(stap_code[q_ix] == 1 || stap_code[q_ix] == 2)
+            if(stap_code[q_ix] == 1 || stap_code[q_ix] == 2)
                 cnt_t = cnt_t + 1;
       }
   }

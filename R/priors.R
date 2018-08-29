@@ -1,5 +1,5 @@
-# Part of the rstkap package for estimating model parameters
-# Copyright (C) 2017 Trustees of the University of Michigan
+# Part of the rstap package for estimating model parameters
+# Copyright (C) 2018 Trustees of the University of Michigan
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -302,6 +302,35 @@ log_normal <- function(location = 0, scale = 1){
 #' @export
 beta_prior <- function(alpha = 1, beta = 1){
     nlist(dist = "beta",location = alpha, scale = beta, df = NA)  
+}
+
+#' @rdname priors
+#' @export
+#' @param regularization Exponent for an LKJ prior on the correlation matrix in
+#'   the \code{decov} or \code{lkj} prior. The default is \eqn{1}, implying a 
+#'   joint uniform prior.
+#' @param concentration Concentration parameter for a symmetric Dirichlet 
+#'   distribution. The default is \eqn{1}, implying a joint uniform prior.
+#' @param shape Shape parameter for a gamma prior on the scale parameter in the
+#'   \code{decov} prior. If \code{shape} and \code{scale} are both \eqn{1} (the
+#'   default) then the gamma prior simplifies to the unit-exponential
+#'   distribution.
+decov <- function(regularization = 1, concentration = 1, 
+                  shape = 1, scale = 1) {
+  validate_parameter_value(regularization)
+  validate_parameter_value(concentration)
+  validate_parameter_value(shape)
+  validate_parameter_value(scale)
+  nlist(dist = "decov", regularization, concentration, shape, scale)
+}
+
+#' @rdname priors
+#' @export
+lkj <- function(regularization = 1, scale = 10, df = 1, autoscale = TRUE) {
+  validate_parameter_value(regularization)
+  validate_parameter_value(scale)
+  validate_parameter_value(df)
+  nlist(dist = "lkj", regularization, scale, df, autoscale)
 }
 
 #' @rdname priors

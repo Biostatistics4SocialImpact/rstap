@@ -73,7 +73,8 @@ print.stapreg <- function(x, digits = 1, ...) {
              c("stap_glm", "stap_lm"))) {
     cat("\n Intercept: ", rownames(x$stap_summary)[1] == "(Intercept)")
     cat("\n fixed predictors:  ", (nfix(x) - 1*(rownames(x$stap_summary)[1] == "(Intercept)")))
-    cat("\n spatial predictors: ", nstap(x))
+    cat("\n spatial predictors: ", nsap(x))
+    cat("\n temporal predictors: ",ntap(x)) 
   }
   
   cat("\n------\n")
@@ -188,6 +189,7 @@ summary.stapreg <- function(object, pars = NULL, regex_pars = NULL,
     args <- list(object = object$stapfit)
     if (!is.null(probs)) 
       args$probs <- probs
+
     out <- do.call("summary", args)$summary
     
     if (!is.null(pars)) {

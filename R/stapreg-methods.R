@@ -141,13 +141,43 @@ nobs.stapreg <- function(object, ...) {
 #' @return number of spatial temporal aggregated predictors
 #' @export
 #' @seealso \code{\link{nstap.stapreg}} 
-nstap <- function(object, ...)
+nstap <- function(object)
     UseMethod("nstap")
+
+#' Retrieves number of temporal aggregated predictors 
+#' @export
+#' @keywords internal
+#' @param object A fitted model object
+#' @return number of spatial aggregated predictors
+#' @export
+#' @seealso \code{\link{nstap.stapreg}} 
+nsap <- function(object)
+    UseMethod("nsap")
+
+#' Retrieves number of temporal aggregated predictors 
+#' @export
+#' @keywords internal
+#' @param object A fitted model object
+#' @return number of temporal aggregated predictors
+#' @export
+#' @seealso \code{\link{nstap.stapreg}} 
+ntap <- function(object)
+    UseMethod("ntap")
 
 #' @rdname stapreg-methods
 #' @export
-nstap.stapreg <- function(object, ...)
-    return(object$n_stap_var)
+nstap.stapreg <- function(object)
+    return(object$stap_data$Q_st)
+
+#' @rdname stapreg-methods
+#' @export
+ntap.stapreg <- function(object)
+    return(object$stap_data$Q_t)
+
+#' @rdname stapreg-methods
+#' @export
+nsap.stapreg <- function(object)
+    return(object$stap_data$Q_s)
 
 #' @export 
 #' @keywords internal

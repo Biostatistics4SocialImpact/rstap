@@ -41,30 +41,48 @@ test_that("get_weight_name works",{
 
 context("test stap data extraction functions")
 
-f1 <- y ~ sex + Age + stap(Coffee_Shops)
-f2 <- y ~ tap_log(Con_Stores,erf) + sex + Age + stap(Coffee_Shops)
-
 
 f1 <- BMI ~ Age +  sap(Coffee_Shops)
 f2 <- BMI ~ Age + tap(Coffee_Shops)
-distance_data <- data.frame(subj_id = 1:10,
-                            BEF = rep("Coffee_Shops",10),
-                            dist = rexp(10))
+f3 <- BMI ~ Age + sap(Fast_Food)
+f4 <- BMI ~ Age + stap(Coffee_Shops)
+distance_data <- data.frame(subj_id = c(1:10,1:10),
+                            BEF = c(rep("Coffee_Shops",10),rep("Fast_Food",10)),
+                            dist = rexp(20))
+time_data <- data.frame(subj_id = c(1:10,1:10),
+                        BEF = c(rep("Coffee_Shops",10),rep("Fast_Food",10)),
+                        time = rexp(20))
 subj_data <- data.frame(subj_id = 1:10,
                         BMI = rnorm(10,mean = 25, sd = 2),
                         Age = rnorm(10,mean = 35, sd = 10))
-admat <- matrix(distance_data$dist,nrow=1)
+admat <- matrix(distance_data$dist[1:10],nrow=1)
 rownames(admat) <- "Coffee_Shops"
+admat2 <- matrix(distance_data$dist[11:20],nrow=1)
+rownames(admat2) <- "Fast_Food"
+admat4 <- matrix(time_data$time[1:10],nrow=1)
+rownames(admat4) <- "Coffee_Shops"
 a1 <-  list(d_mat = admat,
             t_mat = NA,
-            u_t = NA,
-            u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)))
+            u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
+            u_t = NA)
 a2 <- list(d_mat = NA,
            t_mat = admat,
-           u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
-           u_s = NA)
+           u_s = NA,
+           u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1)))
+a3 <- list(d_mat = admat2,
+           t_mat = NA,
+           u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
+           u_t = NA)
+a4 <- list(d_mat = admat,
+           t_mat = admat4,
+           u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
+           u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1))
+           )
+
 stap_data_1 <- extract_stap_data(f1)
 stap_data_2 <- extract_stap_data(f2)
+stap_data_3 <- extract_stap_data(f3)
+stap_data_4 <- extract_stap_data(f4)
 
 test_that("extract_crs_data correctly errors when no distance or time data are given",{
     expect_error(extract_crs_data(formula = y ~ X,
@@ -73,14 +91,27 @@ test_that("extract_crs_data correctly errors when no distance or time data are g
 })
 
 test_that("extract_crs_data correctly extracts data",{
-    expect_equal(extract_crs_data(stap_data_1,subject_data = subj_data,
+    expect_equal(extract_crs_data(stap_data_1,
+                                  subject_data = subj_data,
                                   distance_data = distance_data,
                                   time_data = NULL,
                                   id_key = 'subj_id',
                                   max_distance = max(distance_data$dist)),
                  a1)
-    expect_equal(extract_crs_data(stap_data_2,subj_data, time_data = distance_data,
+    expect_equal(extract_crs_data(stap_data_2,subj_data,
+                                  time_data = distance_data,
                                   id_key = 'subj_id',
                                   max_distance = max(distance_data$dist)),
                  a2)
+    expect_equal(extract_crs_data(stap_data_3,subj_data,
+                                  distance_data = distance_data,
+                                  id_key = 'subj_id',
+                                  max_distance = max(distance_data$dist)),
+                 a3)
+    expect_equal(extract_crs_data(stap_data_4,subject_data = subj_data,
+                                  distance_data = distance_data,
+                                  time_data = time_data,
+                                  id_key ='subj_id',
+                                  max_distance = max(distance_data$dist)),
+                 a4)
 })

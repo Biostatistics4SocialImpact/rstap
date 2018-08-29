@@ -427,6 +427,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     prior_info <- summarize_glm_prior(
         user_prior = prior_stuff,
         user_prior_intercept = prior_intercept_stuff,
+        user_prior_stap = prior_stap_stuff,
+        user_prior_theta = prior_theta_stuff,
         user_prior_aux = prior_aux_stuff,
         has_intercept = has_intercept,
         has_predictors = nvars > 0,
@@ -458,8 +460,10 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     if (!isTRUE(check)) return(standata)
     new_names <- c(if (has_intercept) "(Intercept)",
                    colnames(ztemp),
-                   rownames(dists_crs),
-                   paste0(rownames(dists_crs),'_spatial_scale'),
+                   if(stap_data$Q_s>0) rownames(dists_crs),
+                   if(stap_data$Q_t>0) rownames(times_crs),
+                   if(stap_data$Q_s>0) paste0(rownames(dists_crs),'_spatial_scale'),
+                   if(stap_data$Q_t>0) paste0(rownames(times_crs),'_temporal_scale'),
                    if (is_gaussian) "sigma",
                    if (is_gamma) "shape",
                    if (is_ig) "lambda",
@@ -590,12 +594,15 @@ summarize_glm_prior <-
     function(user_prior,
              user_prior_intercept,
              user_prior_aux,
+             user_prior_stap,
+             user_prior_theta,
              has_intercept,
              has_predictors,
              adjusted_prior_scale,
              adjusted_prior_intercept_scale,
              adjusted_prior_aux_scale,
              family) {
+
         rescaled_coef <-
             user_prior$prior_autoscale &&
             has_predictors &&
@@ -609,6 +616,10 @@ summarize_glm_prior <-
         rescaled_aux <- user_prior_aux$prior_autoscale_for_aux &&
             !is.na(user_prior_aux$prior_dist_name_for_aux) &&
             (user_prior_aux$prior_scale_for_aux != adjusted_prior_aux_scale)
+        rescaled_stap <- user_prior_stap$prior_autoscale &&
+            has_predictors &&
+            !is.na(user_prior$prior_dist_name) &&
+            !(all(user_prior$prior_scale == adjusted_prior_scale))
 
         if (has_predictors && user_prior$prior_dist_name %in% "t") {
             if (all(user_prior$prior_df == 1)) {
@@ -644,6 +655,16 @@ summarize_glm_prior <-
                              ("student_t", "hs", "hs_plus", "lasso", "product_normal"))
                         prior_df else NULL
                 )),
+            prior_stap = with(user_prior_stap, list(dist = prior_dist_name_for_stap,
+                                                    location = prior_mean_for_stap,
+                                                    scale = prior_scale_for_stap,
+                                                    adjusted_scale = if(rescaled_stap)
+                                                        adjusted_prior_scale else NULL,
+                                                    df = if(prior_dist_name_for_stap %in% c("student_t","hs","hs_plus","lasso","product_normal"))
+                                                        prior_df else NULL )),
+            prior_theta = with(user_prior_theta, list(dist = prior_dist_name_for_theta,
+                                                       location = prior_mean_for_theta,
+                                                       scale = prior_scale_for_theta)),
             prior_intercept =
                 if (!has_intercept) NULL else with(user_prior_intercept, list(
                     dist = prior_dist_name_for_intercept,
@@ -655,7 +676,7 @@ summarize_glm_prior <-
                         prior_df_for_intercept else NULL
                 ))
         )
-
+        
         aux_name <- .rename_aux(family)
         prior_list$prior_aux <- if (is.na(aux_name))
             NULL else with(user_prior_aux, list(
