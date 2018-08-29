@@ -17,12 +17,12 @@
 
 #' Bayesian spatial-temporal generalized linear models with group-specific terms via Stan
 #' 
-#' Bayesian inference for GLMs with group-specific coefficients that have 
+#' Bayesian inference for stap-glms with group-specific coefficients that have 
 #' unknown covariance matrices with flexible priors.
 #' 
 #' @export
 #' @templateVar armRef (Ch. 11-15)
-#' @templateVar fun stap_glmer, stan_lmer, stan_glmer.nb
+#' @templateVar fun stap_glmer, stan_lmer 
 #' @templateVar pkg lme4
 #' @templateVar pkgfun glmer
 #' @template return-stanreg-object
@@ -68,15 +68,18 @@
 #'   \link{neg_binomial_2}(link)}.
 #'   
 #'   
-#' @seealso The vignette for \code{stap_glmer} and the \emph{Hierarchical 
-#'   Partial Pooling} vignette... still to be written
+#' @seealso The vignette for \code{stap_glmer} ... still to be written
 #'    
 #' @importFrom lme4 glFormula
 #' @importFrom Matrix Matrix t
 stap_glmer <- 
   function(formula,
-           data = NULL,
            family = gaussian,
+           subject_data = NULL,
+           distance_data = NULL,
+           time_data = NULL,
+           id_key = NULL,
+           max_distance,
            subset,
            weights,
            na.action = getOption("na.action", "na.omit"),
@@ -85,19 +88,26 @@ stap_glmer <-
            ...,
            prior = normal(),
            prior_intercept = normal(),
+           prior_stap = normal(),
+           prior_theta = log_normal(location = 1L, scale = 1L),
            prior_aux = exponential(),
            prior_covariance = decov(),
-           algorithm = c("sampling", "meanfield", "fullrank"),
-           adapt_delta = NULL,
-           QR = FALSE) {
+           adapt_delta = NULL) {
   
+  stap_data <- extract_stap_data(formula)
+  crs_data <- extract_crs_data(stap_data,
+                               subject_data,
+                               distance_data,
+                               time_data,
+                               id_key,
+                               max_distance)
   call <- match.call(expand.dots = TRUE)
   mc <- match.call(expand.dots = FALSE)
-  data <- validate_data(data) #, if_missing = environment(formula))
+  data <- validate_data(subject_data , if_missing = environment(formula))
   family <- validate_family(family)
   mc[[1]] <- quote(lme4::glFormula)
   mc$control <- make_glmerControl()
-  mc$data <- data
+  mc$data <- subject_data
   mc$prior <- mc$prior_intercept <- mc$prior_covariance <- mc$prior_aux <-
     mc$prior_PD <- mc$algorithm <- mc$scale <- mc$concentration <- mc$shape <-
     mc$adapt_delta <- mc$... <- mc$QR <- mc$sparse <- NULL

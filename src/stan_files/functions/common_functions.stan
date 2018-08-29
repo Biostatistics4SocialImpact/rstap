@@ -330,13 +330,13 @@
    * @param stap_code 0-2 code indicating what kind of spatial-temporal exposure to aggregate
    * @param w weight function array
    */ 
-  real assign_exposure(int log_switch, int[] w, int[,] u, vector time_dists, real theta, int q, int n){
+  real assign_exposure(int log_switch, int w, int[,] u, vector time_dists, real theta, int q, int n){
 
       real out;
       if(u[n,(q*2)-1] > u[n,(q*2)])
           return(0);
       else
-          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta) ,w[1]));
+          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta) ,w));
       if(log_switch == 1)
         return(log(out));
       else

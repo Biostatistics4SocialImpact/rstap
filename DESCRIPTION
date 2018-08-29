@@ -1,7 +1,8 @@
 Package: rstap
+Type: Package
 Version: 0.0.0.9000
-Title: Spatiotemporal Aggregated Predictor Models via Bayesian Inference 
-Description: A package to estimate the latent spatial and/or temporal scale at which features in the environment surrounding a subject impact them.
+Title: Spatiotemporal Aggregated Predictor Models via stan 
+Description: Estimates previously compiled stap regression models using the 'rstan' package, which provides the R interface to the Stan C++ library for Bayesian estimation. Users specify models via a custom R syntax with a formula and data.frame plus additional arguments for priors.
 Authors@R: person("Adam", "Peterson", , "atpvyc@umich.edu", c("aut", "cre"))
 URL: https://biostatistics4socialimpact.github.io/rstap
 BugReports: https://github.com/biostatistics4socialimpact/rstap/issues
@@ -10,7 +11,17 @@ Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 Depends: R (>= 3.4.0), Rcpp (>= 0.12.16), methods
-Imports: rstan (>= 2.17.3), rstantools (>= 1.5.0), lme4 (>= 1.1-8), nlme (>= 3.1-124), abind(>= 1.4-5), stats(>= 3.5.0)
+Imports:
+    abind (>= 1.4-5),
+    bayesplot (>= 1.5.0),
+    ggplot2 (>= 2.2.1),
+    lme4 (>= 1.1-8),
+    Matrix (>= 1.2-13),
+    nlme (>= 3.1-124),
+    rstan (>= 2.17.2),
+    rstantools (>= 1.4.0),
+    stats,
+    utils
 LinkingTo: StanHeaders (>= 2.17.2), rstan (>= 2.17.3), BH (>= 1.66.0-1), Rcpp (>= 0.12.16), RcppEigen(>= 0.3.3.3.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes

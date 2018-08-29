@@ -48,7 +48,9 @@ stap_data <- function(object) {
                  any_t,
                  any_st,
                  dt)
-    structure(out, class = c("stap_data"))
+    out <- structure(out, class = c("stap_data"))
+    check_dups(out)
+    return(out)
 }
 
 #' @export

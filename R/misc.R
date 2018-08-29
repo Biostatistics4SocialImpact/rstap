@@ -426,6 +426,10 @@ is.nb <- function(x) x == "neg_binomial_2"
 is.poisson <- function(x) x == "poisson"
 is.beta <- function(x) x == "beta" || x == "Beta regression"
 
+# test if a stanreg object has class clogit
+is_clogit <- function(object) {
+  is(object, "clogit")
+}
 # Maybe broadcast
 #
 # @param x A vector or scalar.
@@ -621,18 +625,14 @@ is.mer <- function(x) {
   isTRUE(check1 && check2)
 }
 
-# test if a stapreg object has class clogit
-is_clogit <- function(object){
-    is(object,'clogit')
-}
 # Get the posterior sample size
 #
 # @param x A stapreg object
 # @return the posterior sample size (or size of sample from approximate posterior)
 posterior_sample_size <- function(x) {
  validate_stapreg_object(x)
- pss <- x$stanfit@sim$n_save
-  sum(pss - x$stanfit@sim$warmup2)
+ pss <- x$stapfit@sim$n_save
+  sum(pss - x$stapfit@sim$warmup2)
 }
 
 paste_scale <- function(names)

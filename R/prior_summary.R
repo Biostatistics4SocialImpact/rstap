@@ -24,7 +24,7 @@
 #'   each have mean zero. The estimate of the intercept returned to the user 
 #'   correspond to the intercept with the predictors as specified by the user 
 #'   (unmodified by \pkg{rstap}), but when \emph{specifying} the prior the 
-#'   intercept can be thought of as the expected outcome when the predictors are
+#'   intercept can be interpreted as the expected outcome when the predictors are
 #'   set to their means.    
 #'
 #' @section Adjusted scales: For some models you may see "\code{adjusted scale}"
@@ -37,13 +37,12 @@
 #'   \code{autoscale} argument to \code{FALSE} when setting a prior using one of
 #'   the distributions that accepts an \code{autoscale} argument. For example,
 #'   \code{normal(0, 5, autoscale=FALSE)} instead of just \code{normal(0, 5)}.
-#' 
 #'   
 #' @return A list of class "prior_summary.stapreg", which has its own print
 #'   method.
 #'   
 #' @seealso The \link[=priors]{priors help page} and the \emph{Prior
-#'   Distributions} vignette.
+#'   Distributions} vignette from the \pkg{rstanarm} package.
 #' 
 prior_summary.stapreg <- function(object, digits = 2,...) {
   x <- object[["prior.info"]]
@@ -73,31 +72,42 @@ print.prior_summary.stapreg <- function(x, digits, ...) {
   msg <- paste0("Priors for model '", model_name, "'")
   cat(msg, "\n------")
   
-  if (!stan_function == "stan_mvmer") {
-    if (!is.null(x[["prior_intercept"]]))
+  if (!is.null(x[["prior_intercept"]]))
       .print_scalar_prior(
         x[["prior_intercept"]], 
-        txt = paste0("Intercept", if (!sparse) " (after predictors centered)"), 
+        txt = paste0("Intercept", " (after predictors centered)"), 
         formatters
       )
-    if (!is.null(x[["prior"]]))
+  if (!is.null(x[["prior"]]))
       .print_vector_prior(
         x[["prior"]], 
-        txt = paste0("\nCoefficients", if (QR) " (in Q-space)"), 
+        txt = paste0("\nCoefficients")  , 
         formatters = formatters
       )
-    if (!is.null(x[["prior_aux"]])) {
+  if(!is.null(x[["prior_stap"]]))
+      .print_vector_prior(
+       x[["prior_stap"]],
+       txt = "Stap Coefficients",
+       formatters = formatters
+       )
+  if(!is.null(x[["prior_theta"]]))
+      .print_vector_prior(
+       x[["prior_theta"]],
+       txt = "Stap Scales",
+       formatters = formatters
+       )
+
+  if (!is.null(x[["prior_aux"]])) {
       aux_name <- x[["prior_aux"]][["aux_name"]]
       aux_dist <- x[["prior_aux"]][["dist"]]
       if (aux_dist %in% c("normal", "student_t", "cauchy"))
-        x[["prior_aux"]][["dist"]] <- paste0("half-", aux_dist)
-      .print_scalar_prior(
-        x[["prior_aux"]], 
-        txt = paste0("\nAuxiliary (", aux_name, ")"), 
-        formatters
-      )
+          x[["prior_aux"]][["dist"]] <- paste0("half-", aux_dist)
+          .print_scalar_prior(
+            x[["prior_aux"]], 
+            txt = paste0("\nAuxiliary (", aux_name, ")"), 
+            formatters
+          )
     }    
-  }  
   
   # unique to stan_(g)lmer, stan_gamm4, stan_mvmer, or stan_jm
   if (!is.null(x[["prior_covariance"]]))
@@ -169,7 +179,7 @@ print.prior_summary.stapreg <- function(x, digits, ...) {
   .f2 <- formatters[[2]]
   
   if (!(p$dist %in% c("R2", NA))) {
-    if (p$dist %in% c("normal", "student_t", "cauchy", "laplace", "lasso", "product_normal")) {
+    if (p$dist %in% c("normal", "student_t", "cauchy", "laplace", "lasso", "product_normal", "lognormal")) {
       p$location <- .format_pars(p$location, .f1)
       p$scale <- .format_pars(p$scale, .f1)
       if (!is.null(p$df))
@@ -188,7 +198,7 @@ print.prior_summary.stapreg <- function(x, digits, ...) {
       if (is.na(p$dist)) {
         "flat"
       } else if (p$dist %in% c("normal", "student_t", "cauchy", 
-                               "laplace", "lasso", "product_normal")) {
+                               "laplace", "lasso", "product_normal","lognormal")) {
         if (is.null(p$df)) {
           paste0(p$dist, "(location = ", .f1(p$location), 
                  ", scale = ", .f1(p$scale), ")")

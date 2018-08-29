@@ -65,7 +65,7 @@
 #' @seealso \code{\link{summary.stapreg}}, \code{\link{stapreg-methods}}
 #' 
 print.stapreg <- function(x, digits = 1, ...) {
-  cat(x$stap_function)
+  cat(x$stan_function)
   cat("\n family:      ", family_plus_link(x))
   cat("\n formula:     ", formula_string(formula(x)))
   cat("\n observations:", nobs(x))
@@ -155,11 +155,8 @@ print.stapreg <- function(x, digits = 1, ...) {
 #'   auxiliary parameters and the log posterior.   
 #'   
 #'   If \code{pars} is \code{NULL} all parameters are selected for a \code{stapreg}
-#'   object, while for a \code{stapmvreg} object all 
-#'   fixed effect regression coefficients are selected as well as any 
-#'   auxiliary parameters and the log posterior. See 
-#'   \strong{Examples}.
-#' @param probs For models fit using MCMC or one of the variational algorithms, 
+#'   object.
+#' @param probs For models fit using MCMC, 
 #'   an optional numeric vector of probabilities passed to 
 #'   \code{\link[stats]{quantile}}.
 #' @param digits Number of digits to use for formatting numbers when printing. 
@@ -167,7 +164,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #'   \code{"print.digits"} attribute of the returned object.
 #'   
 #' @return The \code{summary} method returns an object of class 
-#'   \code{"summary.stapreg"} (or \code{"summary.stapmvreg"}, inheriting 
+#'   \code{"summary.stapreg"}, inheriting 
 #'   \code{"summary.stapreg"}), which is a matrix of 
 #'   summary statistics and 
 #'   diagnostics, with attributes storing information for use by the
@@ -203,19 +200,20 @@ summary.stapreg <- function(object, pars = NULL, regex_pars = NULL,
       out[, "n_eff"] <- round(out[, "n_eff"])
     if ("se_mean" %in% stats) # So people don't confuse se_mean and sd
       colnames(out)[stats %in% "se_mean"] <- "mcse"
+    npred <- (nfix(object) - 1*(rownames(object$stap_summary)[1] == "(Intercept)"))
     
   structure(
     out,
     call = object$call,
-    algorithm = object$algorithm,
     stan_function = object$stan_function,
     family = family_plus_link(object),
     formula = formula(object),
     posterior_sample_size = posterior_sample_size(object),
     nobs = nobs(object),
-    npreds = if (isTRUE(object$stan_function %in% c("stap_glm", "stap_lm")))
-      length(coef(object)) else NULL,
-    # ngrps = if (mer) ngrps(object) else NULL,
+    nfpreds = if(npred >0) npred else NULL,
+    nspreds = if(nsap(object) > 0) nsap(object) else NULL,
+    ntpreds = if(ntap(object) > 0) ntap(object) else NULL,
+    nstpreds = if(nstap(object) > 0 ) nstap(object) else NULL,
     print.digits = digits,
     priors = object$prior.info,
     class = "summary.stapreg"
@@ -231,16 +229,20 @@ print.summary.stapreg <- function(x, digits = max(1, attr(x, "print.digits")),
                                   ...) {
   atts <- attributes(x)
   cat("\nModel Info:\n")
-  cat("\n function:    ", atts$stap_function)
+  cat("\n function:    ", atts$stan_function)
   cat("\n family:      ", atts$family)
   cat("\n formula:     ", formula_string(atts$formula))
-  # cat("\n algorithm:   ", atts$algorithm)
   cat("\n priors:      ", "see help('prior_summary')")
-  if (!is.null(atts$posterior_sample_size) && atts$algorithm == "sampling")
-    cat("\n sample:      ", atts$posterior_sample_size, "(posterior sample size)")
+  cat("\n sample:      ", atts$posterior_sample_size, "(posterior sample size)")
   cat("\n observations:", atts$nobs)
   if (!is.null(atts$npreds))
     cat("\n predictors:  ", atts$npreds)
+  if (!is.null(atts$nspreds))
+      cat("\n Spatial Predictors:  ", atts$nspreds)
+  if(!is.null(atts$ntpreds))
+      cat("\n Temporal Predictors: ", atts$ntpreds)
+  if(!is.null(atts$nstpreds))
+      cat("\n Spatial-Temporal Predictors: ", atts$nstpreds)
   if (!is.null(atts$ngrps))
     cat("\n groups:      ", paste0(names(atts$ngrps), " (", 
                                    unname(atts$ngrps), ")", 
@@ -313,19 +315,12 @@ allow_special_parnames <- function(object, pars) {
 
 # Family name with link in parenthesis 
 # @param x stapreg object
-# @param ... Optionally include m to specify which submodel for stapmvreg models
-family_plus_link <- function(x, ...) {
-  fam <- family(x, ...)
+family_plus_link <- function(x) {
+  fam <- family(x)
   if (is.character(fam)) {
     stopifnot(identical(fam, x$method))
     fam <- paste0("ordered [", fam, "]")
-  } else if (inherits(x, "betareg")) {
-    fam <- paste0("beta [",
-                  x$family$link,
-                  ", link.phi=",
-                  x$family_phi$link,
-                  "]")
-  } else {
+  }  else {
     fam <- paste0(fam$family, " [", fam$link, "]")
   }
   return(fam)
