@@ -40,14 +40,17 @@
 #' @template reference-muth
 #'
 #'
-#' @param formula
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
-#' @param subject_data
-#' @param distance_data
-#' @param time_data
+#' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the id_key on which to join the distance and time_data
+#' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)
+#' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
 #' @param id_key name of column to join on between subject_data and bef_data
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
 #' @param weights
+#' @param y In \code{stap_glm}, logical scalar indicating whether to
+#'   return the response vector. In \code{stan_glm.fit}, a response vector.
+#' @param z In \code{stap_glm}, logical scalar indicating whether to return the design matrix.
+#'   In \code{stap_glm.fit} a standard design matrix.
 #' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 #' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
@@ -57,7 +60,7 @@
 #'
 #'@export stap_glm
 stap_glm <- function(formula,
-                     family = stats::gaussian(),
+                     family = gaussian(),
                      subject_data = NULL,
                      distance_data = NULL,
                      time_data = NULL,

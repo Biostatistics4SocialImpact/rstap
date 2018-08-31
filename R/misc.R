@@ -130,65 +130,39 @@ drop_redundant_dims <- function(data) {
     data[, drop_dim] <- lapply(data[, drop_dim, drop=FALSE], drop)
     return(data)
 }
+
 validate_data <- function(data, if_missing = NULL) {
-    if (missing(data) || is.null(data)) {
-        warn_data_arg_missing()
-        return(if_missing)
-    }
-    if (!is.data.frame(data)) {
+    if (!is.data.frame(data) || missing(data) || is.null(data)) {
         stop("'subject_data' must be a supplied data frame.", call. = FALSE)
     }
 
     drop_redundant_dims(data)
 }
 
-#' extract_stap_components
+
+#' Validate newdata argument for posterior_predict, log_lik, etc.
 #'
-#' extract stap components from formula and create crs matrices
+#' Doesn't check if the correct variables are included (that's done in pp_data),
+#' just that newdata is either NULL or a data frame with no missing values. Also
+#' drops any unused dimensions in variables (e.g. a one column matrix inside a
+#' data frame is converted to a vector).
+#' 
+#' @param x User's 'newdata' argument
+#' @return Either NULL or a data frame
 #'
-#' @param formula that designates model expression including stap covariates
-#' @param distance_data
-#' @return If no error is thrown a list with the crs data matrix, index matrix u
-#'           and corresponding covariate names is returned
-#'
-extract_stap_components <- function(formula, distance_data, subject_data,
-                                    id_key, max_distance){
-    dcol_ix <- validate_distancedata(distance_data,max_distance)
-    stap_covs <- all.names(formula)[which(all.names(formula)=="stap")+1]
-    stap_col_ics <- apply(distance_data, 1, function(x) which(x %in% stap_covs))
-    if(!all(stap_col_ics))
-        stop("The stap_covariates must all be in (only) one column
-             of the distance dataframe as a character or factor variable.
-             see `?stap_glm`")
-    stap_col <- colnames(distance_data)[stap_col_ics[1]]
-    dcol <- colnames(distance_data)[dcol_ix]
-    ##ensure subjects that have zero exposure are included
-    ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
-                                                                   distance_data[,dcol]<= max_distance)),])
-    if(any(lapply(ddata,nrow)==0)){
-        missing <- stap_covs[which(sapply(ddata,nrow)==0)]
-        stap_covs <- stap_covs[which(sapply(ddata,nrow)!=0)]
-        print(paste("The following stap_covariates are not present in distance_data:",
-              paste(missing,collapse = ', ')))
-        print("These will be omitted from the analysis")
-        ddata <- lapply(ddata,function(x) if(nrow(x)!=0) x)
-        ddata[sapply(ddata,is.null)] <- NULL
-    }
-    M <- max(sapply(ddata, nrow))
-    mddata <- lapply(ddata,function(y) merge(subject_data[,id_key], y, by = eval(id_key),
-                                            all.x = T) )
-    d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
-    d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                    nrow = length(stap_covs), ncol = M)
-    rownames(d_mat) <- stap_covs
-    freq <- lapply(mddata, function(x) xtabs(~ get(id_key) + get(stap_col),
-                                         data = x, addNA = TRUE)[,1])
-    u <- lapply(freq,function(x) cbind(
-        replace(dplyr::lag(cumsum(x)),
-                is.na(dplyr::lag(cumsum(x))),0)+1,
-                cumsum(x)))
-    u <- abind(u)
-    return(list(d_mat = d_mat, u = u))
+validate_newdata <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  if (!is.data.frame(x)) {
+    stop("If 'newdata' is specified it must be a data frame.", call. = FALSE)
+  }
+  if (any(is.na(x))) {
+    stop("NAs are not allowed in 'newdata'.", call. = FALSE)
+  }
+  
+  x <- as.data.frame(x)
+  drop_redundant_dims(x)
 }
 
 #' Validate distance_data
@@ -234,13 +208,13 @@ validate_timedata <- function(time_data){
     return(tcol_ix)
 }
 
-# get_stapless_formula
-#
-# Get formula for typical covariates
-#
-# @param f formula from stap_glm
-# @return formula without ~ stap() components
-#
+#' get_stapless_formula
+#'
+#' Get formula for typical covariates
+#'
+#' @param f formula from stap_glm
+#' @return formula without ~ stap() components
+#'
 get_stapless_formula <- function(f){
     stap_ics <- which(all.names(f)%in% c("stap","stap_log"))
     sap_ics <- which(all.names(f) %in% c("sap","sap_log"))
@@ -295,6 +269,14 @@ check_constant_vars <- function(mf) {
              call. = FALSE)
     }
     return(mf)
+}
+
+# Return names of the last dimension in a matrix/array (e.g. colnames if matrix)
+#
+# @param x A matrix or array
+last_dimnames <- function(x) {
+  ndim <- length(dim(x))
+  dimnames(x)[[ndim]]
 }
 
 #' Check weights argument
@@ -426,7 +408,7 @@ is.nb <- function(x) x == "neg_binomial_2"
 is.poisson <- function(x) x == "poisson"
 is.beta <- function(x) x == "beta" || x == "Beta regression"
 
-# test if a stanreg object has class clogit
+# test if a stapreg object has class clogit
 is_clogit <- function(object) {
   is(object, "clogit")
 }
@@ -526,6 +508,55 @@ validate_stapreg_object <- function(x, call. = FALSE) {
   if (a == Inf) b else a
 }
 
+#' Extract X, Y or Z from a stapreg object
+#' 
+#' @keywords internal
+#' @export
+#' @templateVar stapregArg object
+#' @template args-stapreg-object
+#' @param ... Other arguments passed to methods. For a \code{stanmvreg} object
+#'   this can be an integer \code{m} specifying the submodel.
+#' @return For \code{get_x} and \code{get_z}, a matrix. For \code{get_y}, either
+#'   a vector or a matrix, depending on how the response variable was specified.
+get_y <- function(object, ...) UseMethod("get_y")
+#' @rdname get_y
+#' @export
+get_x <- function(object, ...) UseMethod("get_x")
+#' @rdname get_y
+#' @export
+get_z <- function(object, ...) UseMethod("get_z")
+
+#' @export
+get_y.default <- function(object, ...) {
+  object[["y"]] %ORifNULL% model.response(model.frame(object))
+}
+#' @export
+get_x.default <- function(object, ...) {
+  object[["x"]] %ORifNULL% model.matrix(object)
+}
+#' @export
+get_x.lmerMod <- function(object, ...) {
+  object$glmod$X %ORifNULL% stop("X not found")
+}
+#' @export
+get_z.lmerMod <- function(object, ...) {
+  Zt <- object$glmod$reTrms$Zt %ORifNULL% stop("Z not found")
+  t(Zt)
+}
+
+# Get inverse link function
+#
+# @param x A stapreg object, family object, or string. 
+#   this can be an integer \code{m} specifying the submodel.
+# @return The inverse link function associated with x.
+linkinv <- function(x, ...) UseMethod("linkinv")
+linkinv.stapreg <- function(x, ...) {
+  family(x)$linkinv
+}
+linkinv.family <- function(x, ...) {
+  x$linkinv
+}
+
 # Wrapper for rstan::summary
 # @param stanfit A stanfit object created using rstan::sampling or rstan::vb
 # @return A matrix of summary stats
@@ -596,6 +627,22 @@ linear_predictor.matrix <- function(delta_beta, x, offset = NULL) {
   return(eta)
 }
 
+# Regex parameter selection
+#
+# @param x stapreg object
+# @param regex_pars Character vector of patterns
+grep_for_pars <- function(x, regex_pars) {
+  validate_stapreg_object(x)
+  stopifnot(is.character(regex_pars))
+  out <- unlist(lapply(seq_along(regex_pars), function(j) {
+    grep(regex_pars[j], rownames(x$stap_summary), value = TRUE) 
+  }))
+  if (!length(out))
+    stop("No matches for 'regex_pars'.", call. = FALSE)
+  
+  return(out)
+}
+
 # Combine pars and regex_pars
 #
 # @param x stapreg object
@@ -623,6 +670,13 @@ is.mer <- function(x) {
     stop("Bug found. 'x' has 'glmod' component but not class 'lmerMod'.")
   }
   isTRUE(check1 && check2)
+}
+
+# Test if stapreg object used stan_nlmer
+#
+# @param x A stanreg object.
+is.nlmer <- function(x) {
+  is.mer(x) && inherits(x, "nlmerMod")
 }
 
 # Get the posterior sample size

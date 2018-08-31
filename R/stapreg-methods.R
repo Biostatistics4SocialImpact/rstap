@@ -97,35 +97,15 @@ coef.stapreg <- function(object, ...) {
 #'   indicating the confidence level to use.
 #'
 confint.stapreg <- function(object, parm, level = 0.95, ...) {
-  if (!used.optimizing(object)) {
-    stop("For models fit using MCMC or a variational approximation please use ", 
-         "posterior_interval() to obtain Bayesian interval estimates.", 
+    stop("Please use posterior_interval() to obtain", 
+         "Bayesian interval estimates.", 
          call. = FALSE)
-  }
-  confint.default(object, parm, level, ...)
 }
 
 #' @rdname stapreg-methods
 #' @export
-fitted.stapreg <- function(object, ...)  {
-
-    object$stap_data
-    
-    ## calculate X_tilde's here 
-    delta_beta <- object$coefficients[grep("_scale",names(object$coefficients),invert = TRUE)]
-    # linear predictor, fitted values
-    eta <- linear_predictor(delta_beta, cbind(Z,apply(X_tilde,c(2,3),median)), object$offset)
-    mu <- family$linkinv(eta)
-    
-    if (NCOL(y) == 2L) {
-        #residuals of type 'response', (glm which does 'deviance' residuals by default)
-        residuals <- y[,1L] / rowSums(y) - mu
-    } else {
-        ytmp <- if(is.factor(y)) fac2bin(y) else y
-        residuals <- ytmp - mu
-    } 
-    names(eta) <- names(mu) <- names(residuals) <- ynames
-}
+fitted.stapreg <- function(object, ...)  
+    return(object$fitted.values)
 
 #' @rdname stapreg-methods
 #' @export 

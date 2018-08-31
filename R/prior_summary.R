@@ -12,6 +12,7 @@
 #' 
 #' @aliases prior_summary
 #' @export
+#'
 #' @templateVar stapregArg object
 #' @template args-stapreg-object
 #' @param digits Number of digits to use for rounding.
@@ -109,7 +110,7 @@ print.prior_summary.stapreg <- function(x, digits, ...) {
           )
     }    
   
-  # unique to stan_(g)lmer, stan_gamm4, stan_mvmer, or stan_jm
+  # unique to stap_(g)lmer
   if (!is.null(x[["prior_covariance"]]))
     .print_covariance_prior(x[["prior_covariance"]], txt = "\nCovariance", formatters)
   

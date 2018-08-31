@@ -196,12 +196,13 @@ get_stap_code <- function(all_names,stap_covs){
 
 #' extract crs data
 #'
-#' @param stap_data the stap data object extracted from the formula
-#' @param subject_data 
-#' @param distance_data
-#' @param time_data
-#' @param id_key
-#' @param max_distance
+#' @param stap_data the stap data object extracted from \code{extract_stap_data}
+#' @param subject_data the subject_data data.frame
+#' @param distance_data the distance data.frame (optional)
+#' @param time_data the time data.frame (optional)
+#' @param id_key string of the id column name to join on across subject, distance and time data
+#' @param max_distance  the maximum distance in distance_data
+#' @return a list of the crs data for the spatial and/or temporal data as appropriate 
 extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, id_key, max_distance){
 
     dcol_ix <- validate_distancedata(distance_data,max_distance)

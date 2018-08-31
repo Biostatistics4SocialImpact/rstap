@@ -22,10 +22,10 @@
 #' 
 #' @export
 #' @templateVar armRef (Ch. 11-15)
-#' @templateVar fun stap_glmer, stan_lmer 
+#' @templateVar fun stap_glmer, stap_lmer 
 #' @templateVar pkg lme4
 #' @templateVar pkgfun glmer
-#' @template return-stanreg-object
+#' @template return-stapreg-object
 #' @template see-also
 #' @template args-prior_intercept
 #' @template args-priors
@@ -44,10 +44,9 @@
 #' @param subset,weights,offset Same as \code{\link[stats]{glm}}.
 #' @param na.action,contrasts Same as \code{\link[stats]{glm}}, but rarely 
 #'   specified.
-#' @param ... For \code/stap_glmer}, further arguments passed to 
+#' @param ... For \code{stap_glmer}, further arguments passed to 
 #'   \code{\link[rstan]{sampling}} (e.g. \code{iter}, \code{chains}, 
-#'   \code{cores}, etc.) or to \code{\link[rstan]{vb}} (if \code{algorithm} is 
-#'   \code{"meanfield"} or \code{"fullrank"}). For \code{stan_lmer} and 
+#'   \code{cores}, etc.). For \code{stap_lmer} and 
 #'   \code{stap_glmer.nb}, \code{...} should also contain all relevant arguments
 #'   to pass to \code{stap_glmer} (except \code{family}).
 #'
@@ -62,11 +61,6 @@
 #'   
 #'   The \code{stap_lmer} function is equivalent to \code{stap_glmer} with 
 #'   \code{family = gaussian(link = "identity")}. 
-#'   
-#'   The \code{stap_glmer.nb} function, which takes the extra argument 
-#'   \code{link}, is a wrapper for \code{stap_glmer} with \code{family = 
-#'   \link{neg_binomial_2}(link)}.
-#'   
 #'   
 #' @seealso The vignette for \code{stap_glmer} ... still to be written
 #'    
@@ -151,7 +145,7 @@ stap_glmer <-
                x = cbind(X, Z), y = y, data, call, terms = NULL, model = NULL,
                na.action = attr(glmod$fr, "na.action"), contrasts, algorithm, glmod, 
                stan_function = "stap_glmer")
-  out <- stanreg(fit)
+  out <- stapreg(fit)
   class(out) <- c(class(out), "lmerMod")
   
   return(out)
@@ -160,7 +154,7 @@ stap_glmer <-
 
 #' @rdname stap_glmer
 #' @export
-stan_lmer <- 
+stap_lmer <- 
   function(formula,
            data = NULL,
            subset,
@@ -180,7 +174,7 @@ stan_lmer <-
   if ("family" %in% names(list(...))) {
     stop(
       "'family' should not be specified. ", 
-      "To specify a family use stap_glmer instead of stan_lmer."
+      "To specify a family use stap_glmer instead of stap_lmer."
     )
   }
   mc <- call <- match.call(expand.dots = TRUE)
@@ -191,7 +185,7 @@ stan_lmer <-
   mc$family <- "gaussian"
   out <- eval(mc, parent.frame())
   out$call <- call
-  out$stan_function <- "stan_lmer"
+  out$stan_function <- "stap_lmer"
   return(out)
 }
 

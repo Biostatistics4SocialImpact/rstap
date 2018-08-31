@@ -75,15 +75,12 @@
 #' }
 #' \subsection{Types of intervals}{
 #' Currently \code{posterior_interval} only computes central intervals because
-#' other types of intervals are rarely useful for the models that \pkg{rstanarm}
+#' other types of intervals are rarely useful for the models that \pkg{rstap}
 #' can estimate. Additional possibilities may be provided in future releases as
 #' more models become available.
 #' }
 #'
 #' @seealso
-#' \code{\link{confint.stapreg}}, which, for models fit using optimization, can
-#' be used to compute traditional confidence intervals.
-#'
 #' \code{\link{predictive_interval}} for predictive intervals.
 #'
 #' @template reference-gelman-carlin
