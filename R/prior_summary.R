@@ -9,7 +9,6 @@
 #' or alternatively by fitting the model with the \code{prior_PD} argument set
 #' to \code{TRUE} (to draw from the prior predictive distribution instead of
 #' conditioning on the outcome) and then plotting the parameters.
-#' 
 #' @aliases prior_summary
 #' @export
 #'
@@ -216,8 +215,7 @@ print.prior_summary.stapreg <- function(x, digits, ...) {
         paste0("R2(location = ", .f1(p$location), ", what = '", p$what, "')")
       })
   
-  if (!is.null(p$adjusted_scale))
-    cat("\n     **adjusted scale =", .f2(p$adjusted_scale))
+  if (!is.null(p$adjusted_scale)) cat("\n     **adjusted scale =", .f2(p$adjusted_scale))
 }
 .print_covariance_prior <- function(p, txt = "Covariance", formatters = list()) {
   .f1 <- formatters[[1]]
@@ -232,3 +230,4 @@ print.prior_summary.stapreg <- function(x, digits, ...) {
              ", scale = ", .f1(p$scale), ")")
   )
 }
+

@@ -162,11 +162,15 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
     for(ix in 1:length(stap_covs)){
         temp <- all_names[which(all_names == stap_covs[ix])+1]
         if(stap_code[ix] %in% c(0,2)){
-            if(temp %in% c("cerf","cexp"))
+            if(temp %in% c("erf","cexp"))
+                stop("erf and the complementary  exponential are reserved for temporal decay only")
+            if(temp %in% c("cerf","exp"))
                 w[ix,1] <- w_codes[[temp]]
             else
                 w[ix,1] <- 2
         }else if(stap_code[ix] == 1){
+            if(temp %in% c("cerf","exp"))
+                stop("cerf and the exponential are reserved for spatial decay only")
             if(temp %in% c("erf","exp"))
                 w[ix,2] <- w_codes[[temp]]
             else

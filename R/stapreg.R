@@ -27,18 +27,17 @@ stapreg <- function(object){
     y <- object$y
     Z <- object$z
     nvars <- ncol(Z) + stap_data$Q_s*2 + stap_data $Q_t*2 +stap_data$Q_st*3
-    n_fixef_vars <- ncol(Z)
     nobs <- NROW(y)
     ynames <- if(is.matrix(y)) rownames(y) else names(y)
     stap_summary <- make_stap_summary(stapfit)
     coefs <- stap_summary[1:nvars, "50%"]
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
-    X <- calculate_stap_X(object$dists_crs, object$times_crs,
+    x <- .calculate_stap_X(object$dists_crs, object$times_crs,
                           object$u_s, object$u_t,
-                          stanmat[,which(grepl("_scale",names(coefs))),drop=F],
+                          stanmat[,coef_names(stap_data),drop=F],
                           stap_data)
-    X_tilde <- array(NA, dim(X))
-    for(n_ix in 1:dim(X)[1]) X_tilde[n_ix,,] <- as.matrix(scale(X[n_ix,,]))
+    X_tilde <- array(NA, dim(x))
+    for(n_ix in 1:dim(x)[1]) X_tilde[n_ix,,] <- as.matrix(scale(x[n_ix,,]))
     colnames(stanmat) <- c(colnames(Z),
                            coef_names(stap_data))
     ses <- apply(stanmat, 2L, mad)
@@ -70,12 +69,10 @@ stapreg <- function(object){
         residuals,
         covmat,
         y,
-        x = X,
-        X_tilde = X_tilde,
+        x,
         z = Z,
-        n_fixef_vars = n_fixef_vars,
-        model = object$model, 
-        data = object$data, 
+        model = object$model,
+        max_distance = object$max_distance,
         family,
         offset = if (any(object$offset != 0)) object$offset else NULL,
         weights = object$weights, 
@@ -85,7 +82,6 @@ stapreg <- function(object){
         formula = object$formula, 
         terms = object$terms,
         prior.info = attr(stapfit, "prior.info"),
-        algorithm = object$algorithm,
         stap_summary,  
         stapfit = stapfit,
         stap_data = stap_data,
@@ -101,7 +97,7 @@ stapreg <- function(object){
 
 }
 
-calculate_stap_X <- function(dists_crs, times_crs, u_s, u_t, scales, stap_data){
+.calculate_stap_X <- function(dists_crs, times_crs, u_s, u_t, scales, stap_data){
 
     n <- nrow(u_s)
     q <- stap_data$Q

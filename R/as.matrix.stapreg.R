@@ -56,11 +56,6 @@ as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
 #' @export
 as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
   pars <- collect_pars(x, pars, regex_pars)
-  if (!used.sampling(x))
-    stop(
-      "For models not fit using MCMC ", 
-      "use 'as.matrix' instead of 'as.array'"
-    )
 
   arr <- as.array(x$stapfit)
   if (identical(arr, numeric(0)))

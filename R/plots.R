@@ -93,8 +93,6 @@ set_plotting_args <- function(x, pars = NULL, regex_pars = NULL, ...,
                               plotfun = character()) {
 
   plotfun <- mcmc_function_name(plotfun)
-  if (!used.sampling(x))
-    validate_plotfun_for_opt_or_vb(plotfun)
 
   .plotfun_is_type <- function(patt) {
     grepl(pattern = paste0("_", patt), x = plotfun, fixed = TRUE)
@@ -119,11 +117,6 @@ set_plotting_args <- function(x, pars = NULL, regex_pars = NULL, ...,
     pars <- allow_special_parnames(x, pars)
   }
   
-  if (!used.sampling(x)) {
-    if (!length(pars))
-      pars <- NULL
-    return(list(x = as.matrix(x, pars = pars), ...))
-  }
   
   if (needs_chains(plotfun))
     list(x = as.array(x, pars = pars, regex_pars = regex_pars), ...)
@@ -296,9 +289,9 @@ pairs.stapreg <-
     
     bayesplot::mcmc_pairs(
       x = posterior, 
-      np = bayesplot::nuts_params(x),  
-      lp = bayesplot::log_posterior(x),  
-      max_treedepth = .max_treedepth(x),
+      np = bayesplot::nuts_params(x$stapfit),  
+      lp = bayesplot::log_posterior(x$stapfit),  
+      max_treedepth = .max_treedepth(x$stapfit),
       condition = condition,
       ...
     )
@@ -306,11 +299,32 @@ pairs.stapreg <-
   }
 
 
+#' plot_stap
+#' 
+#' @export
+#' @param object a fitted stapreg object
+#' @param pars a specific parameter to plot
+#' @param regex_pars a string to run through regex  for matching
+#' @return a plot with the appropriate  weight function and scale
+plot_stap <- function(object, pars, regex_pars) UseMethod("plot_stap") 
+
+plot_stap.stapreg <- function(object, pars, regex_pars){
+
+    d <- seq(from = 0, to = object$max_distance)
+    med <- coef(object)
+    coef_names <- coef_names(object_stap_data)
+    med <- med[which(names(med) %in% coef_names)]
+    pi_s <- posterior_interval(object,pars,regex_pars)
+}
+
+
+
+
 # internal for pairs.stapreg ----------------------------------------------
 
 # @param x stapreg object
 .max_treedepth <- function(x) {
-  control <- x$stanfit@stan_args[[1]]$control
+  control <- x@stan_args[[1]]$control
   if (is.null(control)) {
     max_td <- 10
   } else {

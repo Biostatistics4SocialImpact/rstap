@@ -4,8 +4,7 @@
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
+# # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -85,7 +84,6 @@ NULL
 coef.stapreg <- function(object, ...) {
   if (is.mer(object)) 
     return(coef_mer(object, ...))
-  
   object$coefficients
 }
 
@@ -172,7 +170,7 @@ nfix <- function(object, ...)
 #' @rdname stapreg-methods
 #' @export
 nfix.stapreg <- function(object,...)
-    return(object$n_fixef_vars)
+    return(nrow(object$Z))
 
 #' @rdname stapreg-methods
 #' @export 
@@ -364,9 +362,12 @@ model.frame.stapreg <- function(formula, fixed.only = FALSE, ...) {
 model.matrix.stapreg <- function(object, ...) {
   if (inherits(object, "gamm4")) return(object$jam$X)
   if (is.mer(object)) return(object$glmod$X)
+  return(object$model)
     
   NextMethod("model.matrix")
 }
+
+
 
 #' formula method for stapreg objects
 #' 

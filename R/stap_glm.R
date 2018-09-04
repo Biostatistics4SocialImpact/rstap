@@ -147,17 +147,14 @@ stap_glm <- function(formula,
                  times_crs = crs_data$t_mat,
                  u_s = crs_data$u_s,
                  u_t = crs_data$u_t,
+                 max_distance = max_distance,
                  offset, weights, z = Z, y = Y,
                  model = mf,  terms = mt, call,
                  na.action = attr(mf, "na.action"),
                  contrasts = attr(Z, "contrasts"),
                  stan_function = "stap_glm")
     out <- stapreg(fit)
-    out$xlevels <- .getXlevels(mt, mf)
-    if (!x)
-        out$x <- NULL
-    if(!z)
-        out$z <- NULL
+    out$zlevels <- .getXlevels(mt, mf)
     if (!y)
         out$y <- NULL
     if (!model)

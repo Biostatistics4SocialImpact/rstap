@@ -118,8 +118,8 @@ pp_data <-
 # the functions below are heavily based on a combination of 
 # lme4:::predict.merMod and lme4:::mkNewReTrms, although they do also have 
 # substantial modifications
-.pp_data_mer_x <- function(object, newdata, m = NULL, ...) {
-  x <- get_x(object, m = m)
+.pp_data_mer_x <- function(object, newdata, ...) {
+  x <- get_x(object)
   if (is.null(newdata)) return(x)
   form <- if (is.null(m)) attr(object$glmod$fr, "formula") else 
     formula(object, m = m)

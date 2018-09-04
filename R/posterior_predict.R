@@ -112,7 +112,7 @@ posterior_predict.stapreg <- function(object, newdata = NULL, draws = NULL,
                          offset = offset),
                     dots)
   dat <- do.call("pp_data", pp_data_args)
-  ppargs <- pp_args(object, data = pp_eta(object, dat, draws, m = m), m = m)
+  ppargs <- pp_args(object, data = pp_eta(object, dat, draws), m = m)
 
   if (is.binomial(family(object, m = m)$family)) {
     ppargs$trials <- pp_binomial_trials(object, newdata, m = m)
@@ -266,17 +266,11 @@ pp_args <- function(object, data, m = NULL) {
 
 # create eta and stanmat (matrix of posterior draws)
 #
-# @param object A stapreg or stanmvreg object
+# @param object A stapreg object
 # @param data Output from pp_data()
 # @param draws Number of draws
-# @param m Optional integer specifying the submodel for stanmvreg objects
-# @param stanmat Optionally pass a stanmat that has been amended to include
-#   new b parameters for individuals in the prediction data but who were not
-#   included in the model estimation; relevant for dynamic predictions for 
-#   stan_jm objects only
-# @return Linear predictor "eta" and matrix of posterior draws "stanmat". For
-#   some stan_betareg models "" is also included in the list.
-pp_eta <- function(object, data, draws = NULL, m = NULL, stanmat = NULL) {
+# @return Linear predictor "eta" and matrix of posterior draws "stanmat". 
+pp_eta <- function(object, data, draws = NULL) {
   x <- data$x
   S <- if (is.null(stanmat)) posterior_sample_size(object) else nrow(stanmat)
   if (is.null(draws))

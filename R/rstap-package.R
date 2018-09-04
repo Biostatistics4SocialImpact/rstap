@@ -6,10 +6,16 @@
 #' @name rstap-package
 #' @aliases rstap
 #' @useDynLib rstap, .registration = TRUE
+#'
 #' @import methods
 #' @import Rcpp
+#' @importFrom rstan sampling 
+#' @importFrom utils capture.output
+#' @import stats
+#' @import bayesplot
 #' @import rstantools
-#' @importFrom rstan sampling
+#' @export log_lik posterior_linpred posterior_predict posterior_interval
+#' @export predictive_interval predictive_error prior_summary
 #' 
 #' @references 
 #' Stan Development Team (2018). RStan: the R interface to Stan. R package version 2.17.3. http://mc-stan.org

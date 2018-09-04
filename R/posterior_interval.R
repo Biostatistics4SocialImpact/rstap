@@ -100,3 +100,4 @@ posterior_interval.stapreg <-
     mat <- as.matrix.stapreg(object, pars = pars, regex_pars = regex_pars)
     rstantools::posterior_interval(mat, prob = prob)
   }
+

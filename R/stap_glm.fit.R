@@ -361,7 +361,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         standata$prior_df_for_aux <- c(prior_df_for_aux)
         standata$prior_mean_for_aux <- c(prior_mean_for_aux)
         standata$len_y <- length(y)
-        stanfit <- stanmodels$continuous
+        stanfit <- stanmodels$stap_continuous
     } else if (is.binomial(famname)) {
         standata$prior_scale_for_aux <-
             if (!length(group) || prior_scale_for_aux == Inf)
@@ -405,7 +405,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             stanfit <- stanmodels$bernoulli
         } else {
             standata$trials <- trials
-            stanfit <- stanmodels$binomial
+            stanfit <- stanmodels$stap_binomial
         }
     } else if (is.poisson(famname)) {
         standata$prior_scale_for_aux <- prior_scale_for_aux %ORifINF% 0

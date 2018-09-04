@@ -224,7 +224,8 @@ get_stapless_formula <- function(f){
     stap_nms <- all.names(f)[stap_ics + 1]
     sap_nms <- all.names(f)[sap_ics + 1]
     tap_nms <- all.names(f)[tap_ics + 1]
-    formula_components <- all.vars(f)[!(all.vars(f)%in%c(stap_nms,sap_nms,tap_nms))]
+    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf")
+    formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
     if(grepl("cbind",all.names(f))[2]){
         new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
         ix <- 3
@@ -521,19 +522,23 @@ validate_stapreg_object <- function(x, call. = FALSE) {
 get_y <- function(object, ...) UseMethod("get_y")
 #' @rdname get_y
 #' @export
-get_x <- function(object, ...) UseMethod("get_x")
-#' @rdname get_y
-#' @export
 get_z <- function(object, ...) UseMethod("get_z")
+#' @rdname get_x
+#' @export
+get_x <- function(object, ...) UseMethod("get_x")
 
+#' @export
+get_z.default <- function(object, ...){
+    object[["z"]] %ORifNULL% model.matrix(object)
+}
 #' @export
 get_y.default <- function(object, ...) {
   object[["y"]] %ORifNULL% model.response(model.frame(object))
 }
-#' @export
-get_x.default <- function(object, ...) {
-  object[["x"]] %ORifNULL% model.matrix(object)
-}
+get_x.default <- function(object, ...)
+    object[["x"]]
+
+
 #' @export
 get_x.lmerMod <- function(object, ...) {
   object$glmod$X %ORifNULL% stop("X not found")
@@ -670,6 +675,23 @@ is.mer <- function(x) {
     stop("Bug found. 'x' has 'glmod' component but not class 'lmerMod'.")
   }
   isTRUE(check1 && check2)
+}
+
+# Check if a fitted model (stapreg object) has weights
+# 
+# @param x stapreg object
+# @return Logical. Only TRUE if x$weights has positive length and the elements
+#   of x$weights are not all the same.
+#
+model_has_weights <- function(x) {
+  wts <- x[["weights"]]
+  if (!length(wts)) {
+    FALSE
+  } else if (all(wts == wts[1])) {
+    FALSE
+  } else {
+    TRUE
+  }
 }
 
 # Test if stapreg object used stan_nlmer

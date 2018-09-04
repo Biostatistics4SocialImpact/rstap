@@ -31,8 +31,6 @@
 #' @template args-priors
 #' @template args-prior_aux
 #' @template args-prior_covariance
-#' @template args-prior_PD
-#' @template args-algorithm
 #' @template args-adapt_delta
 #' @template args-QR
 #' @template reference-gelman-hill

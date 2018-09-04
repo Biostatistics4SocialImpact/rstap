@@ -317,9 +317,9 @@
         else if(w == 2)
             return(erfc(exposure));
         else if(w == 3)
-            return(1-exp(-exposure));
-        else 
             return(exp(-exposure));
+        else 
+            return(1-exp(-exposure));
     }
 
   /**
