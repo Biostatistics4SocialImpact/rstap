@@ -349,6 +349,15 @@ maybe_broadcast <- function(x, n) {
     x
   }
 }
+
+# Grep for "b" parameters (ranef)
+#
+# @param x Character vector (often rownames(fit$stan_summary))
+# @param ... Passed to grep
+b_names <- function(x, ...) {
+  grep("^b\\[", x, ...)
+}
+
 # Check and set scale parameters for priors
 #
 # @param scale Value of scale parameter (can be NULL).

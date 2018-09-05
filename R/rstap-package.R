@@ -11,6 +11,11 @@
 #' @import Rcpp
 #' @importFrom rstan sampling 
 #' @importFrom utils capture.output
+#' @importFrom pracma erfc
+#' @importFrom pracma erf
+#' @importFrom pracma erfcinv
+#' @importFrom pracma erfinv
+#' @importFrom dplyr lag
 #' @import stats
 #' @import bayesplot
 #' @import rstantools

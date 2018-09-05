@@ -147,7 +147,8 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
       }
       data <- data.frame(y, trials, x)
     }
-    beta <- grep("_scale",names(coef(object))) 
+    scales_ix <- grep("_scale",names(coef(object)))
+    beta <- setdiff(coef_names(object$stap_data), names(coef(object))[scales_ix] )
     delta <- setdiff(names(coef(object)), coef_names(object$stap_data))
     draws$stap_exposure <- apply(apply(x,c(2,3), function(y) y *  stanmat[,beta,drop=F]),c(1,2), sum)
     draws$delta <- stanmat[, delta, drop = FALSE]

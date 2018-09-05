@@ -49,27 +49,17 @@ pp_data <-
   if (!is.null(cl <- attr(Terms, "dataClasses"))) 
     .checkMFClasses(cl, m)
   x <- model.matrix(Terms, m, contrasts.arg = object$contrasts)
-  if (is(object, "polr") && !is_scobit(object)) 
-    x <- x[,colnames(x) != "(Intercept)", drop = FALSE]
-  
-  if (inherits(object, "betareg")) {
-    mf <- model.frame(delete.response(object$terms$precision), 
-                      data = newdata, na.action = object$na.action, 
-                      xlev = object$levels$precision)
-    z_betareg <- model.matrix(object$terms$precision, mf, contrasts = object$contrasts$precision)
-    return(nlist(x, offset, z_betareg))
-  }
   
   return(nlist(x, offset))
 }
 
 
 # for models fit using stap_(g)lmer 
-.pp_data_mer <- function(object, newdata, re.form, m = NULL, ...) {
+.pp_data_mer <- function(object, newdata, re.form, ...) {
 
-  x <- .pp_data_mer_x(object, newdata, m = m, ...)
-  z <- .pp_data_mer_z(object, newdata, re.form, m = m, ...)
-  offset <- model.offset(model.frame(object, m = m))
+  x <- .pp_data_mer_x(object, newdata,  ...)
+  z <- .pp_data_mer_z(object, newdata, re.form, ...)
+  offset <- model.offset(model.frame(object))
   if (!missing(newdata) && (!is.null(offset) || !is.null(object$call$offset))) {
     offset <- try(eval(object$call$offset, newdata), silent = TRUE)
     if (!is.numeric(offset)) offset <- NULL
@@ -150,29 +140,9 @@ pp_data <-
   if (NAcheck || fmla0check) return(list())
   if (is.null(newdata) && is.null(re.form)) {
     Z <- get_z(object, m = m) 
-    if (!is.stanmvreg(object)) {
-      # Z_names not needed for stapreg with no newdata
-      return(list(Zt = t(Z)))
-    } else {
-      # must supply Z_names for stanmvreg since b pars
-      # might be for multiple submodels and Zt will only
-      # be for one submodel, so their elements may not 
-      # correspond exactly
-      ReTrms <- object$glmod[[m]]$reTrms
-      Z_names <- make_b_nms(ReTrms, m = m, stub = get_stub(object))
-      return(nlist(Zt = ReTrms$Zt, Z_names))
-    }
-  }
-  else if (is.null(newdata)) {
-    rfd <- mfnew <- model.frame(object, m = m)
-  } 
-  else if (inherits(object, "gamm4")) {
-    requireNamespace("mgcv", quietly = TRUE)
-    if (is.null(newdata))   x <- predict(object$jam, type = "lpmatrix")
-    else x <- predict(object$jam, newdata = newdata, type = "lpmatrix")
-    NAs <- apply(is.na(x), 1, any)
-    rfd <- mfnew <- newdata[!NAs,, drop=FALSE]
-    attr(rfd,"na.action") <- "na.omit"
+    return(list(Zt = t(Z)))
+  } else if (is.null(newdata)) {
+    rfd <- mfnew <- model.frame(object)
   } else {
     terms_fixed <- delete.response(terms(object, fixed.only = TRUE, m = m))
     mfnew <- model.frame(terms_fixed, newdata, na.action = na.action)

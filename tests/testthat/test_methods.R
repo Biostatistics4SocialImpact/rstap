@@ -5,6 +5,9 @@ data("homog_subject_data")
 SW <- suppressWarnings
 
 capture.output(
+    ITER <- 10,
+    CHAINS <- 2,
+    REFRESH <- 0,
     stap_glm1 <- SW(stap_glm(formula = y ~ sex + sap(Fast_Food),
                     subject_data = homog_subject_data,
                     distance_data = homog_distance_data,
@@ -16,8 +19,10 @@ capture.output(
                     prior_theta = log_normal(location = 1, scale = 1),
                     prior_aux = cauchy(location = 0,scale = 5),
                     max_distance = max(homog_distance_data$Distance),
-                    chains = 2, iter = 10,
-                    refresh = 0)), file = 'NUl')
+                    chains = CHAINS, iter = ITER,
+                    refresh = REFRESH)),
+    glm1 <- glm(y ~ sex,data=homog_subject_data,family=gaussian), file = 'NULL')
+    
 
 context("methods for stanreg objects")
 
@@ -51,9 +56,7 @@ test_that("log_lik method works",{
     # and compare
     samp <- as.matrix(stap_glm1)
     y <- get_y(stap_glm1)
-    y_new <- y[1:10] + rnorm(10)
     z <- get_z(stap_glm1)
-    z_new <- cbind(1, z[1:10, 2] + rnorm(10))
     sigma <- samp[, 5]
     f1 <- y ~ sex + sap(Fast_Food)
     stap_data <- rstap:::extract_stap_data(f1)
@@ -61,63 +64,116 @@ test_that("log_lik method works",{
                                  subject_data = homog_subject_data,
                                  distance_data = homog_distance_data,
                                  id_key = 'subj_id',max_distance = 3)
-    crs_data_new <- rstap:::extract_crs_data(stap_data,
-                                 subject_data = homog_subject_data[1:10,],
-                                 distance_data = homog_distance_data[which(homog_distance_data$subj_id%in%1:10),],
-                                 id_key = 'subj_id',max_distance = 3)
-    
     X <- get_x(stap_glm1)
-    stap_exp <- apply(apply(X,c(2,3), function(y) y * samp[,3]),c(1,2),sum)
-    X_new <- rstap:::.calculate_stap_X(crs_data_new$d_mat, u_s = crs_data_new$u_s,
-                              stap_data = stap_data,
-                              scales = samp[,4,drop=F])
-    X_new <- X_new[1,,1] + rnorm(10)
-    eta <- tcrossprod(z, samp[, 1:2]) + t(stap_exp)
-    eta_new <- tcrossprod(z_new, samp[, 1:3])
+    stap_exp <- t(apply(apply(X,c(2,3), function(y) y * samp[,3]),c(1,2),sum))
+    eta <- tcrossprod(z, samp[, 1:2]) + stap_exp
     llmat <- matrix(NA, nrow = nrow(samp), ncol = nrow(eta))
-    llmat_new <- matrix(NA, nrow = nrow(samp), ncol = nrow(eta_new))
-    for (i in 1:nrow(llmat)) {
+    for (i in 1:nrow(llmat)) 
         llmat[i, ] <- dnorm(y, mean = eta[, i], sd = sigma[i], log = TRUE)
-        llmat_new[i, ] <- dnorm(y_new, mean = eta_new[, i], sd = sigma[i],
-                                log = TRUE)
-    }
     expect_equal(log_lik(stap_glm1), llmat, check.attributes = FALSE)
+    
+    ## Need to figure out how to handle "newdata" both for predictions and log_lik functions
 })
 
 
 # ngrps, nobs -------------------------------------------------------------
 
 
+test_that("ngrps is right", {
+    expect_error(ngrps(stap_glm1), "stan_glmer and stan_lmer models only")
+})
 
 
+test_that("nobs is right", {
+    expect_equal(nobs(stap_glm1), nrow(homog_subject_data))
+})
 # vcov --------------------------------------------------------------------
 
-
-
+test_that("vcov returns correct structure", {
+    expect_equal(rownames(vcov(stap_glm1)), c("(Intercept)","sexF","Fast_Food","Fast_Food_spatial_scale"))
+})
 
 # sigma -------------------------------------------------------------------
 
-
+test_that("sigma method works",{
+    expect_double <- function(x) expect_type(x, "double")
+    expect_double(sig <- sigma(stap_glm1))
+    expect_false(identical(sig, 1))
+})
 
 
 # VarCorr -----------------------------------------------------------------
-
+test_that("VarCorr returns correct structure", {
+    expect_error(VarCorr(stap_glm1), "stan_glmer and stan_lmer models only")
+})
 
 # ranef,fixef,coef --------------------------------------------------------
-
-
+test_that("ranef returns correct structure", {
+    expect_error(ranef(stap_glm1), "stan_glmer and stan_lmer models only")
+})
 
 # as.matrix,as.data.frame,as.array ----------------------------------------
 
+test_that("as.matrix, as.data.frame, as.array methods work for MCMC", {
+    last_dimnames <- rstap:::last_dimnames
+    # glm
+    mat <- as.matrix(stap_glm1)
+    df <- as.data.frame(stap_glm1)
+    arr <- as.array(stap_glm1)
+    expect_identical(df, as.data.frame(mat))
+    expect_identical(mat[1:2, 1], arr[1:2, 1, 1])
+    expect_equal(dim(mat), c(floor(ITER/2) * CHAINS, 5L))
+    expect_equal(dim(arr), c(floor(ITER/2), CHAINS, 5L))
+    expect_identical(last_dimnames(mat), c("(Intercept)", "sexF", "Fast_Food", "Fast_Food_spatial_scale",
+                                           "sigma"))
+    expect_identical(last_dimnames(arr), last_dimnames(mat))
+    
+    # selecting only 1 parameter
+    mat <- as.matrix(stap_glm1, pars = "sexF")
+    df <- as.data.frame(stap_glm1, pars = "sexF")
+    arr <- as.array(stap_glm1, pars = "sexF")
+    expect_identical(df, as.data.frame(mat))
+    expect_identical(mat[1:2, 1], arr[1:2, 1, 1])
+    expect_equal(dim(mat), c(floor(ITER/2) * CHAINS, 1L))
+    expect_equal(dim(arr), c(floor(ITER/2), CHAINS, 1L))
+    expect_identical(last_dimnames(mat), "sexF")
+    expect_identical(last_dimnames(arr), last_dimnames(mat))
+    
+    # pars & regex_pars
+    nr <- posterior_sample_size(stap_glm1)
+    mat <- as.matrix(stap_glm1, pars = "sexF", regex_pars = "Fast_Food")
+    df <- as.data.frame(stap_glm1, pars = "sexF", regex_pars = "Fast_Food")
+    arr <- as.array(stap_glm1, pars = "sexF", regex_pars = "Fast_Food")
+    expect_identical(df, as.data.frame(mat))
+    expect_identical(mat[1:2, 1], arr[1:2, 1, 1])
+    expect_equal(dim(mat), c(nr, 3L))
+    expect_equal(dim(arr), c(nr/2, 2, 3L))
+    expect_identical(last_dimnames(mat), c("sexF", "Fast_Food","Fast_Food_spatial_scale"))
+    expect_identical(last_dimnames(mat), last_dimnames(arr))
+})
 
-# terms, formula, model.frame, model.matrix, update methods  --------------
 
+# terms, formula, model.frame, model.matrix methods  --------------
 
+context("model.frame methods")
+test_that("model.frame works properly", {
+    expect_identical(model.frame(stap_glm1), model.frame(glm1))
+})
 
+context("terms methods")
+test_that("terms works properly", {
+    expect_identical(terms(stap_glm1), terms(glm1))
+})
+
+context("formula methods")
+test_that("formula works properly", {
+    expect_equal(formula(stap_glm1),as.formula(y~sex + sap(Fast_Food)))
+})
+
+## no update method yet
+    
 
 # print and summary -------------------------------------------------------
-
-
 
 context("print and summary methods")
 
@@ -133,11 +189,19 @@ test_that("print and summary methods work ok for stap_glm", {
 
 
 # prior_summary -----------------------------------------------------------
+test_that("prior_summary doesn't error", {
+    expect_output(print(prior_summary(stap_glm1, digits = 2)),
+                  "Priors for model 'stap_glm1'")
+})
+
+test_that("prior_summary returns correctly named list", {
+    expect_named(prior_summary(stap_glm1),
+                 c("prior", "prior_stap", "prior_theta", "prior_intercept", "prior_aux"))
+})
 
 
 # predictive_error,predictive_interval ------------------------------------
 
 
-# stanreg lists -----------------------------------------------------------
 
 

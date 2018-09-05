@@ -44,8 +44,8 @@
 #'   specified.
 #' @param ... For \code{stap_glmer}, further arguments passed to 
 #'   \code{\link[rstan]{sampling}} (e.g. \code{iter}, \code{chains}, 
-#'   \code{cores}, etc.). For \code{stap_lmer} and 
-#'   \code{stap_glmer.nb}, \code{...} should also contain all relevant arguments
+#'   \code{cores}, etc.). For \code{stap_lmer} 
+#'    \code{...} should also contain all relevant arguments
 #'   to pass to \code{stap_glmer} (except \code{family}).
 #'
 #' @details The \code{stap_glmer} function is similar in syntax to 
@@ -154,7 +154,9 @@ stap_glmer <-
 #' @export
 stap_lmer <- 
   function(formula,
-           data = NULL,
+           subject_data = NULL,
+           distance_data = NULL,
+           time_data = NULL,
            subset,
            weights,
            na.action = getOption("na.action", "na.omit"),
@@ -165,10 +167,8 @@ stap_lmer <-
            prior_intercept = normal(),
            prior_aux = exponential(),
            prior_covariance = decov(),
-           prior_PD = FALSE,
-           algorithm = c("sampling", "meanfield", "fullrank"),
-           adapt_delta = NULL,
-           QR = FALSE) {
+           adapt_delta = NULL
+           ) {
   if ("family" %in% names(list(...))) {
     stop(
       "'family' should not be specified. ", 
@@ -184,44 +184,5 @@ stap_lmer <-
   out <- eval(mc, parent.frame())
   out$call <- call
   out$stan_function <- "stap_lmer"
-  return(out)
-}
-
-
-#' @rdname stap_glmer
-#' @export
-#' @param link For \code{stap_glmer.nb} only, the link function to use. See 
-#'   \code{\link{neg_binomial_2}}.
-#' 
-stap_glmer.nb <- 
-  function(formula,
-           data = NULL,
-           subset,
-           weights,
-           na.action = getOption("na.action", "na.omit"),
-           offset,
-           contrasts = NULL,
-           link = "log",
-           ...,
-           prior = normal(),
-           prior_intercept = normal(),
-           prior_aux = exponential(),
-           prior_covariance = decov(),
-           prior_PD = FALSE,
-           algorithm = c("sampling", "meanfield", "fullrank"),
-           adapt_delta = NULL,
-           QR = FALSE) {
-    
-  if ("family" %in% names(list(...)))
-    stop("'family' should not be specified.")
-  mc <- call <- match.call(expand.dots = TRUE)
-  if (!"formula" %in% names(call))
-    names(call)[2L] <- "formula"
-  mc[[1]] <- quote(stap_glmer)
-  mc$REML <- mc$link <- NULL
-  mc$family <- neg_binomial_2(link = link)
-  out <- eval(mc, parent.frame())
-  out$call <- call
-  out$stan_function <- "stap_glmer.nb"
   return(out)
 }

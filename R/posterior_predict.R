@@ -93,7 +93,8 @@
 #'
 #' \code{\link{predictive_error}} and \code{\link{predictive_interval}}.
 #'
-posterior_predict.stapreg <- function(object, newdata = NULL, draws = NULL,
+posterior_predict.stapreg <- function(object, newsubjdata = NULL,newdistancedata = NULL,
+                                      newtimedata = NULL, draws = NULL,
                                       re.form = NULL, fun = NULL, seed = NULL,
                                       offset = NULL, ...) {
   if (!is.null(seed))

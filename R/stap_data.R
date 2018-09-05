@@ -1,5 +1,4 @@
 # Part of the rstap package for estimating model parameters
-# Copyright (C) 2013, 2014, 2015, 2016, 2017 
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,9 +14,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Create a stap_data object 
-#
-# @object a named list of objects containing information about the staps for a given model 
+#' Create a stap_data object 
+#'
+#' @param object  a named list of objects containing information about the staps for a given model 
+#' @return an object of class "stap_data"
 stap_data <- function(object) {
     
     stap_code <- array(sapply(object, function(x) x$stap_code), dim = length(object))
@@ -121,8 +121,9 @@ coef_names.stap_data <- function(object){
     }
     as.vector(sapply(1:object$Q,function(z) get_name(object$stap_code[z],object$covariates[z])))
 }
-
+#' checks for duplicates in stap,sap,tap designation
 #' @export
+#'
 check_dups.stap_data <- function(object){
     sap <- sap_covs(object)
     tap <- tap_covs(object)

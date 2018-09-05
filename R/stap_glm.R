@@ -49,8 +49,6 @@
 #' @param weights
 #' @param y In \code{stap_glm}, logical scalar indicating whether to
 #'   return the response vector. In \code{stan_glm.fit}, a response vector.
-#' @param z In \code{stap_glm}, logical scalar indicating whether to return the design matrix.
-#'   In \code{stap_glm.fit} a standard design matrix.
 #' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 #' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates

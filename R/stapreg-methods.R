@@ -170,7 +170,7 @@ nfix <- function(object, ...)
 #' @rdname stapreg-methods
 #' @export
 nfix.stapreg <- function(object,...)
-    return(nrow(object$Z))
+    return(ncol(get_z(object)))
 
 #' @rdname stapreg-methods
 #' @export 
@@ -236,10 +236,9 @@ ngrps.stapreg <- function(object, ...) {
 #' @importFrom lme4 ranef
 #' 
 ranef.stapreg <- function(object, ...) {
-  all_names <- if (used.optimizing(object))
-    rownames(object$stap_summary) else object$stanfit@sim$fnames_oi
+  all_names <- object$stapfit@sim$fnames_oi
   sel <- b_names(all_names)
-  ans <- object$stan_summary[sel, select_median(object$algorithm)]
+  ans <- object$stap_summary[sel, '50%']
   # avoid returning the extra levels that were included
   ans <- ans[!grepl("_NEW_", names(ans), fixed = TRUE)]
   fl <- .flist(object)
@@ -273,10 +272,10 @@ ranef.stapreg <- function(object, ...) {
 #'   importFrom(lme4,sigma)
 #'
 sigma.stapreg <- function(object, ...) {
-  if (!("sigma" %in% rownames(object$stan_summary))) 
+  if (!("sigma" %in% rownames(object$stap_summary))) 
     return(1)
   
-  object$stan_summary["sigma", '50%']
+  object$stap_summary["sigma", '50%']
 }
 
 #' @rdname stapreg-methods
@@ -359,12 +358,10 @@ model.frame.stapreg <- function(formula, fixed.only = FALSE, ...) {
 #' @export
 #' @param object,... See \code{\link[stats]{model.matrix}}.
 #' 
-model.matrix.stapreg <- function(object, ...) {
+model.matrix.stapreg <- function(object, subject_data) {
   if (inherits(object, "gamm4")) return(object$jam$X)
   if (is.mer(object)) return(object$glmod$X)
-  return(object$model)
-    
-  NextMethod("model.matrix")
+  return(model.matrix(terms(object), data = subject_data))
 }
 
 
@@ -424,7 +421,7 @@ terms.stapreg <- function(x, ..., fixed.only = TRUE, random.only = FALSE) {
   object$glmod$reTrms$cnms
 }
 .flist <- function(object, ...) UseMethod(".flist")
-.flist.stanreg <- function(object, ...) {
+.flist.stapreg <- function(object, ...) {
   .glmer_check(object)
   as.list(object$glmod$reTrms$flist)
 }

@@ -20,8 +20,10 @@ Imports:
     nlme (>= 3.1-124),
     rstan (>= 2.17.2),
     rstantools (>= 1.4.0),
-    stats,
-    utils
+    stats, 
+    utils,
+    pracma (>= 2.1.4),
+    dplyr (>= 0.7.6)
 LinkingTo: StanHeaders (>= 2.17.2), rstan (>= 2.17.3), BH (>= 1.66.0-1), Rcpp (>= 0.12.16), RcppEigen(>= 0.3.3.3.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes
