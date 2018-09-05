@@ -2,6 +2,10 @@ pandoc: 1.19.2.1
 pkgdown: 1.1.0
 pkgdown_sha: ~
 articles:
-  STAP_Introduction: STAP_Introduction.html
-  STAP_Spatial_Correlation: STAP_Spatial_Correlation.html
+  Introduction: Introduction.html
+  Spatial_Correlation_I: Spatial_Correlation_I.html
+  clustered_poisson: clustered_poisson.html
+  longitudinal-I: longitudinal-I.html
+  misspecified-weightfunction: misspecified-weightfunction.html
+  scale-priors: scale-priors.html
 

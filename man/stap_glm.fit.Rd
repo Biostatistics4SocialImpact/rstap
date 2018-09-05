@@ -4,7 +4,7 @@
 \alias{stap_glm.fit}
 \title{Fitting Generalized Linear STKAP models}
 \usage{
-stap_glm.fit(y, z, dists_crs, u_s, times_crs, u_t, stap_data,
+stap_glm.fit(y, z, dists_crs, u_s, times_crs, u_t, weight_functions, stap_data,
   max_distance = 3L, weights = rep(1, NROW(y)), offset = rep(0, NROW(y)),
   family = stats::gaussian(), ..., prior = normal(),
   prior_intercept = normal(), prior_stap = normal(), group = list(),

@@ -4,7 +4,24 @@
 \alias{extract_crs_data}
 \title{extract crs data}
 \usage{
-extract_crs_data(stap_data, distance_data, time_data, id_key, max_distance)
+extract_crs_data(stap_data, subject_data, distance_data, time_data, id_key,
+  max_distance)
+}
+\arguments{
+\item{stap_data}{the stap data object extracted from \code{extract_stap_data}}
+
+\item{subject_data}{the subject_data data.frame}
+
+\item{distance_data}{the distance data.frame (optional)}
+
+\item{time_data}{the time data.frame (optional)}
+
+\item{id_key}{string of the id column name to join on across subject, distance and time data}
+
+\item{max_distance}{the maximum distance in distance_data}
+}
+\value{
+a list of the crs data for the spatial and/or temporal data as appropriate
 }
 \description{
 extract crs data

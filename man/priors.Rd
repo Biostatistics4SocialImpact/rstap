@@ -13,6 +13,8 @@
 \alias{exponential}
 \alias{log_normal}
 \alias{beta_prior}
+\alias{decov}
+\alias{lkj}
 \alias{R2}
 \title{Prior distributions and options}
 \usage{
@@ -37,6 +39,10 @@ exponential(rate = 1, autoscale = TRUE)
 log_normal(location = 0, scale = 1)
 
 beta_prior(alpha = 1, beta = 1)
+
+decov(regularization = 1, concentration = 1, shape = 1, scale = 1)
+
+lkj(regularization = 1, scale = 10, df = 1, autoscale = TRUE)
 
 R2(location = NULL, what = c("mode", "mean", "median", "log"))
 }
@@ -77,6 +83,18 @@ below.}
 \item{rate}{Prior rate for the exponential distribution. Defaults to 
 \code{1}. For the exponential distribution the rate parameter is the 
 \emph{reciprocal} of the mean.}
+
+\item{regularization}{Exponent for an LKJ prior on the correlation matrix in
+the \code{decov} or \code{lkj} prior. The default is \eqn{1}, implying a 
+joint uniform prior.}
+
+\item{concentration}{Concentration parameter for a symmetric Dirichlet 
+distribution. The default is \eqn{1}, implying a joint uniform prior.}
+
+\item{shape}{Shape parameter for a gamma prior on the scale parameter in the
+\code{decov} prior. If \code{shape} and \code{scale} are both \eqn{1} (the
+default) then the gamma prior simplifies to the unit-exponential
+distribution.}
 
 \item{what}{A character string among \code{'mode'} (the default),
 \code{'mean'}, \code{'median'}, or \code{'log'} indicating how the

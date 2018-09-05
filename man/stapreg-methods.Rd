@@ -10,6 +10,8 @@
 \alias{fitted.stapreg}
 \alias{nobs.stapreg}
 \alias{nstap.stapreg}
+\alias{ntap.stapreg}
+\alias{nsap.stapreg}
 \alias{nfix.stapreg}
 \alias{residuals.stapreg}
 \alias{se.stapreg}
@@ -29,7 +31,11 @@
 
 \method{nobs}{stapreg}(object, ...)
 
-\method{nstap}{stapreg}(object, ...)
+\method{nstap}{stapreg}(object)
+
+\method{ntap}{stapreg}(object)
+
+\method{nsap}{stapreg}(object)
 
 \method{nfix}{stapreg}(object, ...)
 
@@ -109,7 +115,7 @@ uncertainty intervals.
    \code{\link[=summary.stapreg]{summary}}, and \code{\link{prior_summary}} 
    methods for stapreg objects for information on the fitted model.
  \item \code{\link{launch_shinystan}} to use the ShinyStan GUI to explore a
-   fitted \pkg{rstanarm} model.
+   fitted \pkg{rstap} model.
  \item The \code{\link[=plot.stapreg]{plot}} method to plot estimates and
    diagnostics.
  \item The \code{\link{pp_check}} method for graphical posterior predictive

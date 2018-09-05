@@ -32,7 +32,6 @@
 #' @template args-prior_aux
 #' @template args-prior_covariance
 #' @template args-adapt_delta
-#' @template args-QR
 #' @template reference-gelman-hill
 #' @template reference-muth
 #' 

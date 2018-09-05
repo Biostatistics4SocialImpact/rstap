@@ -81,10 +81,22 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/STAP_Introduction.html">STAP Introduction</a>
+      <a href="../articles/Introduction.html">STAP Introduction</a>
     </li>
     <li>
-      <a href="../articles/STAP_Spatial_Correlation.html">STAP-Spatial_Correlation</a>
+      <a href="../articles/Spatial_Correlation_I.html">STAP-Spatial_Correlation</a>
+    </li>
+    <li>
+      <a href="../articles/clustered_poisson.html">Spatial Correlation II</a>
+    </li>
+    <li>
+      <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
+    </li>
+    <li>
+      <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
+    </li>
+    <li>
+      <a href="../articles/scale-priors.html">Scale Priors</a>
     </li>
   </ul>
 </li>
@@ -131,6 +143,55 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="check_constant_vars.html">check_constant_vars()</a></code> </p>
+        </td>
+        <td><p>Check if any variables in a model frame are constants
+(the exception is that a constant variable of all 1's is allowed)</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="drop_redundant_dims.html">drop_redundant_dims()</a></code> </p>
+        </td>
+        <td><p>Validate data argument</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="extract_crs_data.html">extract_crs_data()</a></code> </p>
+        </td>
+        <td><p>extract crs data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="extract_stap_components.html">extract_stap_components()</a></code> </p>
+        </td>
+        <td><p>extract_stap_components</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="extract_stap_data.html">extract_stap_data()</a></code> </p>
+        </td>
+        <td><p>extract stap data from formula and create stapcov object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="fac2bin.html">fac2bin()</a></code> </p>
+        </td>
+        <td><p>Convert 2-level factor to 0/1</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="get_stap_code.html">get_stap_code()</a></code> </p>
+        </td>
+        <td><p>Get stap coding from formula</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="get_stapless_formula.html">get_stapless_formula()</a></code> </p>
+        </td>
+        <td><p>get_stapless_formula</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="nlist.html">nlist()</a></code> </p>
         </td>
         <td><p>create a named list using specified names or, if names are omitted using the
@@ -162,9 +223,15 @@ names of the objects in the list</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="set_sampling_args.html">set_sampling_args()</a></code> </p>
+        </td>
+        <td><p>Set arguments for sampling</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="stap_glm.html">stap_glm()</a></code> </p>
         </td>
-        <td><p>Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan</p></td>
+        <td><p>Fitting Generalized Linear STAP models</p></td>
       </tr><tr>
         
         <td>
@@ -186,15 +253,57 @@ names of the objects in the list</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="stapreg.html">stapreg()</a></code> </p>
+        </td>
+        <td><p>Create a stapreg object</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="summary.stapreg.html">summary(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="summary.stapreg.html">print(<i>&lt;summary.stapreg&gt;</i>)</a></code> <code><a href="summary.stapreg.html">as.data.frame(<i>&lt;summary.stapreg&gt;</i>)</a></code> </p>
         </td>
         <td><p>Summary method for stapreg objects</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="validate_distancedata.html">validate_distancedata()</a></code> </p>
+        </td>
+        <td><p>Validate distance_data</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="validate_family.html">validate_family()</a></code> </p>
         </td>
         <td><p>Check family argument</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="validate_glm_formula.html">validate_glm_formula()</a></code> </p>
+        </td>
+        <td><p>Check for stap_glmer syntax in formula for non-glmer models</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="validate_offset.html">validate_offset()</a></code> </p>
+        </td>
+        <td><p>Check offset argument</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="validate_timedata.html">validate_timedata()</a></code> </p>
+        </td>
+        <td><p>Validate time_data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="validate_weights.html">validate_weights()</a></code> </p>
+        </td>
+        <td><p>Check weights argument</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="warn_data_arg_missing.html">warn_data_arg_missing()</a></code> </p>
+        </td>
+        <td><p>Throw a warning if 'data' argument to modeling function is missing</p></td>
       </tr>
     </tbody>
     </table>

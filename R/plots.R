@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+
 #' Plot method for stapreg objects
 #'
 #' The \code{plot} method for \link{stapreg-objects} provides a convenient 
@@ -61,10 +62,6 @@
 #' }  
 #'
 #' @template reference-bayesvis
-#' 
-#' # For graphical posterior predictive checks see
-#' # help("pp_check.stapreg")
-#'
 #' @importFrom ggplot2 ggplot aes_string xlab %+replace% theme
 #'
 plot.stapreg <- function(x, plotfun = "intervals", pars = NULL,

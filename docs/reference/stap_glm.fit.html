@@ -84,10 +84,22 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/STAP_Introduction.html">STAP Introduction</a>
+      <a href="../articles/Introduction.html">STAP Introduction</a>
     </li>
     <li>
-      <a href="../articles/STAP_Spatial_Correlation.html">STAP-Spatial_Correlation</a>
+      <a href="../articles/Spatial_Correlation_I.html">STAP-Spatial_Correlation</a>
+    </li>
+    <li>
+      <a href="../articles/clustered_poisson.html">Spatial Correlation II</a>
+    </li>
+    <li>
+      <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
+    </li>
+    <li>
+      <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
+    </li>
+    <li>
+      <a href="../articles/scale-priors.html">Scale Priors</a>
     </li>
   </ul>
 </li>
@@ -118,11 +130,12 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>stap_glm.fit</span>(<span class='no'>y</span>, <span class='no'>z</span>, <span class='no'>dists_crs</span>, <span class='no'>u</span>, <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fl'>3L</span>, <span class='kw'>weights</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>1</span>,
-  <span class='fu'>NROW</span>(<span class='no'>y</span>)), <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>0</span>, <span class='fu'>NROW</span>(<span class='no'>y</span>)), <span class='kw'>family</span> <span class='kw'>=</span> <span class='kw pkg'>stats</span><span class='kw ns'>::</span><span class='fu'><a href='http://www.rdocumentation.org/packages/stats/topics/family'>gaussian</a></span>(), <span class='no'>...</span>,
-  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
-  <span class='kw'>group</span> <span class='kw'>=</span> <span class='fu'>list</span>(), <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>theta_one</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>()),
-  <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>cauchy</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0L</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5L</span>), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>stap_glm.fit</span>(<span class='no'>y</span>, <span class='no'>z</span>, <span class='no'>dists_crs</span>, <span class='no'>u_s</span>, <span class='no'>times_crs</span>, <span class='no'>u_t</span>, <span class='no'>stap_data</span>,
+  <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fl'>3L</span>, <span class='kw'>weights</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fu'>NROW</span>(<span class='no'>y</span>)), <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>0</span>, <span class='fu'>NROW</span>(<span class='no'>y</span>)),
+  <span class='kw'>family</span> <span class='kw'>=</span> <span class='kw pkg'>stats</span><span class='kw ns'>::</span><span class='fu'><a href='http://www.rdocumentation.org/packages/stats/topics/family'>gaussian</a></span>(), <span class='no'>...</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
+  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>group</span> <span class='kw'>=</span> <span class='fu'>list</span>(),
+  <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>theta_one</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>()), <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>cauchy</a></span>(<span class='kw'>location</span> <span class='kw'>=</span>
+  <span class='fl'>0L</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5L</span>), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

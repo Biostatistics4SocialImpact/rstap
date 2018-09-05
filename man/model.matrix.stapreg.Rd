@@ -4,7 +4,7 @@
 \alias{model.matrix.stapreg}
 \title{model.matrix method for stapreg objects}
 \usage{
-\method{model.matrix}{stapreg}(object, ...)
+\method{model.matrix}{stapreg}(object, subject_data)
 }
 \arguments{
 \item{object, ...}{See \code{\link[stats]{model.matrix}}.}

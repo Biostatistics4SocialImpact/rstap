@@ -4,7 +4,7 @@
 \alias{nstap}
 \title{Retrieves number of Spatial-temporal aggregated predictors}
 \usage{
-nstap(object, ...)
+nstap(object)
 }
 \arguments{
 \item{object}{A fitted model object}

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Set arguments for sampling — set_sampling_args • rstap</title>
+<title>Convert 2-level factor to 0/1 — fac2bin • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,10 +30,9 @@
 
 
 
-<meta property="og:title" content="Set arguments for sampling — set_sampling_args" />
+<meta property="og:title" content="Convert 2-level factor to 0/1 — fac2bin" />
 
-<meta property="og:description" content="Prepare a list of arguments to use with rstan::sampling via
-do.call." />
+<meta property="og:description" content="Convert 2-level factor to 0/1" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -120,63 +119,25 @@ do.call." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Set arguments for sampling</h1>
+    <h1>Convert 2-level factor to 0/1</h1>
     
-    <div class="hidden name"><code>set_sampling_args.Rd</code></div>
+    <div class="hidden name"><code>fac2bin.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Prepare a list of arguments to use with <code><a href='http://www.rdocumentation.org/packages/rstan/topics/stanmodel-method-sampling'>rstan::sampling</a></code> via
-<code>do.call</code>.</p>
+    <p>Convert 2-level factor to 0/1</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>set_sampling_args</span>(<span class='no'>object</span>, <span class='no'>prior</span>, <span class='kw'>user_dots</span> <span class='kw'>=</span> <span class='fu'>list</span>(),
-  <span class='kw'>user_adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>object</th>
-      <td><p>The stanfit object to use for sampling.</p></td>
-    </tr>
-    <tr>
-      <th>prior</th>
-      <td><p>Prior distribution list (can be NULL).</p></td>
-    </tr>
-    <tr>
-      <th>user_dots</th>
-      <td><p>The contents of <code>...</code> from the user's call to
-the <code>stan_*</code> modeling function.</p></td>
-    </tr>
-    <tr>
-      <th>user_adapt_delta</th>
-      <td><p>The value for <code>adapt_delta</code> specified by the
-user.</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>Other arguments to <code><a href='http://www.rdocumentation.org/packages/rstan/topics/stanmodel-method-sampling'>sampling</a></code> not coming from
-<code>user_dots</code> (e.g. <code>data</code>, <code>pars</code>, <code>init</code>, etc.)</p></td>
-    </tr>
-    </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A list of arguments to use for the <code>args</code> argument for 
-  <code>do.call(sampling, args)</code>.</p>
-    
+    <pre class="usage"><span class='fu'>fac2bin</span>(<span class='no'>y</span>)</pre>
+        
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>

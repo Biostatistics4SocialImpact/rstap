@@ -42,10 +42,7 @@ fixed effect regression coefficients are selected, as well as any
 auxiliary parameters and the log posterior.   
 
 If \code{pars} is \code{NULL} all parameters are selected for a \code{stapreg}
-object, while for a \code{stapmvreg} object all 
-fixed effect regression coefficients are selected as well as any 
-auxiliary parameters and the log posterior. See 
-\strong{Examples}.}
+object.}
 
 \item{regex_pars}{An optional character vector of \link[=grep]{regular 
 expressions} to use for parameter selection. \code{regex_pars} can be used
@@ -53,7 +50,7 @@ in place of \code{pars} or in addition to \code{pars}. Currently, all
 functions that accept a \code{regex_pars} argument ignore it for models fit
 using optimization.}
 
-\item{probs}{For models fit using MCMC or one of the variational algorithms, 
+\item{probs}{For models fit using MCMC, 
 an optional numeric vector of probabilities passed to 
 \code{\link[stats]{quantile}}.}
 
@@ -67,7 +64,7 @@ When calling \code{summary}, the value of digits is stored as the
 }
 \value{
 The \code{summary} method returns an object of class 
-  \code{"summary.stapreg"} (or \code{"summary.stapmvreg"}, inheriting 
+  \code{"summary.stapreg"}, inheriting 
   \code{"summary.stapreg"}), which is a matrix of 
   summary statistics and 
   diagnostics, with attributes storing information for use by the
