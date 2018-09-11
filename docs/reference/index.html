@@ -150,9 +150,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="drop_redundant_dims.html">drop_redundant_dims()</a></code> </p>
+          <p><code><a href="check_dups.stap_data.html">check_dups(<i>&lt;stap_data&gt;</i>)</a></code> </p>
         </td>
-        <td><p>Validate data argument</p></td>
+        <td><p>checks for duplicates in stap,sap,tap designation</p></td>
       </tr><tr>
         
         <td>
@@ -162,21 +162,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="extract_stap_components.html">extract_stap_components()</a></code> </p>
-        </td>
-        <td><p>extract_stap_components</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="extract_stap_data.html">extract_stap_data()</a></code> </p>
         </td>
         <td><p>extract stap data from formula and create stapcov object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fac2bin.html">fac2bin()</a></code> </p>
-        </td>
-        <td><p>Convert 2-level factor to 0/1</p></td>
       </tr><tr>
         
         <td>
@@ -192,10 +180,34 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="log_lik.stapreg.html">log_lik(<i>&lt;stapreg&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Pointwise log-likelihood matrix</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="nlist.html">nlist()</a></code> </p>
         </td>
         <td><p>create a named list using specified names or, if names are omitted using the
 names of the objects in the list</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="pairs.stapreg.html">pairs(<i>&lt;stapreg&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Pairs method for stapreg objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot.stapreg.html">plot(<i>&lt;stapreg&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Plot method for stapreg objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_stap.html">plot_stap()</a></code> </p>
+        </td>
+        <td><p>plot_stap</p></td>
       </tr><tr>
         
         <td>
@@ -205,13 +217,31 @@ names of the objects in the list</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="posterior_predict.stapreg.html">posterior_predict(<i>&lt;stapreg&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Draw from posterior predictive distribution</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="predictive_error.stapreg.html">predictive_error(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="predictive_error.stapreg.html">predictive_error(<i>&lt;ppd&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>In-sample or out-of-sample predictive errors</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="print.stapreg.html">print(<i>&lt;stapreg&gt;</i>)</a></code> </p>
         </td>
         <td><p>Print method for stapreg objects</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="priors.html">normal()</a></code> <code><a href="priors.html">student_t()</a></code> <code><a href="priors.html">cauchy()</a></code> <code><a href="priors.html">hs()</a></code> <code><a href="priors.html">hs_plus()</a></code> <code><a href="priors.html">laplace()</a></code> <code><a href="priors.html">lasso()</a></code> <code><a href="priors.html">product_normal()</a></code> <code><a href="priors.html">exponential()</a></code> <code><a href="priors.html">log_normal()</a></code> <code><a href="priors.html">beta_prior()</a></code> <code><a href="priors.html">R2()</a></code> </p>
+          <p><code><a href="prior_summary.stapreg.html">prior_summary(<i>&lt;stapreg&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Summarize the priors used for an rstap model</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="priors.html">normal()</a></code> <code><a href="priors.html">student_t()</a></code> <code><a href="priors.html">cauchy()</a></code> <code><a href="priors.html">hs()</a></code> <code><a href="priors.html">hs_plus()</a></code> <code><a href="priors.html">laplace()</a></code> <code><a href="priors.html">lasso()</a></code> <code><a href="priors.html">product_normal()</a></code> <code><a href="priors.html">exponential()</a></code> <code><a href="priors.html">log_normal()</a></code> <code><a href="priors.html">beta_prior()</a></code> <code><a href="priors.html">decov()</a></code> <code><a href="priors.html">lkj()</a></code> <code><a href="priors.html">R2()</a></code> </p>
         </td>
         <td><p>Prior distributions and options</p></td>
       </tr><tr>
@@ -223,15 +253,15 @@ names of the objects in the list</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="set_sampling_args.html">set_sampling_args()</a></code> </p>
+          <p><code><a href="stap_data.html">stap_data()</a></code> </p>
         </td>
-        <td><p>Set arguments for sampling</p></td>
+        <td><p>Create a stap_data object</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="stap_glm.html">stap_glm()</a></code> </p>
         </td>
-        <td><p>Fitting Generalized Linear STAP models</p></td>
+        <td><p>Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan</p></td>
       </tr><tr>
         
         <td>
@@ -241,13 +271,19 @@ names of the objects in the list</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="stap_glmer.html">stap_glmer()</a></code> <code><a href="stap_glmer.html">stap_lmer()</a></code> </p>
+        </td>
+        <td><p>Bayesian spatial-temporal generalized linear models with group-specific terms via Stan</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="stap_lm.html">stap_lm()</a></code> </p>
         </td>
         <td><p>Bayesian spatial-temporal aggregated predictor(STAP) models via Stan</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="stapreg-methods.html">coef(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">confint(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">fitted(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">nobs(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">nstap(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">nfix(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">residuals(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">se(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">vcov(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">fixef(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">ngrps(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">ranef(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">sigma(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">VarCorr(<i>&lt;stapreg&gt;</i>)</a></code> </p>
+          <p><code><a href="stapreg-methods.html">coef(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">confint(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">fitted(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">nobs(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">nstap(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">ntap(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">nsap(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">nfix(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">residuals(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">se(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">vcov(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">fixef(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">ngrps(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">ranef(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">sigma(<i>&lt;stapreg&gt;</i>)</a></code> <code><a href="stapreg-methods.html">VarCorr(<i>&lt;stapreg&gt;</i>)</a></code> </p>
         </td>
         <td><p>Methods for stapreg objects</p></td>
       </tr><tr>
@@ -277,15 +313,9 @@ names of the objects in the list</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="validate_glm_formula.html">validate_glm_formula()</a></code> </p>
+          <p><code><a href="validate_newdata.html">validate_newdata()</a></code> </p>
         </td>
-        <td><p>Check for stap_glmer syntax in formula for non-glmer models</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="validate_offset.html">validate_offset()</a></code> </p>
-        </td>
-        <td><p>Check offset argument</p></td>
+        <td><p>Validate newdata argument for posterior_predict, log_lik, etc.</p></td>
       </tr><tr>
         
         <td>
@@ -298,12 +328,6 @@ names of the objects in the list</p></td>
           <p><code><a href="validate_weights.html">validate_weights()</a></code> </p>
         </td>
         <td><p>Check weights argument</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="warn_data_arg_missing.html">warn_data_arg_missing()</a></code> </p>
-        </td>
-        <td><p>Throw a warning if 'data' argument to modeling function is missing</p></td>
       </tr>
     </tbody>
     </table>

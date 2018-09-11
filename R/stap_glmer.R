@@ -101,7 +101,7 @@ stap_glmer <-
   mc$data <- subject_data
   mc$prior <- mc$prior_intercept <- mc$prior_covariance <- mc$prior_aux <-
     mc$prior_PD <- mc$algorithm <- mc$scale <- mc$concentration <- mc$shape <-
-    mc$adapt_delta <- mc$... <- mc$QR <- mc$sparse <- NULL
+    mc$adapt_delta <- mc$... <- NULL
   glmod <- eval(mc, parent.frame())
   X <- glmod$X
   y <- glmod$fr[, as.character(glmod$formula[2L])]

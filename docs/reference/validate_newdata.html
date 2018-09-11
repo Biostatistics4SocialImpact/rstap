@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check family argument — validate_family • rstap</title>
+<title>Validate newdata argument for posterior_predict, log_lik, etc. — validate_newdata • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,12 @@
 
 
 
-<meta property="og:title" content="Check family argument — validate_family" />
+<meta property="og:title" content="Validate newdata argument for posterior_predict, log_lik, etc. — validate_newdata" />
 
-<meta property="og:description" content="Check family argument" />
+<meta property="og:description" content="Doesn't check if the correct variables are included (that's done in pp_data),
+just that newdata is either NULL or a data frame with no missing values. Also
+drops any unused dimensions in variables (e.g. a one column matrix inside a
+data frame is converted to a vector)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -119,33 +122,34 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check family argument</h1>
+    <h1>Validate newdata argument for posterior_predict, log_lik, etc.</h1>
     
-    <div class="hidden name"><code>validate_family.Rd</code></div>
+    <div class="hidden name"><code>validate_newdata.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Check family argument</p>
+    <p>Doesn't check if the correct variables are included (that's done in pp_data),
+just that newdata is either NULL or a data frame with no missing values. Also
+drops any unused dimensions in variables (e.g. a one column matrix inside a
+data frame is converted to a vector).</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>validate_family</span>(<span class='no'>f</span>)</pre>
+    <pre class="usage"><span class='fu'>validate_newdata</span>(<span class='no'>x</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>f</th>
-      <td><p>the <code>family</code> argument specified by user (or default)</p></td>
+      <th>x</th>
+      <td><p>User's 'newdata' argument</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If no error is thrown than either <code>f</code> itself is returned
-(if already a family) or the family object created from <code>f</code> is
-returned if <code>f</code> a string or function. Code adapted from <span class="pkg">rstanarm</span>.</p>
+    <p>Either NULL or a data frame</p>
     
 
   </div>

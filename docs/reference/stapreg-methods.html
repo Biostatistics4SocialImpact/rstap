@@ -149,7 +149,13 @@ those pages are provided in the <strong>See Also</strong> section, below.</p>
 <span class='fu'>nobs</span>(<span class='no'>object</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for stapreg</span>
-<span class='fu'><a href='nstap.html'>nstap</a></span>(<span class='no'>object</span>, <span class='no'>...</span>)
+<span class='fu'><a href='nstap.html'>nstap</a></span>(<span class='no'>object</span>)
+
+<span class='co'># S3 method for stapreg</span>
+<span class='fu'><a href='ntap.html'>ntap</a></span>(<span class='no'>object</span>)
+
+<span class='co'># S3 method for stapreg</span>
+<span class='fu'><a href='nsap.html'>nsap</a></span>(<span class='no'>object</span>)
 
 <span class='co'># S3 method for stapreg</span>
 <span class='fu'>nfix</span>(<span class='no'>object</span>, <span class='no'>...</span>)
@@ -239,20 +245,20 @@ uncertainty intervals.</p></dd>
 
     <div class='dont-index'><ul>
 <li><p>The <code><a href='print.stapreg.html'>print</a></code>,
-   <code><a href='summary.stapreg.html'>summary</a></code>, and <code>prior_summary</code> 
+   <code><a href='summary.stapreg.html'>summary</a></code>, and <code><a href='prior_summary.stapreg.html'>prior_summary</a></code> 
    methods for stapreg objects for information on the fitted model.</p></li>
 <li><p><code>launch_shinystan</code> to use the ShinyStan GUI to explore a
-   fitted <span class="pkg">rstanarm</span> model.</p></li>
-<li><p>The <code>plot</code> method to plot estimates and
+   fitted <span class="pkg">rstap</span> model.</p></li>
+<li><p>The <code><a href='plot.stapreg.html'>plot</a></code> method to plot estimates and
    diagnostics.</p></li>
 <li><p>The <code>pp_check</code> method for graphical posterior predictive
    checking.</p></li>
-<li><p>The <code>posterior_predict</code> and <code>predictive_error</code>
+<li><p>The <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code> and <code><a href='predictive_error.stapreg.html'>predictive_error</a></code>
    methods for predictions and predictive errors.</p></li>
 <li><p>The <code><a href='posterior_interval.stapreg.html'>posterior_interval</a></code> and <code>predictive_interval</code>
    methods for uncertainty intervals for model parameters and predictions.</p></li>
 <li><p>The <code>loo</code>, <code>kfold</code>, and
- <code>log_lik</code> methods for leave-one-out or K-fold cross-validation, 
+ <code><a href='log_lik.stapreg.html'>log_lik</a></code> methods for leave-one-out or K-fold cross-validation, 
    model comparison, and computing the log-likelihood of (possibly new) data.</p></li>
 <li><p>The <code><a href='as.matrix.stapreg.html'>as.matrix</a></code>, <code>as.data.frame</code>, 
    and <code>as.array</code> methods to access posterior draws.</p></li>

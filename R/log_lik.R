@@ -50,9 +50,7 @@ log_lik.stapreg <- function(object, newdata = NULL, offset = NULL, ...) {
       FUN = function(i) {
         as.vector(fun(
           data_i = args$data[i, ,drop=F],
-          draws = args$draws,
-          stap_exposure = args$draws$stap_exposure[,i ,drop=F]
-        ))
+          draws = args$draws))
       },
       FUN.VALUE = numeric(length = args$S)
     )
@@ -95,7 +93,7 @@ ll_args <- function(object, ...) UseMethod("ll_args")
 ll_args.stapreg <- function(object, newdata = NULL, offset = NULL, 
                             reloo_or_kfold = FALSE, ...) {
   validate_stapreg_object(object)
-  f <- family(object, m = m)
+  f <- family(object)
   draws <- nlist(f)
   has_newdata <- !is.null(newdata)
   
@@ -119,6 +117,10 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
     z <- get_z(object)
     x <- get_x(object)
     y <- get_y(object)
+    scales_ix <- grep("_scale",names(coef(object)))
+    beta <- setdiff(coef_names(object$stap_data), names(coef(object))[scales_ix] )
+    stap_exp <- t(apply(apply(x,c(2,3), function(y) y *  stanmat[,beta,drop=F]),c(1,2), sum))
+    colnames(stap_exp) <- paste0("stap_exp_",1:ncol(stap_exp))
   }
   
     fname <- f$family
@@ -134,7 +136,7 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
       return(nlist(data, draws, S = NROW(draws$mu), N = nrow(data)))
       
     } else if (!is.binomial(fname)) {
-      data <- data.frame(y,z)
+      data <- data.frame(y,z,stap_exp)
     } else {
       if (NCOL(y) == 2L) {
         trials <- rowSums(y)
@@ -147,10 +149,7 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
       }
       data <- data.frame(y, trials, x)
     }
-    scales_ix <- grep("_scale",names(coef(object)))
-    beta <- setdiff(coef_names(object$stap_data), names(coef(object))[scales_ix] )
     delta <- setdiff(names(coef(object)), coef_names(object$stap_data))
-    draws$stap_exposure <- apply(apply(x,c(2,3), function(y) y *  stanmat[,beta,drop=F]),c(1,2), sum)
     draws$delta <- stanmat[, delta, drop = FALSE]
     if (is.gaussian(fname)) 
       draws$sigma <- stanmat[,  "sigma"]
@@ -178,7 +177,7 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
       if (is.null(ppdat$Zt)) z <- matrix(NA, nrow = nrow(x), ncol = 0)
       else z <- t(ppdat$Zt)
     } else {
-      z <- get_z(object, m = m)
+      z <- get_z(object)
     }
     data <- cbind(data, as.matrix(z)[1:NROW(x),, drop = FALSE])
     draws$beta <- cbind(draws$beta, b)
@@ -200,7 +199,8 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
 
 .xdata <- function(data) {
   sel <- c("y", "weights","offset", "trials","strata")
-  data[, -which(colnames(data) %in% sel)]
+  stap_sel <-  grep("stap_exp",colnames(data))
+  data[, -c(which(colnames(data) %in% sel),stap_sel)]
 }
 
 .nxdata <- function(data) {
@@ -208,35 +208,41 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
   data[, -which(colnames(data) %in% sel)]
 }
 
+.stap_samples <- function(data){
+    stap_sel <- grep("stap_exp",colnames(data))
+    data[,stap_sel]
+}
+
 .mu <- function(data, draws) {
   eta <- as.vector(linear_predictor(draws$delta, .xdata(data), data$offset))
-  draws$f$linkinv(eta)
+  stap_exp <- as.vector(as.numeric(.stap_samples(data)))
+  draws$f$linkinv(eta + stap_exp)
 }
 
 # log-likelihood functions ------------------------------------------------
-.ll_gaussian_i <- function(data_i, draws, stap_exposure) {
-  val <- dnorm(data_i$y, mean = .mu(data_i, draws) + stap_exposure, sd = draws$sigma, log = TRUE)
+.ll_gaussian_i <- function(data_i, draws) {
+  val <- dnorm(data_i$y, mean = .mu(data_i, draws), sd = draws$sigma, log = TRUE)
   .weighted(val, data_i$weights)
 }
-.ll_binomial_i <- function(data_i, draws, stap_exposure) {
-  val <- dbinom(data_i$y, size = data_i$trials, prob = .mu(data_i, draws) + stap_exposure, log = TRUE)
+.ll_binomial_i <- function(data_i, draws) {
+  val <- dbinom(data_i$y, size = data_i$trials, prob = .mu(data_i, draws) , log = TRUE)
   .weighted(val, data_i$weights)
 }
-.ll_poisson_i <- function(data_i, draws, stap_exposure) {
-  val <- dpois(data_i$y, lambda = .mu(data_i, draws) + stap_exposure, log = TRUE)
+.ll_poisson_i <- function(data_i, draws) {
+  val <- dpois(data_i$y, lambda = .mu(data_i, draws) , log = TRUE)
   .weighted(val, data_i$weights)
 }
 .ll_neg_binomial_2_i <- function(data_i, draws) {
   val <- dnbinom(data_i$y, size = draws$size, mu = .mu(data_i, draws), log = TRUE)
   .weighted(val, data_i$weights)
 }
-.ll_Gamma_i <- function(data_i, draws, stap_exposure) {
+.ll_Gamma_i <- function(data_i, draws) {
   val <- dgamma(data_i$y, shape = draws$shape, 
-                rate = draws$shape / (stap_exposure + .mu(data_i,draws)), log = TRUE)
+                rate = draws$shape / ( .mu(data_i,draws)), log = TRUE)
   .weighted(val, data_i$weights)
 }
-.ll_inverse.gaussian_i <- function(data_i, draws, stap_exposure) {
-  mu <- .mu(data_i, draws) + stap_exposure
+.ll_inverse.gaussian_i <- function(data_i, draws) {
+  mu <- .mu(data_i, draws) 
   val <- 0.5 * log(draws$lambda / (2 * pi)) - 
     1.5 * log(data_i$y) -
     0.5 * draws$lambda * (data_i$y - mu)^2 / 

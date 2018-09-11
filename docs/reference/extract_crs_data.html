@@ -130,14 +130,51 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>extract_crs_data</span>(<span class='no'>stap_data</span>, <span class='no'>distance_data</span>, <span class='no'>time_data</span>, <span class='no'>id_key</span>, <span class='no'>max_distance</span>)</pre>
-        
+    <pre class="usage"><span class='fu'>extract_crs_data</span>(<span class='no'>stap_data</span>, <span class='no'>subject_data</span>, <span class='no'>distance_data</span>, <span class='no'>time_data</span>, <span class='no'>id_key</span>,
+  <span class='no'>max_distance</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>stap_data</th>
+      <td><p>the stap data object extracted from <code>extract_stap_data</code></p></td>
+    </tr>
+    <tr>
+      <th>subject_data</th>
+      <td><p>the subject_data data.frame</p></td>
+    </tr>
+    <tr>
+      <th>distance_data</th>
+      <td><p>the distance data.frame (optional)</p></td>
+    </tr>
+    <tr>
+      <th>time_data</th>
+      <td><p>the time data.frame (optional)</p></td>
+    </tr>
+    <tr>
+      <th>id_key</th>
+      <td><p>string of the id column name to join on across subject, distance and time data</p></td>
+    </tr>
+    <tr>
+      <th>max_distance</th>
+      <td><p>the maximum distance in distance_data</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>a list of the crs data for the spatial and/or temporal data as appropriate</p>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-                </ul>
+      <li><a href="#arguments">Arguments</a></li>
+      
+      <li><a href="#value">Value</a></li>
+          </ul>
 
   </div>
 </div>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check family argument — validate_family • rstap</title>
+<title>Pointwise log-likelihood matrix — log_lik.stapreg • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,11 @@
 
 
 
-<meta property="og:title" content="Check family argument — validate_family" />
+<meta property="og:title" content="Pointwise log-likelihood matrix — log_lik.stapreg" />
 
-<meta property="og:description" content="Check family argument" />
+<meta property="og:description" content="For models fit using MCMC, the log_lik method returns the
+\(S\) by \(N\) pointwise log-likelihood matrix, where \(S\) is the size
+of the posterior sample and \(N\) is the number of data points." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -119,33 +121,51 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check family argument</h1>
+    <h1>Pointwise log-likelihood matrix</h1>
     
-    <div class="hidden name"><code>validate_family.Rd</code></div>
+    <div class="hidden name"><code>log_lik.stapreg.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Check family argument</p>
+    <p>For models fit using MCMC, the <code>log_lik</code> method returns the
+\(S\) by \(N\) pointwise log-likelihood matrix, where \(S\) is the size
+of the posterior sample and \(N\) is the number of data points.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>validate_family</span>(<span class='no'>f</span>)</pre>
+    <pre class="usage"><span class='co'># S3 method for stapreg</span>
+<span class='fu'>log_lik</span>(<span class='no'>object</span>, <span class='kw'>newdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>f</th>
-      <td><p>the <code>family</code> argument specified by user (or default)</p></td>
+      <th>object</th>
+      <td><p>A fitted model object returned by one of the 
+<span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
+    </tr>
+    <tr>
+      <th>newdata</th>
+      <td><p>An optional data frame of new data (e.g. holdout data) to use
+when evaluating the log-likelihood. See the description of <code>newdata</code>
+for <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>offset</th>
+      <td><p>A vector of offsets. Only required if <code>newdata</code> is
+specified and an <code>offset</code> was specified when fitting the model.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Currently ignored.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If no error is thrown than either <code>f</code> itself is returned
-(if already a family) or the family object created from <code>f</code> is
-returned if <code>f</code> a string or function. Code adapted from <span class="pkg">rstanarm</span>.</p>
+    <p>A \(S\) by \(N\) matrix, where \(S\) is the size of the posterior  
+  sample and \(N\) is the number of data points.</p>
     
 
   </div>

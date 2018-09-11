@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check family argument — validate_family • rstap</title>
+<title>plot_stap — plot_stap • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Check family argument — validate_family" />
+<meta property="og:title" content="plot_stap — plot_stap" />
 
-<meta property="og:description" content="Check family argument" />
+<meta property="og:description" content="plot_stap" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -119,33 +119,39 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check family argument</h1>
+    <h1>plot_stap</h1>
     
-    <div class="hidden name"><code>validate_family.Rd</code></div>
+    <div class="hidden name"><code>plot_stap.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Check family argument</p>
+    <p>plot_stap</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>validate_family</span>(<span class='no'>f</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_stap</span>(<span class='no'>object</span>, <span class='no'>pars</span>, <span class='no'>regex_pars</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>f</th>
-      <td><p>the <code>family</code> argument specified by user (or default)</p></td>
+      <th>object</th>
+      <td><p>a fitted stapreg object</p></td>
+    </tr>
+    <tr>
+      <th>pars</th>
+      <td><p>a specific parameter to plot</p></td>
+    </tr>
+    <tr>
+      <th>regex_pars</th>
+      <td><p>a string to run through regex  for matching</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If no error is thrown than either <code>f</code> itself is returned
-(if already a family) or the family object created from <code>f</code> is
-returned if <code>f</code> a string or function. Code adapted from <span class="pkg">rstanarm</span>.</p>
+    <p>a plot with the appropriate  weight function and scale</p>
     
 
   </div>

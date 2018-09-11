@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan — stap_glm • rstap</title>
+<title>Bayesian spatial-temporal generalized linear models with group-specific terms via Stan — stap_glmer • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,11 +30,10 @@
 
 
 
-<meta property="og:title" content="Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan — stap_glm" />
+<meta property="og:title" content="Bayesian spatial-temporal generalized linear models with group-specific terms via Stan — stap_glmer" />
 
-<meta property="og:description" content="
-Generalized linear modeling with optional prior distributions for the
-coefficients, intercept, and auxiliary parameters." />
+<meta property="og:description" content="Bayesian inference for stap-glms with group-specific coefficients that have 
+unknown covariance matrices with flexible priors." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -121,76 +120,60 @@ coefficients, intercept, and auxiliary parameters." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan</h1>
+    <h1>Bayesian spatial-temporal generalized linear models with group-specific terms via Stan</h1>
     
-    <div class="hidden name"><code>stap_glm.Rd</code></div>
+    <div class="hidden name"><code>stap_glmer.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p><img src='figures/stanlogo.png' width="25px" alt="http://mc-stan.org/about/logo/" />
-Generalized linear modeling with optional prior distributions for the
-coefficients, intercept, and auxiliary parameters.</p>
+    <p>Bayesian inference for stap-glms with group-specific coefficients that have 
+unknown covariance matrices with flexible priors.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>stap_glm</span>(<span class='no'>formula</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'>gaussian</span>(), <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+    <pre class="usage"><span class='fu'>stap_glmer</span>(<span class='no'>formula</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='no'>gaussian</span>, <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>time_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>id_key</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>max_distance</span>,
-  <span class='no'>subset</span>, <span class='no'>weights</span>, <span class='kw'>na.action</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>z</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>x</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>,
-  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
-  <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>log_normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>1L</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1L</span>),
-  <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>exponential</a></span>(), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+  <span class='no'>subset</span>, <span class='no'>weights</span>, <span class='kw'>na.action</span> <span class='kw'>=</span> <span class='fu'>getOption</span>(<span class='st'>"na.action"</span>, <span class='st'>"na.omit"</span>), <span class='no'>offset</span>,
+  <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
+  <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>log_normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>1L</span>, <span class='kw'>scale</span> <span class='kw'>=</span>
+  <span class='fl'>1L</span>), <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>exponential</a></span>(), <span class='kw'>prior_covariance</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>decov</a></span>(),
+  <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+
+<span class='fu'>stap_lmer</span>(<span class='no'>formula</span>, <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>time_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>subset</span>, <span class='no'>weights</span>, <span class='kw'>na.action</span> <span class='kw'>=</span> <span class='fu'>getOption</span>(<span class='st'>"na.action"</span>,
+  <span class='st'>"na.omit"</span>), <span class='no'>offset</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
+  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>exponential</a></span>(),
+  <span class='kw'>prior_covariance</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>decov</a></span>(), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>formula, subset</th>
-      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>,</p></td>
+      <th>formula, data</th>
+      <td><p>Same as for <code><a href='http://www.rdocumentation.org/packages/lme4/topics/glmer'>glmer</a></code>. 
+Note that the subject_data argument must be provided in addition to either distance_data and/or time_data.</p></td>
     </tr>
     <tr>
       <th>family</th>
-      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code> for gaussian, binomial, and poisson</p></td>
+      <td><p>Same as for <code><a href='http://www.rdocumentation.org/packages/lme4/topics/glmer'>glmer</a></code> except limited to gaussian, binomial and poisson</p></td>
     </tr>
     <tr>
-      <th>subject_data</th>
-      <td><p>a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the id_key on which to join the distance and time_data</p></td>
-    </tr>
-    <tr>
-      <th>distance_data</th>
-      <td><p>a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)</p></td>
-    </tr>
-    <tr>
-      <th>time_data</th>
-      <td><p>same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance</p></td>
-    </tr>
-    <tr>
-      <th>id_key</th>
-      <td><p>name of column to join on between subject_data and bef_data</p></td>
-    </tr>
-    <tr>
-      <th>max_distance</th>
-      <td><p>the inclusion distance; upper bound for all elements of dists_crs</p></td>
-    </tr>
-    <tr>
-      <th>na.action, contrasts</th>
-      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>, but
-rarely specified.</p></td>
-    </tr>
-    <tr>
-      <th>offset, weights</th>
+      <th>subset, weights, offset</th>
       <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>.</p></td>
     </tr>
     <tr>
-      <th>y</th>
-      <td><p>In <code>stap_glm</code>, logical scalar indicating whether to
-return the response vector. In <code>stan_glm.fit</code>, a response vector.</p></td>
+      <th>na.action, contrasts</th>
+      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>, but rarely 
+specified.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Further arguments passed to the function in the <span class="pkg">rstap</span> 
-to specify <code>iter</code>, <code>chains</code>, <code>cores</code>, <code>refresh</code>, etc.</p></td>
+      <td><p>For <code>stap_glmer</code>, further arguments passed to 
+<code><a href='http://www.rdocumentation.org/packages/rstan/topics/stanmodel-method-sampling'>sampling</a></code> (e.g. <code>iter</code>, <code>chains</code>, 
+<code>cores</code>, etc.). For <code>stap_lmer</code> 
+ <code>...</code> should also contain all relevant arguments
+to pass to <code>stap_glmer</code> (except <code>family</code>).</p></td>
     </tr>
     <tr>
       <th>prior</th>
@@ -267,6 +250,11 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
 <code>prior_aux</code> to <code>NULL</code>.</p></td>
     </tr>
     <tr>
+      <th>prior_covariance</th>
+      <td><p>Cannot be <code>NULL</code>; see <code><a href='priors.html'>decov</a></code> for
+more information about the default arguments.</p></td>
+    </tr>
+    <tr>
       <th>adapt_delta</th>
       <td><p>See the adapt_delta help page for details.</p></td>
     </tr>
@@ -275,22 +263,26 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A stapreg object is returned 
-for <code>stap_glm</code>.</p>
-<p>A stapfit object (or a slightly modified 
-  stapfit object) is returned if <code>stan_glm.fit</code> is called directly.</p>
+for <code>stap_glmer, stap_lmer</code>.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The <code>stap_glm</code> function is similar in syntax to
-<code><a href='http://www.rdocumentation.org/packages/rstanarm/topics/stan_glm'>stan_glm</a></code> except instead of performing full bayesian
-inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
-as detailed in in --need to add citation --</p>
+    <p>The <code>stap_glmer</code> function is similar in syntax to 
+  <code><a href='http://www.rdocumentation.org/packages/lme4/topics/glmer'>glmer</a></code> but rather than performing (restricted) maximum 
+  likelihood estimation of generalized linear models, Bayesian estimation is 
+  performed via MCMC. The Bayesian model adds priors on the 
+  regression coefficients (in the same way as <code>stan_glm</code>) and
+  priors on the terms of a decomposition of the covariance matrices of the
+  group-specific parameters. See <code><a href='priors.html'>priors</a></code> for more information
+  about the priors.</p>  
+<p>The <code>stap_lmer</code> function is equivalent to <code>stap_glmer</code> with 
+  <code>family = gaussian(link = "identity")</code>.</p>
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>Gelman, A. and Hill, J. (2007). <em>Data Analysis Using
   Regression and Multilevel/Hierarchical Models.</em> Cambridge University Press,
-  Cambridge, UK. (Ch. 3-6)</p>
+  Cambridge, UK. (Ch. 11-15)</p>
 <p>Muth, C., Oravecz, Z., and Gabry, J. (2018)
 User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinystan.
 <em>The Quantitative Methods for Psychology</em>. 14(2), 99--119.
@@ -299,9 +291,8 @@ User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinyst
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='stapreg-methods.html'>stapreg-methods</a></code> and 
-<code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>.</p>
-<p>The various vignettes for <code>stap_glm</code> at
-  <a href='https:biostatistics4socialimpact.github.io/rstap/articles'>https:biostatistics4socialimpact.github.io/rstap/articles</a></p></div>
+<code><a href='http://www.rdocumentation.org/packages/lme4/topics/glmer'>glmer</a></code>.</p>
+<p>The vignette for <code>stap_glmer</code> ... still to be written</p></div>
     
 
   </div>

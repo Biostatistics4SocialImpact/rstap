@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Posterior uncertainty intervals — posterior_interval.stapreg • rstap</title>
+<title>Plot method for stapreg objects — plot.stapreg • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,13 +30,14 @@
 
 
 
-<meta property="og:title" content="Posterior uncertainty intervals — posterior_interval.stapreg" />
+<meta property="og:title" content="Plot method for stapreg objects — plot.stapreg" />
 
-<meta property="og:description" content="For models fit using MCMC,  the posterior_interval 
-function computes Bayesian posterior uncertainty
-intervals. These intervals are often referred to as credible
-intervals, but we use the term uncertainty intervals to highlight the
-fact that wider intervals correspond to greater uncertainty." />
+<meta property="og:description" content="The plot method for stapreg-objects provides a convenient 
+interface to the MCMC module in the bayesplot 
+package for plotting MCMC draws and diagnostics. It is also straightforward 
+to use the functions from the bayesplot package directly rather than 
+via the plot method. Examples of both methods of plotting are given
+below." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -123,46 +124,43 @@ fact that wider intervals correspond to greater uncertainty." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Posterior uncertainty intervals</h1>
+    <h1>Plot method for stapreg objects</h1>
     
-    <div class="hidden name"><code>posterior_interval.stapreg.Rd</code></div>
+    <div class="hidden name"><code>plot.stapreg.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>For models fit using MCMC,  the <code>posterior_interval</code> 
-function computes Bayesian posterior uncertainty
-intervals. These intervals are often referred to as <em>credible</em>
-intervals, but we use the term <em>uncertainty</em> intervals to highlight the
-fact that wider intervals correspond to greater uncertainty.</p>
+    <p>The <code>plot</code> method for stapreg-objects provides a convenient 
+interface to the <a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-overview'>MCMC</a> module in the <span class="pkg">bayesplot</span> 
+package for plotting MCMC draws and diagnostics. It is also straightforward 
+to use the functions from the <span class="pkg">bayesplot</span> package directly rather than 
+via the <code>plot</code> method. Examples of both methods of plotting are given
+below.</p>
     
     </div>
 
     <pre class="usage"><span class='co'># S3 method for stapreg</span>
-<span class='fu'>posterior_interval</span>(<span class='no'>object</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"central"</span>,
-  <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+<span class='fu'>plot</span>(<span class='no'>x</span>, <span class='kw'>plotfun</span> <span class='kw'>=</span> <span class='st'>"intervals"</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>object</th>
+      <th>x</th>
       <td><p>A fitted model object returned by one of the 
 <span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
     </tr>
     <tr>
-      <th>prob</th>
-      <td><p>A number \(p \in (0,1)\) indicating the desired
-probability mass to include in the intervals. The default is to report
-\(90\)% intervals (<code>prob=0.9</code>) rather than the traditionally used
-\(95\)% (see Details).</p></td>
-    </tr>
-    <tr>
-      <th>type</th>
-      <td><p>The type of interval to compute. Currently the only option is
-<code>"central"</code> (see Details). A central \(100p\)%
-interval is defined by the \(\alpha/2\) and \(1 - \alpha/2\) quantiles,
-where \(\alpha = 1 - p\).</p></td>
+      <th>plotfun</th>
+      <td><p>A character string naming the <span class="pkg">bayesplot</span> 
+<a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-overview'>MCMC</a> function to use. The default is to call
+<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-intervals'>mcmc_intervals</a></code>. <code>plotfun</code> can be specified
+either as the full name of a <span class="pkg">bayesplot</span> plotting function (e.g.
+<code>"mcmc_hist"</code>) or can be abbreviated to the part of the name following
+the <code>"mcmc_"</code> prefix (e.g. <code>"hist"</code>). To get the names of all
+available MCMC functions see <code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/available_ppc'>available_mcmc</a></code>.</p></td>
     </tr>
     <tr>
       <th>pars</th>
@@ -178,64 +176,39 @@ using optimization.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Currently ignored.</p></td>
+      <td><p>Additional arguments to pass to <code>plotfun</code> for customizing the
+plot. These are described on the help pages for the individual plotting 
+functions. For example, the arguments accepted for the default
+<code>plotfun="intervals"</code> can be found at
+<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-intervals'>mcmc_intervals</a></code>.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A matrix with two columns and as many rows as model parameters (or
-  the subset of parameters specified by <code>pars</code> and/or
-  <code>regex_pars</code>). For a given value of <code>prob</code>, \(p\), the columns
-  correspond to the lower and upper \(100p\)% interval limits and have the
-  names \(100\alpha/2\)% and \(100(1 - \alpha/2)\)%, where \(\alpha
-  = 1-p\). For example, if <code>prob=0.9</code> is specified (a \(90\)%
-  interval), then the column names will be <code>"5%"</code> and <code>"95%"</code>,
-  respectively.</p>
-    
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <h3>Interpretation</h3>
-    Unlike for a frenquentist confidence interval, it is valid to say that,
-conditional on the data and model, we believe that with probability \(p\)
-the value of a parameter is in its \(100p\)% posterior interval. This
-intuitive interpretation of Bayesian intervals is often erroneously applied
-to frequentist confidence intervals. See Morey et al. (2015) for more details
-on this issue and the advantages of using Bayesian posterior uncertainty
-intervals (also known as credible intervals).
-    <h3>Default 90% intervals</h3>
-    We default to reporting \(90\)% intervals rather than \(95\)% intervals
-for several reasons:
-<ul>
-<li><p>Computational stability: \(90\)% intervals are more stable than
- \(95\)% intervals (for which each end relies on only \(2.5\)% of the
- posterior draws).</p></li>
-<li><p>Relation to Type-S errors (Gelman and Carlin, 2014):
- \(95\)% of the mass in a \(90\)% central interval is above the lower
- value (and \(95\)% is below the upper value). For a parameter
- \(\theta\), it is therefore easy to see if the posterior probability that
- \(\theta &gt; 0\) (or \(\theta &lt; 0\)) is larger or smaller than \(95\)%.</p></li>
-</ul>
-Of course, if \(95\)% intervals are desired they can be computed by
-specifying <code>prob=0.95</code>.
-    <h3>Types of intervals</h3>
-    Currently <code>posterior_interval</code> only computes central intervals because
-other types of intervals are rarely useful for the models that <span class="pkg">rstap</span>
-can estimate. Additional possibilities may be provided in future releases as
-more models become available.
+    <p>Either a ggplot object that can be further customized using the
+  <span class="pkg">ggplot2</span> package, or an object created from multiple ggplot objects
+  (e.g. a gtable object created by <code><a href='http://www.rdocumentation.org/packages/gridExtra/topics/arrangeGrob'>arrangeGrob</a></code>).</p>
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>Gelman, A. and Carlin, J. (2014). Beyond power calculations:
-assessing Type S (sign) and Type M (magnitude) errors. <em>Perspectives on
-Psychological Science</em>. 9(6), 641--51.</p>
-<p>Morey, R. D., Hoekstra, R., Rouder, J., Lee, M. D., and Wagenmakers, E. 
-(2016). The fallacy of placing confidence in confidence intervals. 
-<em>Psychonomic Bulletin &amp; Review</em>. 23(1), 103--123.</p>
+    <p>Gabry, J., Simpson, D., Vehtari, A., Betancourt, M., and Gelman,
+  A. (2018). Visualization in Bayesian workflow. <em>Journal of the Royal
+  Statistical Society Series A</em>, accepted for publication. arXiv preprint:
+  <a href='http://arxiv.org/abs/1709.01449'>http://arxiv.org/abs/1709.01449</a>.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code>predictive_interval</code> for predictive intervals.</p></div>
+    <div class='dont-index'><ul>
+<li><p>The vignettes in the <span class="pkg">bayesplot</span> package for many examples.</p></li>
+<li><p><code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-overview'>MCMC-overview</a></code> (<span class="pkg">bayesplot</span>) for links to
+  the documentation for all the available plotting functions.</p></li>
+<li><p><code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/bayesplot-colors'>color_scheme_set</a></code> (<span class="pkg">bayesplot</span>) to change
+  the color scheme used for plotting.</p></li>
+<li><p><code>pp_check</code> for graphical posterior predictive checks.</p></li>
+<li><p><code>plot_nonlinear</code> for models with nonlinear smooth 
+  functions fit using <code>stan_gamm4</code>.</p></li>
+</ul></div>
     
 
   </div>
@@ -245,8 +218,6 @@ Psychological Science</em>. 9(6), 641--51.</p>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-
-      <li><a href="#details">Details</a></li>
 
       <li><a href="#references">References</a></li>
 

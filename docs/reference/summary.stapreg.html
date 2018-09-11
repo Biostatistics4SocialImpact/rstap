@@ -175,10 +175,7 @@ the random effects or the auxiliary parameters.
 fixed effect regression coefficients are selected, as well as any 
 auxiliary parameters and the log posterior.</p>
 <p>If <code>pars</code> is <code>NULL</code> all parameters are selected for a <code>stapreg</code>
-object, while for a <code>stapmvreg</code> object all 
-fixed effect regression coefficients are selected as well as any 
-auxiliary parameters and the log posterior. See 
-<strong>Examples</strong>.</p></td>
+object.</p></td>
     </tr>
     <tr>
       <th>regex_pars</th>
@@ -190,7 +187,7 @@ using optimization.</p></td>
     </tr>
     <tr>
       <th>probs</th>
-      <td><p>For models fit using MCMC or one of the variational algorithms, 
+      <td><p>For models fit using MCMC, 
 an optional numeric vector of probabilities passed to 
 <code><a href='http://www.rdocumentation.org/packages/stats/topics/quantile'>quantile</a></code>.</p></td>
     </tr>
@@ -213,7 +210,7 @@ When calling <code>summary</code>, the value of digits is stored as the
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>The <code>summary</code> method returns an object of class 
-  <code>"summary.stapreg"</code> (or <code>"summary.stapmvreg"</code>, inheriting 
+  <code>"summary.stapreg"</code>, inheriting 
   <code>"summary.stapreg"</code>), which is a matrix of 
   summary statistics and 
   diagnostics, with attributes storing information for use by the
@@ -225,7 +222,7 @@ When calling <code>summary</code>, the value of digits is stored as the
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code>prior_summary</code> to extract or print a summary of the 
+    <div class='dont-index'><p><code><a href='prior_summary.stapreg.html'>prior_summary</a></code> to extract or print a summary of the 
   priors used for a particular model.</p></div>
     
 

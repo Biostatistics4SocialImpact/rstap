@@ -159,6 +159,7 @@ nsap.stapreg <- function(object)
 
 #' @export 
 #' @keywords internal
+#' @name nfix
 #' @param object a A fitted model object
 #' @param ... Arguments to methods.
 #' @return number of fixed effects- non spatial temporal aggregated predictors

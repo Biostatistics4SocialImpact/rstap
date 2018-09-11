@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check family argument — validate_family • rstap</title>
+<title>Pairs method for stapreg objects — pairs.stapreg • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,12 @@
 
 
 
-<meta property="og:title" content="Check family argument — validate_family" />
+<meta property="og:title" content="Pairs method for stapreg objects — pairs.stapreg" />
 
-<meta property="og:description" content="Check family argument" />
+<meta property="og:description" content="Interface to bayesplot's mcmc_pairs function 
+for use with rstap models. Be careful not to specify too
+many parameters to include or the plot will be both hard to read and slow to
+render." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -119,33 +122,77 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check family argument</h1>
+    <h1>Pairs method for stapreg objects</h1>
     
-    <div class="hidden name"><code>validate_family.Rd</code></div>
+    <div class="hidden name"><code>pairs.stapreg.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Check family argument</p>
+    <p>Interface to <span class="pkg">bayesplot</span>'s <code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code> function 
+for use with <span class="pkg">rstap</span> models. Be careful not to specify too
+many parameters to include or the plot will be both hard to read and slow to
+render.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>validate_family</span>(<span class='no'>f</span>)</pre>
+    <pre class="usage"><span class='co'># S3 method for stapreg</span>
+<span class='fu'>pairs</span>(<span class='no'>x</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>condition</span> <span class='kw'>=</span> <span class='fu'>pairs_condition</span>(<span class='kw'>nuts</span> <span class='kw'>=</span> <span class='st'>"accept_stat__"</span>), <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>f</th>
-      <td><p>the <code>family</code> argument specified by user (or default)</p></td>
+      <th>x</th>
+      <td><p>A fitted model object returned by one of the 
+<span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
+    </tr>
+    <tr>
+      <th>pars</th>
+      <td><p>An optional character vetor of parameter names. All parameters 
+are included by default, but for models with more than just a few 
+parameters it may be far too many to visualize on a small computer screen 
+and also may require substantial computing time.</p></td>
+    </tr>
+    <tr>
+      <th>regex_pars</th>
+      <td><p>An optional character vector of regular 
+expressions to use for parameter selection. <code>regex_pars</code> can be used
+in place of <code>pars</code> or in addition to <code>pars</code>. Currently, all
+functions that accept a <code>regex_pars</code> argument ignore it for models fit
+using optimization.</p></td>
+    </tr>
+    <tr>
+      <th>condition</th>
+      <td><p>Same as the <code>condition</code> argument to 
+<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code> except the <em>default is different</em>
+for <span class="pkg">rstap</span> models. By default, the <code>mcmc_pairs</code> function in
+the <span class="pkg">bayesplot</span> package plots some of the Markov chains (half, in the
+case of an even number of chains) in the panels above the diagonal and the
+other half in the panels below the diagonal. However since we know that 
+<span class="pkg">rstap</span> models were fit using Stan (which <span class="pkg">bayesplot</span> doesn't 
+assume) we can make the default more useful by splitting the draws 
+according to the <code>accept_stat__</code> diagnostic. The plots below the 
+diagonal will contain realizations that are below the median 
+<code>accept_stat__</code> and the plots above the diagonal will contain 
+realizations that are above the median <code>accept_stat__</code>. To change this
+behavior see the documentation of the <code>condition</code> argument at 
+<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Optional arguments passed to <code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code>. 
+The <code>np</code>, <code>lp</code>, and <code>max_treedepth</code> arguments to 
+<code>mcmc_pairs</code> are handled automatically by <span class="pkg">rstap</span> and do not 
+need to be specified by the user in <code>...</code>. The arguments that can be 
+specified in <code>...</code> include <code>transformations</code>, <code>diag_fun</code>,
+<code>off_diag_fun</code>, <code>diag_args</code>, <code>off_diag_args</code>,
+and <code>np_style</code>. These arguments are
+documented thoroughly on the help page for
+<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code>.</p></td>
     </tr>
     </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>If no error is thrown than either <code>f</code> itself is returned
-(if already a family) or the family object created from <code>f</code> is
-returned if <code>f</code> a string or function. Code adapted from <span class="pkg">rstanarm</span>.</p>
     
 
   </div>
@@ -153,9 +200,7 @@ returned if <code>f</code> a string or function. Code adapted from <span class="
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>

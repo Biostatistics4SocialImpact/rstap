@@ -21,6 +21,8 @@
 #' @import rstantools
 #' @export log_lik posterior_linpred posterior_predict posterior_interval
 #' @export predictive_interval predictive_error prior_summary
+#' @export loo_linpred loo_predict loo_predictive_interval
+#' @export loo waic
 #' 
 #' @references 
 #' Stan Development Team (2018). RStan: the R interface to Stan. R package version 2.17.3. http://mc-stan.org

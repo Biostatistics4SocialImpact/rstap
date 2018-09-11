@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Check family argument — validate_family • rstap</title>
+<title>Summarize the priors used for an rstap model — prior_summary.stapreg • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,17 @@
 
 
 
-<meta property="og:title" content="Check family argument — validate_family" />
+<meta property="og:title" content="Summarize the priors used for an rstap model — prior_summary.stapreg" />
 
-<meta property="og:description" content="Check family argument" />
+<meta property="og:description" content="The prior_summary method provides a summary of the prior distributions
+used for the parameters in a given model. In some cases the user-specified
+prior does not correspond exactly to the prior used internally by
+rstap (see the sections below). Especially in these cases, but also
+in general, it can be much more useful to visualize the priors. Visualizing
+the priors can be done using the posterior_vs_prior function,
+or alternatively by fitting the model with the prior_PD argument set
+to TRUE (to draw from the prior predictive distribution instead of
+conditioning on the outcome) and then plotting the parameters." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -119,33 +127,80 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Check family argument</h1>
+    <h1>Summarize the priors used for an rstap model</h1>
     
-    <div class="hidden name"><code>validate_family.Rd</code></div>
+    <div class="hidden name"><code>prior_summary.stapreg.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Check family argument</p>
+    <p>The <code>prior_summary</code> method provides a summary of the prior distributions
+used for the parameters in a given model. In some cases the user-specified
+prior does not correspond exactly to the prior used internally by
+<span class="pkg">rstap</span> (see the sections below). Especially in these cases, but also
+in general, it can be much more useful to visualize the priors. Visualizing
+the priors can be done using the <code>posterior_vs_prior</code> function,
+or alternatively by fitting the model with the <code>prior_PD</code> argument set
+to <code>TRUE</code> (to draw from the prior predictive distribution instead of
+conditioning on the outcome) and then plotting the parameters.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>validate_family</span>(<span class='no'>f</span>)</pre>
+    <pre class="usage"><span class='co'># S3 method for stapreg</span>
+<span class='fu'>prior_summary</span>(<span class='no'>object</span>, <span class='kw'>digits</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>f</th>
-      <td><p>the <code>family</code> argument specified by user (or default)</p></td>
+      <th>object</th>
+      <td><p>A fitted model object returned by one of the 
+<span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
+    </tr>
+    <tr>
+      <th>digits</th>
+      <td><p>Number of digits to use for rounding.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Currently ignored by the method for stapreg objects.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If no error is thrown than either <code>f</code> itself is returned
-(if already a family) or the family object created from <code>f</code> is
-returned if <code>f</code> a string or function. Code adapted from <span class="pkg">rstanarm</span>.</p>
+    <p>A list of class "prior_summary.stapreg", which has its own print
+  method.</p>
+    
+    <h2 class="hasAnchor" id="intercept-after-predictors-centered-"><a class="anchor" href="#intercept-after-predictors-centered-"></a>Intercept (after predictors centered)</h2>
+
+    
+    <p>For <span class="pkg">rstap</span> modeling functions that accept a <code>prior_intercept</code> 
+  argument, the specified prior for the intercept term applies to the 
+  intercept after <span class="pkg">rstap</span> internally centers the predictors so they 
+  each have mean zero. The estimate of the intercept returned to the user 
+  correspond to the intercept with the predictors as specified by the user 
+  (unmodified by <span class="pkg">rstap</span>), but when <em>specifying</em> the prior the 
+  intercept can be interpreted as the expected outcome when the predictors are
+  set to their means.</p>
+    
+    <h2 class="hasAnchor" id="adjusted-scales"><a class="anchor" href="#adjusted-scales"></a>Adjusted scales</h2>
+
+    <p>For some models you may see "<code>adjusted scale</code>"
+  in the printed output and adjusted scales included in the object returned 
+  by <code>prior_summary</code>. These adjusted scale values are the prior scales 
+  actually used by <span class="pkg">rstap</span> and are computed by adjusting the prior 
+  scales specified by the user to account for the scales of the predictors 
+  (as described in the documentation for the <code><a href='priors.html'>autoscale</a></code>
+  argument). To disable internal prior scale adjustments set the 
+  <code>autoscale</code> argument to <code>FALSE</code> when setting a prior using one of
+  the distributions that accepts an <code>autoscale</code> argument. For example,
+  <code><a href='priors.html'>normal(0, 5, autoscale=FALSE)</a></code> instead of just <code><a href='priors.html'>normal(0, 5)</a></code>.</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p>The <a href='priors.html'>priors help page</a> and the <em>Prior
+  Distributions</em> vignette from the <span class="pkg">rstanarm</span> package.</p></div>
     
 
   </div>
@@ -155,6 +210,12 @@ returned if <code>f</code> a string or function. Code adapted from <span class="
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#intercept-after-predictors-centered-">Intercept (after predictors centered)</a></li>
+
+      <li><a href="#adjusted-scales">Adjusted scales</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

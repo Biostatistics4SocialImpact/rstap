@@ -133,7 +133,7 @@ encouraged. Many of these are informed by the priors in rstanarm." />
     <div class="ref-description">
     
     <p>The functions described on this page are used to specify the prior-related #' arguments of the various modeling functions in the <span class="pkg">rstap</span> package (to
-view the priors used for an existing model see <code>prior_summary</code>). 
+view the priors used for an existing model see <code><a href='prior_summary.stapreg.html'>prior_summary</a></code>). 
 The default priors used in the various <span class="pkg">rstap</span> modeling functions are
 intended to be <em>weakly informative</em> in that they provide moderate
 regularlization and help stabilize computation. For many applications the
@@ -163,6 +163,10 @@ encouraged. Many of these are informed by the priors in <span class="pkg">rstana
 <span class='fu'>log_normal</span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='fu'>beta_prior</span>(<span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>beta</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+
+<span class='fu'>decov</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>concentration</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+
+<span class='fu'>lkj</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 
 <span class='fu'>R2</span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"mode"</span>, <span class='st'>"mean"</span>, <span class='st'>"median"</span>, <span class='st'>"log"</span>))</pre>
     
@@ -217,6 +221,24 @@ below.</p></td>
       <td><p>Prior rate for the exponential distribution. Defaults to 
 <code>1</code>. For the exponential distribution the rate parameter is the 
 <em>reciprocal</em> of the mean.</p></td>
+    </tr>
+    <tr>
+      <th>regularization</th>
+      <td><p>Exponent for an LKJ prior on the correlation matrix in
+the <code>decov</code> or <code>lkj</code> prior. The default is \(1\), implying a 
+joint uniform prior.</p></td>
+    </tr>
+    <tr>
+      <th>concentration</th>
+      <td><p>Concentration parameter for a symmetric Dirichlet 
+distribution. The default is \(1\), implying a joint uniform prior.</p></td>
+    </tr>
+    <tr>
+      <th>shape</th>
+      <td><p>Shape parameter for a gamma prior on the scale parameter in the
+<code>decov</code> prior. If <code>shape</code> and <code>scale</code> are both \(1\) (the
+default) then the gamma prior simplifies to the unit-exponential
+distribution.</p></td>
     </tr>
     <tr>
       <th>what</th>
@@ -323,7 +345,7 @@ and an error will prompt the user to specify another choice for
   better to specify <code>autoscale = TRUE</code> (the default value), which 
   will adjust the scales of the priors according to the dispersion in the
   variables. See the documentation of the <code>autoscale</code> argument above 
-  and also the <code>prior_summary</code> page for more information.
+  and also the <code><a href='prior_summary.stapreg.html'>prior_summary</a></code> page for more information.
     <h3>Product-normal family</h3>
     Family members:
   <ul>

@@ -224,7 +224,7 @@ get_stapless_formula <- function(f){
     stap_nms <- all.names(f)[stap_ics + 1]
     sap_nms <- all.names(f)[sap_ics + 1]
     tap_nms <- all.names(f)[tap_ics + 1]
-    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf")
+    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf") ## add wei here
     formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
     if(grepl("cbind",all.names(f))[2]){
         new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
@@ -726,6 +726,6 @@ paste_scale <- function(names)
 get_weight_function <- function(weight_code){
     switch(weight_code,function(x,y) { pracma::erf(x/y)} ,
            function(x,y){ pracma::erfc(x/y)},
-           function(x,y){ exp(x/y)},
+           function(x,y){ exp(x/y)}, ## add wei functions here
            function(x,y){1- exp(x/y)})
 }
