@@ -87,7 +87,7 @@
       <h1>Mis-Specified Weight Function</h1>
                         <h4 class="author">Adam Peterson</h4>
             
-            <h4 class="date">2018-09-05</h4>
+            <h4 class="date">2018-09-11</h4>
       
       
       <div class="hidden name"><code>misspecified-weightfunction.Rmd</code></div>
@@ -102,7 +102,8 @@
 <span class="co">#&gt; Warning: package 'dplyr' was built under R version 3.5.1</span>
 <span class="kw">library</span>(tidyr)
 <span class="kw">library</span>(ggplot2)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num_subj &lt;-<span class="st"> </span><span class="fl">5E2</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">3421</span>)
+num_subj &lt;-<span class="st"> </span><span class="fl">5E2</span>
 num_bef &lt;-<span class="st"> </span><span class="dv">50</span>
 sub_df &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_subj, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="fl">2.0</span>),
                      <span class="dt">y =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_subj, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="fl">2.0</span>),
@@ -119,22 +120,45 @@ Z &lt;-<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">
 delta &lt;-<span class="st"> </span><span class="op">-</span>.<span class="dv">8</span>
 beta &lt;-<span class="st"> </span>.<span class="dv">92</span>
 theta_FF &lt;-<span class="st"> </span><span class="fl">2.00</span>
+theta_wei &lt;-<span class="st"> </span><span class="dv">4</span>
 sigma &lt;-<span class="st"> </span><span class="fl">1.3</span>
 true_pars &lt;-<span class="st"> </span><span class="kw">c</span>(alpha,delta,beta,theta_FF)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="kw">c</span>(<span class="st">"x"</span>,<span class="st">"y"</span>)]),
                        <span class="kw">as.matrix</span>(bef_df[,<span class="kw">c</span>(<span class="st">"x"</span>,<span class="st">"y"</span>)]))
+
 unif_kernel &lt;-<span class="st"> </span><span class="cf">function</span>(x,theta) <span class="kw">return</span>( <span class="dv">1</span><span class="op">*</span>(x<span class="op">&lt;=</span>theta)  )
-X &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(<span class="kw">unif_kernel</span>(x,theta_FF)))
-X_tilde &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">scale</span>(X))
+X_unif &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(<span class="kw">unif_kernel</span>(x,theta_FF)))
+X_exp &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(<span class="kw">exp</span>(<span class="op">-</span>x<span class="op">/</span>theta_FF)))
+X_wei &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(<span class="kw">exp</span>(<span class="op">-</span>(x<span class="op">/</span>theta_wei)<span class="op">^</span>theta_wei)))
+X_tilde &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">scale</span>(X_unif))
 <span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
 <span class="kw">hist</span>(dists)
-<span class="kw">hist</span>(X)</code></pre></div>
+<span class="kw">hist</span>(X_unif)</code></pre></div>
 <p><img src="misspecified-weightfunction_files/figure-html/distances-1.png" width="700"></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BMI &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X_tilde<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj,<span class="dt">mean =</span> <span class="dv">0</span>,<span class="dt">sd =</span> sigma)
-<span class="kw">hist</span>(BMI)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(X_exp)</code></pre></div>
+<p><img src="misspecified-weightfunction_files/figure-html/X_weightts-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(X_wei)</code></pre></div>
+<p><img src="misspecified-weightfunction_files/figure-html/X_weightts-2.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BMI_unif &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X_tilde<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj,<span class="dt">mean =</span> <span class="dv">0</span>,<span class="dt">sd =</span> sigma)
+BMI_exp &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span><span class="kw">scale</span>(X_exp)<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj,<span class="dt">mean =</span> <span class="dv">0</span>,<span class="dt">sd =</span> sigma)
+BMI_wei &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span><span class="kw">scale</span>(X_wei)<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj,<span class="dt">mean =</span> <span class="dv">0</span>,<span class="dt">sd =</span> sigma)
+<span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
+d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists),<span class="dt">by=</span><span class="fl">0.01</span>)
+w_unif &lt;-<span class="st"> </span><span class="kw">unif_kernel</span>(d,theta_FF)
+w_exp &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span>theta_FF)
+theta_wei &lt;-<span class="st"> </span><span class="dv">4</span>
+w_wei &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>(d<span class="op">/</span>theta_wei)<span class="op">^</span>theta_wei)
+<span class="kw">plot</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span>theta_FF), <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">main =</span> <span class="st">"Cerf Decay"</span>)
+<span class="kw">plot</span>(d,w_unif, <span class="dt">type =</span> <span class="st">'l'</span>,<span class="dt">main=</span><span class="st">"Uniform Weight"</span>)</code></pre></div>
 <p><img src="misspecified-weightfunction_files/figure-html/y_creation-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
+<span class="kw">plot</span>(d,w_exp, <span class="dt">type =</span> <span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exponential decay"</span>)
+<span class="kw">plot</span>(d,w_wei, <span class="dt">type =</span> <span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Weibull decay"</span>)</code></pre></div>
+<p><img src="misspecified-weightfunction_files/figure-html/weibull_plot-1.png" width="700"></p>
 <p>We’ll now model these data in the rstap framework, but since rstap’s estimation engine uses HMC, we can’t use a weight function that has a step-function. Instead we’ll use the usual complementary error function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_df &lt;-<span class="st"> </span>sub_df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BMI =</span> BMI,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_df &lt;-<span class="st"> </span>sub_df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BMI_exp =</span> BMI_exp,
+                             <span class="dt">BMI_unif =</span> BMI_unif,
+                             <span class="dt">BMI_we =</span> BMI_wei,
                               <span class="dt">sex =</span> Z,
                               <span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj)
 
@@ -143,7 +167,7 @@ dist_df &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span 
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>), <span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
 
-fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> BMI <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food),
+fit_unif &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> BMI_unif <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food),
                 <span class="dt">subject_data =</span> subj_df,
                 <span class="dt">distance_data =</span> dist_df,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
@@ -154,25 +178,25 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
                 <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">2</span>, <span class="dt">cores =</span> <span class="dv">2</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_unif
 <span class="co">#&gt; stap_glm</span>
 <span class="co">#&gt;  family:       gaussian [identity]</span>
-<span class="co">#&gt;  formula:      BMI ~ sex + sap(Fast_Food)</span>
+<span class="co">#&gt;  formula:      BMI_unif ~ sex + sap(Fast_Food)</span>
 <span class="co">#&gt;  observations: 500</span>
 <span class="co">#&gt;  Intercept:  TRUE</span>
-<span class="co">#&gt;  fixed predictors:   </span>
+<span class="co">#&gt;  fixed predictors:   1</span>
 <span class="co">#&gt;  spatial predictors:  1</span>
 <span class="co">#&gt;  temporal predictors:  0</span>
 <span class="co">#&gt; ------</span>
 <span class="co">#&gt;                         Median MAD_SD</span>
-<span class="co">#&gt; (Intercept)             24.0    0.1  </span>
+<span class="co">#&gt; (Intercept)             23.9    0.1  </span>
 <span class="co">#&gt; sex                     -0.7    0.1  </span>
-<span class="co">#&gt; Fast_Food                0.6    0.1  </span>
-<span class="co">#&gt; Fast_Food_spatial_scale  8.7    4.7  </span>
+<span class="co">#&gt; Fast_Food                0.2    0.1  </span>
+<span class="co">#&gt; Fast_Food_spatial_scale  7.5    4.2  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Auxiliary parameter(s):</span>
 <span class="co">#&gt;       Median MAD_SD</span>
-<span class="co">#&gt; sigma 1.4    0.0   </span>
+<span class="co">#&gt; sigma 1.5    0.0   </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Sample avg. posterior predictive distribution of y:</span>
 <span class="co">#&gt;          Median MAD_SD</span>
@@ -181,32 +205,36 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
 <span class="co">#&gt; ------</span>
 <span class="co">#&gt; * For help interpreting the printed output see ?print.stapreg</span>
 <span class="co">#&gt; * For info on the priors used see ?prior_summary.stapreg</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.matrix</span>(fit) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st">  </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/loo.stapreg.html">waic</a></span>(fit_unif)
+<span class="co">#&gt; Warning: 500 (100.0%) p_waic estimates greater than 0.4. We recommend</span>
+<span class="co">#&gt; trying loo instead.</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Computed from 2000 by 500 log-likelihood matrix</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;                  Estimate             SE</span>
+<span class="co">#&gt; elpd_waic -415497140953.3  53064249075.0</span>
+<span class="co">#&gt; p_waic     415497136266.5  53064249071.2</span>
+<span class="co">#&gt; waic       830994281906.5 106128498150.0</span>
+<span class="co">#&gt; Warning: 500 (100.0%) p_waic estimates greater than 0.4. We recommend</span>
+<span class="co">#&gt; trying loo instead.</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.matrix</span>(fit_unif) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st">  </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">prior =</span> <span class="kw">rlnorm</span>(<span class="dt">n=</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/n.html">n</a></span>(),<span class="dt">meanlog =</span> <span class="dv">1</span>,<span class="dt">sdlog =</span> <span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">everything</a></span>(),<span class="dt">key =</span><span class="st">'parameter'</span>,<span class="dt">value =</span> <span class="st">'sample'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(parameter<span class="op">%in%</span><span class="kw">c</span>(<span class="st">"Fast_Food_spatial_scale"</span>,<span class="st">"prior"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>sample,<span class="dt">color=</span>parameter)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Prior vs. Posterior Comparison"</span>)</code></pre></div>
-<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
+<p><img src="misspecified-weightfunction_files/figure-html/unif_priorpost-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists), <span class="dt">by =</span> <span class="fl">0.01</span>)
-cerf_w &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw">coef</span>(fit)[<span class="dv">4</span>])
+cerf_w &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw">coef</span>(fit_unif)[<span class="dv">4</span>])
 unif_w &lt;-<span class="st"> </span><span class="kw">unif_kernel</span>(d,theta_FF)
 <span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
 <span class="kw">plot</span>(d,cerf_w, <span class="dt">main =</span> <span class="st">"Cerf Weight"</span>, <span class="dt">type=</span><span class="st">'l'</span>)
-<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">1</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>,<span class="dt">lty=</span><span class="dv">2</span>)
-<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">2</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>,<span class="dt">lty=</span><span class="dv">2</span>)
+<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit_unif,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">1</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>,<span class="dt">lty=</span><span class="dv">2</span>)
+<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit_unif,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">2</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>,<span class="dt">lty=</span><span class="dv">2</span>)
 <span class="kw">plot</span>(d,unif_w, <span class="dt">main =</span> <span class="st">"Unif Weight"</span>, <span class="dt">type=</span><span class="st">'l'</span>)</code></pre></div>
-<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<p><img src="misspecified-weightfunction_files/figure-html/stap_comparison-1.png" width="700"></p>
 <p>For a different, more closely related weight function, the discrepancy might not be as bad.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(<span class="kw">exp</span>(<span class="op">-</span>x<span class="op">/</span>theta_FF)) )
-X_tilde &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">scale</span>(X))
-<span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
-<span class="kw">hist</span>(X)
-<span class="kw">hist</span>(X_tilde)</code></pre></div>
-<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_df<span class="op">$</span>BMI &lt;-<span class="st"> </span><span class="kw">as.vector</span>(alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X_tilde<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj,<span class="dt">mean =</span> <span class="dv">0</span>,<span class="dt">sd =</span> sigma))
-
-fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> BMI <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food),
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_exp &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> BMI_exp <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food),
                 <span class="dt">subject_data =</span> subj_df,
                 <span class="dt">distance_data =</span> dist_df,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
@@ -217,22 +245,49 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
                 <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">2</span>, <span class="dt">cores =</span> <span class="dv">2</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.matrix</span>(fit) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st">  </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_exp
+<span class="co">#&gt; stap_glm</span>
+<span class="co">#&gt;  family:       gaussian [identity]</span>
+<span class="co">#&gt;  formula:      BMI_exp ~ sex + sap(Fast_Food)</span>
+<span class="co">#&gt;  observations: 500</span>
+<span class="co">#&gt;  Intercept:  TRUE</span>
+<span class="co">#&gt;  fixed predictors:   1</span>
+<span class="co">#&gt;  spatial predictors:  1</span>
+<span class="co">#&gt;  temporal predictors:  0</span>
+<span class="co">#&gt; ------</span>
+<span class="co">#&gt;                         Median MAD_SD</span>
+<span class="co">#&gt; (Intercept)             24.0    0.1  </span>
+<span class="co">#&gt; sex                     -0.7    0.1  </span>
+<span class="co">#&gt; Fast_Food                0.7    0.1  </span>
+<span class="co">#&gt; Fast_Food_spatial_scale  2.6    1.2  </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Auxiliary parameter(s):</span>
+<span class="co">#&gt;       Median MAD_SD</span>
+<span class="co">#&gt; sigma 1.2    0.0   </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Sample avg. posterior predictive distribution of y:</span>
+<span class="co">#&gt;          Median MAD_SD</span>
+<span class="co">#&gt; mean_PPD 23.6    0.1  </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ------</span>
+<span class="co">#&gt; * For help interpreting the printed output see ?print.stapreg</span>
+<span class="co">#&gt; * For info on the priors used see ?prior_summary.stapreg</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.matrix</span>(fit_exp) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st">  </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">prior =</span> <span class="kw">rlnorm</span>(<span class="dt">n=</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/n.html">n</a></span>(),<span class="dt">meanlog =</span> <span class="dv">1</span>,<span class="dt">sdlog =</span> <span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">everything</a></span>(),<span class="dt">key =</span><span class="st">'parameter'</span>,<span class="dt">value =</span> <span class="st">'sample'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(parameter<span class="op">%in%</span><span class="kw">c</span>(<span class="st">"Fast_Food_spatial_scale"</span>,<span class="st">"prior"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>sample,<span class="dt">color=</span>parameter)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Prior vs. Posterior Comparison"</span>)</code></pre></div>
-<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="misspecified-weightfunction_files/figure-html/fit_exppriorpost-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists), <span class="dt">by =</span> <span class="fl">0.01</span>)
-cerf_w &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw">coef</span>(fit)[<span class="dv">4</span>])
+cerf_w &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw">coef</span>(fit_exp)[<span class="dv">4</span>])
 exp_w &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span>theta_FF)
 <span class="kw">plot</span>(d,cerf_w, <span class="dt">main =</span> <span class="st">"Cerf Weight"</span>, <span class="dt">type=</span><span class="st">'l'</span>)
-<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">1</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
-<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">2</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit_exp,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">1</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">points</span>(d,pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit_exp,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">2</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
 <span class="kw">points</span>(d,exp_w, <span class="dt">main =</span> <span class="st">"Exponential Weight"</span>, <span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">col=</span><span class="st">'blue'</span>,<span class="dt">lty=</span><span class="dv">3</span>, <span class="dt">lwd =</span> <span class="dv">2</span>)</code></pre></div>
-<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> BMI <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food,exp),
+<p><img src="misspecified-weightfunction_files/figure-html/fit_exp1stappred-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_exp2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> BMI_exp <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food,exp),
                 <span class="dt">subject_data =</span> subj_df,
                 <span class="dt">distance_data =</span> dist_df,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
@@ -243,21 +298,75 @@ exp_w &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op"
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
                 <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">2</span>, <span class="dt">cores =</span> <span class="dv">2</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.matrix</span>(fit) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st">  </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_exp2
+<span class="co">#&gt; stap_glm</span>
+<span class="co">#&gt;  family:       gaussian [identity]</span>
+<span class="co">#&gt;  formula:      BMI_exp ~ sex + sap(Fast_Food, exp)</span>
+<span class="co">#&gt;  observations: 500</span>
+<span class="co">#&gt;  Intercept:  TRUE</span>
+<span class="co">#&gt;  fixed predictors:   1</span>
+<span class="co">#&gt;  spatial predictors:  1</span>
+<span class="co">#&gt;  temporal predictors:  0</span>
+<span class="co">#&gt; ------</span>
+<span class="co">#&gt;                         Median MAD_SD</span>
+<span class="co">#&gt; (Intercept)             24.0    0.1  </span>
+<span class="co">#&gt; sex                     -0.7    0.1  </span>
+<span class="co">#&gt; Fast_Food                0.7    0.1  </span>
+<span class="co">#&gt; Fast_Food_spatial_scale  2.4    1.4  </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Auxiliary parameter(s):</span>
+<span class="co">#&gt;       Median MAD_SD</span>
+<span class="co">#&gt; sigma 1.2    0.0   </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Sample avg. posterior predictive distribution of y:</span>
+<span class="co">#&gt;          Median MAD_SD</span>
+<span class="co">#&gt; mean_PPD 23.6    0.1  </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ------</span>
+<span class="co">#&gt; * For help interpreting the printed output see ?print.stapreg</span>
+<span class="co">#&gt; * For info on the priors used see ?prior_summary.stapreg</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.matrix</span>(fit_exp2) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st">  </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">prior =</span> <span class="kw">rlnorm</span>(<span class="dt">n=</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/n.html">n</a></span>(),<span class="dt">meanlog =</span> <span class="dv">1</span>,<span class="dt">sdlog =</span> <span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">everything</a></span>(),<span class="dt">key =</span><span class="st">'parameter'</span>,<span class="dt">value =</span> <span class="st">'sample'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(parameter<span class="op">%in%</span><span class="kw">c</span>(<span class="st">"Fast_Food_spatial_scale"</span>,<span class="st">"prior"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>sample,<span class="dt">color=</span>parameter)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Prior vs. Posterior Comparison"</span>)</code></pre></div>
-<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+<p><img src="misspecified-weightfunction_files/figure-html/fit_exp2_priorvspost-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists), <span class="dt">by =</span> <span class="fl">0.01</span>)
-est_w &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span><span class="kw">coef</span>(fit)[<span class="dv">4</span>])
-exp_w &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span>theta_FF)
+est_w &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span><span class="kw">coef</span>(fit_exp2)[<span class="dv">4</span>])
+exp_w &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>(d<span class="op">/</span>theta_FF))
 <span class="kw">plot</span>(d,est_w, <span class="dt">main =</span> <span class="st">"Correct Model"</span>, <span class="dt">type=</span><span class="st">'l'</span>)
-<span class="kw">points</span>(d,<span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">1</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
-<span class="kw">points</span>(d,<span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">2</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">points</span>(d,<span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit_exp2,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">1</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
+<span class="kw">points</span>(d,<span class="kw">exp</span>(<span class="op">-</span>d<span class="op">/</span><span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit_exp2,<span class="dt">regex_pars =</span> <span class="st">'scale'</span>)[<span class="dv">2</span>]),<span class="dt">col=</span><span class="st">'red'</span>, <span class="dt">type =</span> <span class="st">'l'</span>, <span class="dt">lty =</span> <span class="dv">2</span>)
 <span class="kw">points</span>(d,exp_w, <span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">col=</span><span class="st">'blue'</span>,<span class="dt">lty=</span><span class="dv">3</span>, <span class="dt">lwd =</span> <span class="dv">2</span>)</code></pre></div>
-<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
+<p><img src="misspecified-weightfunction_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/loo.stapreg.html">waic</a></span>(fit_exp)
+<span class="co">#&gt; Warning: 500 (100.0%) p_waic estimates greater than 0.4. We recommend</span>
+<span class="co">#&gt; trying loo instead.</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Computed from 2000 by 500 log-likelihood matrix</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;                Estimate           SE</span>
+<span class="co">#&gt; elpd_waic -5.473854e+15 2.684992e+14</span>
+<span class="co">#&gt; p_waic     5.473849e+15 2.684991e+14</span>
+<span class="co">#&gt; waic       1.094771e+16 5.369985e+14</span>
+<span class="co">#&gt; Warning: 500 (100.0%) p_waic estimates greater than 0.4. We recommend</span>
+<span class="co">#&gt; trying loo instead.</span>
+<span class="kw"><a href="../reference/loo.stapreg.html">waic</a></span>(fit_exp2)
+<span class="co">#&gt; Warning: 500 (100.0%) p_waic estimates greater than 0.4. We recommend</span>
+<span class="co">#&gt; trying loo instead.</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Computed from 2000 by 500 log-likelihood matrix</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;                Estimate           SE</span>
+<span class="co">#&gt; elpd_waic -1.614404e+17 3.200470e+15</span>
+<span class="co">#&gt; p_waic     1.614404e+17 3.200469e+15</span>
+<span class="co">#&gt; waic       3.228808e+17 6.400939e+15</span>
+<span class="co">#&gt; Warning: 500 (100.0%) p_waic estimates greater than 0.4. We recommend</span>
+<span class="co">#&gt; trying loo instead.</span>
+<span class="co"># loo_cerf &lt;- loo(fit_exp)</span>
+<span class="co"># loo_exp &lt;- loo(fit_exp2)</span>
+<span class="co"># compare_models(loo_cerf,loo_exp)</span></code></pre></div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

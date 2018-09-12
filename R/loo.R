@@ -551,8 +551,6 @@ recommend_exact_loo <- function(reason) {
 # @return A modified version of 'loo_x'.
 # @importFrom utils capture.output
 reloo <- function(x, loo_x, obs, ..., refit = TRUE) {
-  if (is.stanmvreg(x))
-    STOP_if_stanmvreg("reloo")
   stopifnot(!is.null(x$data), is.loo(loo_x))
 
   J <- length(obs)
@@ -707,14 +705,6 @@ hash_y <- function(x, ...) {
 # check if discrete or continuous
 # @param object stapreg object
 is_discrete <- function(object) {
-  if (inherits(object, "polr"))
-    return(TRUE)
-  if (inherits(object, "stanmvreg")) {
-    fams <- fetch(family(object), "family")
-    res <- sapply(fams, function(x)
-      is.binomial(x) || is.poisson(x) || is.nb(x))
-    return(res)
-  }
   fam <- family(object)$family
   is.binomial(fam) || is.poisson(fam) || is.nb(fam)
 }

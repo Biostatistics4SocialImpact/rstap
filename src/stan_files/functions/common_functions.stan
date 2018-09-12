@@ -304,6 +304,20 @@
     return positive_infinity();
   }
 
+  /** 
+  * Elementwise exponentiate a vector
+  *
+  * @param in a vector
+  * @param to_pow a variable by which to exponentiate every element of in
+  * @return a vector with its elements exponentiated
+  */
+  vector expo_vec(vector in, real to_pow){
+      vector[rows(in)] out;
+      for(i in 1:rows(in))
+          out[i] = (in[i] ^ to_pow);
+  return(out);
+  }
+
    /** 
     * Calculate weight function
     *
@@ -311,15 +325,20 @@
     * @param w integer coding the appropriate weight function
     * @return  exposure evaluated with the corresponding weight function
     */ 
-    vector get_weights(vector exposure, int w){
+    vector get_weights(vector exposure, int w, real theta){
         if(w == 1)
             return(erf(exposure));
         else if(w == 2)
             return(erfc(exposure));
         else if(w == 3)
             return(exp(-exposure));
-        else 
+        else if(w == 4)
             return(1-exp(-exposure));
+        else if(w == 5)
+            return( exp(- expo_vec(exposure,theta) ));
+        else 
+            return(1-exp(- expo_vec(exposure,theta) ));
+            
     }
 
   /**
@@ -336,14 +355,9 @@
       if(u[n,(q*2)-1] > u[n,(q*2)])
           return(0);
       else
-          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta) ,w));
+          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta), w, theta));
       if(log_switch == 1)
         return(log(out));
       else
         return(out);
 }
-      
-
-
-
-

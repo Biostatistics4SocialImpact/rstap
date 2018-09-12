@@ -411,7 +411,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         standata$prior_scale_for_aux <- prior_scale_for_aux %ORifINF% 0
         standata$prior_mean_for_aux <- 0
         standata$prior_df_for_aux <- 0
-        stanfit <- stanmodels$count
+        stanfit <- stanmodels$stap_count
     } else if (is_nb) {
         standata$prior_scale_for_aux <- prior_scale_for_aux %ORifINF% 0
         standata$prior_df_for_aux <- c(prior_df_for_aux)

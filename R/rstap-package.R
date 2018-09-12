@@ -15,7 +15,6 @@
 #' @importFrom pracma erf
 #' @importFrom pracma erfcinv
 #' @importFrom pracma erfinv
-#' @importFrom dplyr lag
 #' @import stats
 #' @import bayesplot
 #' @import rstantools

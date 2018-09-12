@@ -149,7 +149,7 @@ get_weight_name <- function(code){
 }
 
 weight_switch <- function(num){
-    switch(num+1,"none", "erf","cerf","exp",'cexp')
+    switch(num+1,"none", "erf","cerf","exp",'cexp',"wei","cwei")
 }
 
 get_stap_name <- function(code)
@@ -158,19 +158,19 @@ get_stap_name <- function(code)
 
 get_weight_code <- function(all_names, stap_covs, stap_code){
     w <- matrix(0,nrow = length(stap_covs),ncol=2)
-    w_codes <- list("erf"=1,"cerf"=2,"exp"=3,"cexp"=4)
+    w_codes <- list("erf"=1,"cerf"=2,"exp"=3,"cexp"=4,"wei"=5,"cwei"=6)
     for(ix in 1:length(stap_covs)){
         temp <- all_names[which(all_names == stap_covs[ix])+1]
         if(stap_code[ix] %in% c(0,2)){
-            if(temp %in% c("erf","cexp"))
-                stop("erf and the complementary  exponential are reserved for temporal decay only")
-            if(temp %in% c("cerf","exp"))
+            if(temp %in% c("erf","cexp","cwei"))
+                stop("erf,cwei and the complementary  exponential are reserved for temporal decay only")
+            if(temp %in% c("cerf","exp","wei"))
                 w[ix,1] <- w_codes[[temp]]
             else
                 w[ix,1] <- 2
         }else if(stap_code[ix] == 1){
-            if(temp %in% c("cerf","exp"))
-                stop("cerf and the exponential are reserved for spatial decay only")
+            if(temp %in% c("cerf","exp","wei"))
+                stop("cerf, wei and exponential functions  are reserved for spatial decay only")
             if(temp %in% c("erf","exp"))
                 w[ix,2] <- w_codes[[temp]]
             else
