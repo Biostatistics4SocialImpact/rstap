@@ -23,7 +23,7 @@ stap_glm(formula, family = gaussian(), subject_data = NULL,
 
 \item{time_data}{same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance}
 
-\item{id_key}{name of column to join on between subject_data and bef_data}
+\item{id_key}{name of column(s) to join on between subject_data and bef_data}
 
 \item{max_distance}{the inclusion distance; upper bound for all elements of dists_crs}
 

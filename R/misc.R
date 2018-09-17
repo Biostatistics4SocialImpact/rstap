@@ -216,6 +216,9 @@ validate_timedata <- function(time_data){
 #' @return formula without ~ stap() components
 #'
 get_stapless_formula <- function(f){
+    
+    with_bars <- f
+    f <- lme4::nobars(f)
     stap_ics <- which(all.names(f)%in% c("stap","stap_log"))
     sap_ics <- which(all.names(f) %in% c("sap","sap_log"))
     tap_ics <- which(all.names(f) %in% c("tap","tap_log"))
@@ -224,8 +227,10 @@ get_stapless_formula <- function(f){
     stap_nms <- all.names(f)[stap_ics + 1]
     sap_nms <- all.names(f)[sap_ics + 1]
     tap_nms <- all.names(f)[tap_ics + 1]
-    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf") ## add wei here
+    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf","wei","cwei") 
     formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
+    bar_components <- sapply(lme4::findbars(with_bars),paste_bars)
+    formula_components <- c(formula_components,bar_components)
     if(grepl("cbind",all.names(f))[2]){
         new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
         ix <- 3
@@ -582,6 +587,23 @@ make_stap_summary <- function(stanfit){
 }
 
 
+check_reTrms <- function(reTrms) {
+  stopifnot(is.list(reTrms))
+  nms <- names(reTrms$cnms)
+  dupes <- duplicated(nms)
+  for (i in which(dupes)) {
+    original <- reTrms$cnms[[nms[i]]]
+    dupe <- reTrms$cnms[[i]]
+    overlap <- dupe %in% original
+    if (any(overlap))
+      stop("rstap  does not permit formulas with duplicate group-specific terms.\n", 
+           "In this case ", nms[i], " is used as a grouping factor multiple times and\n",
+           dupe[overlap], " is included multiple times.\n", 
+           "Consider using || or -1 in your formulas to prevent this from happening.")
+  }
+  return(invisible(NULL))
+}
+
 # Issue warning if high rhat values
 #
 # @param rhats Vector of rhat values.
@@ -686,6 +708,15 @@ is.mer <- function(x) {
   isTRUE(check1 && check2)
 }
 
+#' @importFrom lme4 glmerControl
+make_glmerControl <- function(...) {
+  glmerControl(check.nlev.gtreq.5 = "ignore",
+               check.nlev.gtr.1 = "stop",
+               check.nobs.vs.rankZ = "ignore",
+               check.nobs.vs.nlev = "ignore",
+               check.nobs.vs.nRE = "ignore", ...)  
+}
+
 # Check if a fitted model (stapreg object) has weights
 # 
 # @param x stapreg object
@@ -726,6 +757,17 @@ paste_scale <- function(names)
 get_weight_function <- function(weight_code){
     switch(weight_code,function(x,y) { pracma::erf(x/y)} ,
            function(x,y){ pracma::erfc(x/y)},
-           function(x,y){ exp(x/y)}, ## add wei functions here
-           function(x,y){1- exp(x/y)})
+           function(x,y){ exp(-x/y)}, 
+           function(x,y){1- exp(-x/y)},
+           function(x,y){exp(- (x/y)^y)},
+           function(x,y){1 - exp(-(x/y)^y)})
+}
+
+paste_bars <- function(bar_element){
+    l <- length(all.names(bar_element))
+    all_names <- all.names(bar_element)
+    if(l==2)
+        paste0("(1",all_names[1],all_names[2],")")
+    else
+        paste0("(",paste(all_names[2:(l-1)],collapse = "+"),all_names[1],all_names[l], ")")
 }

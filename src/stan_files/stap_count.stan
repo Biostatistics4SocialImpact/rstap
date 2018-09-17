@@ -1,4 +1,4 @@
-// GLM for a count outcome
+// STAP-GLM(M) for a count outcome
 functions {
 #include /functions/common_functions.stan
 #include /functions/count_likelihoods.stan
@@ -11,14 +11,19 @@ data {
 #include /data/data_glm.stan
     //declares has_weights, weights, has_offset, offset
 #include /data/weights_offset.stan
-  int<lower=6,upper=7> family; // 6 poisson, 7 neg-binom, (8 poisson with gamma noise at some point?)
+  int<lower=6,upper=7> family; // 6 poisson, 7 neg-binom 
   // declares prior_{mean, scale, df}, prior_{mean, scale, df}_for_intercept, prior_{mean, scale, df}_for_aux
 #include /data/hyperparameters.stan
+  // declares t, p[t], l[t], q, len_theta_L, shape, scale, {len_}concentration, {len_}regularization
+#include /data/glmer_stuff.stan
+  // declares num_not_zero, w, v, u
+#include /data/glmer_stuff2.stan
 }
 transformed data{
   real poisson_max = pow(2.0, 30.0);
+  int<lower=1> V[special_case ? t: 0, N] = make_V(N, special_case ? t: 0 , v);
   // defines hs, len_z_T, len_var_group, delta, pos
-    #include /tdata/tdata_glm.stan
+#include /tdata/tdata_glm.stan
 }
 parameters {
   real<lower=(link == 1 ? negative_infinity() : 0.0)> gamma[has_intercept];
@@ -39,9 +44,34 @@ transformed parameters {
     if (prior_dist_for_aux <= 2) // normal or student_t
       aux = aux + prior_mean_for_aux;
   }
+
+  if (t > 0) {
+    if (special_case == 1) {
+      int start = 1;
+      theta_L = scale .* (family == 6 ? tau : tau * aux);
+      if (t == 1) b = theta_L[1] * z_b;
+      else for (i in 1:t) {
+        int end = start + l[i] - 1;
+        b[start:end] = theta_L[i] * z_b[start:end];
+        start = end + 1;
+      }
+    }
+    else {
+      if (family == 6)
+        theta_L = make_theta_L(len_theta_L, p, 1.0,
+                               tau, scale, zeta, rho, z_T);
+      else
+        theta_L = make_theta_L(len_theta_L, p, aux,
+                               tau, scale, zeta, rho, z_T);
+      b = make_b(z_b, theta_L, p, l);
+    }
+  }
 }
 model {
 #include /model/make_eta.stan
+  if (t > 0){
+#include /model/eta_add_Wb.stan
+}
   if (has_intercept == 1) {
     if (link == 1) eta = eta + gamma[1];
     else eta = eta - min(eta) + gamma[1];
@@ -69,6 +99,8 @@ model {
   }
   else if (family != 7)
     target += dot_product(weights, pw_pois(y, eta, link));
+  else if (family == 7)
+    target += dot_product(weights, pw_nb(y, eta, aux, link));
   
   // Log-prior for aux
   if (family > 6 && 
@@ -86,6 +118,9 @@ model {
   
   // Log-prior for noise
   if (family == 8) target += gamma_lpdf(noise[1] | aux, 1);
+
+  if (t > 0) decov_lp(z_b, z_T, rho, zeta, tau, 
+                      regularization, del, shape, t, p);
   
 }
 generated quantities {
@@ -97,6 +132,9 @@ generated quantities {
   {
     vector[N] nu;
 #include /model/make_eta.stan
+    if( t>0){
+#include /model/eta_add_Wb.stan
+}
     if (has_intercept == 1) {
       if (link == 1) eta = eta + gamma[1];
       else {

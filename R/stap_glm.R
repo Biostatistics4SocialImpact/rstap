@@ -43,7 +43,7 @@
 #' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the id_key on which to join the distance and time_data
 #' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)
 #' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
-#' @param id_key name of column to join on between subject_data and bef_data
+#' @param id_key name of column(s) to join on between subject_data and bef_data
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
 #' @param weights
 #' @param y In \code{stap_glm}, logical scalar indicating whether to

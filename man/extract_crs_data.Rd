@@ -16,7 +16,7 @@ extract_crs_data(stap_data, subject_data, distance_data, time_data, id_key,
 
 \item{time_data}{the time data.frame (optional)}
 
-\item{id_key}{string of the id column name to join on across subject, distance and time data}
+\item{id_key}{string of the id column(s) name to join on across subject, distance and time data.}
 
 \item{max_distance}{the maximum distance in distance_data}
 }

@@ -1,4 +1,3 @@
-
   // glmer stuff, see table 3 of
   // https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf
   int<lower=0> t;               // num. terms (maybe 0) with a | in the glmer formula

@@ -59,24 +59,6 @@ A list with elements \code{value} and \code{pareto_k}.
 These functions are wrappers around the \code{\link[loo]{E_loo}} function
 (\pkg{loo} package) that provide compatibility for \pkg{rstap} models.
 }
-\examples{
-\dontrun{
-if (!exists("example_model")) example(example_model)
-
-# optionally, log-weights can be pre-computed and reused
-psis_result <- loo::psis(log_ratios = -log_lik(example_model))
-
-loo_probs <- loo_linpred(example_model, type = "mean", transform = TRUE, psis_object = psis_result)
-str(loo_probs)
-
-loo_pred_var <- loo_predict(example_model, type = "var", psis_object = psis_result)
-str(loo_pred_var)
-
-loo_pred_ints <- loo_predictive_interval(example_model, prob = 0.8, psis_object = psis_result)
-str(loo_pred_ints)
-}
-
-}
 \references{
 Vehtari, A., Gelman, A., and Gabry, J. (2017). Practical
   Bayesian model evaluation using leave-one-out cross-validation and WAIC.

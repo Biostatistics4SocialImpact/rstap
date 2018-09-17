@@ -200,7 +200,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         Q_s = stap_data$Q_s, 
         Q_t = stap_data$Q_t,
         Q_st = stap_data$Q_st,
-        w = stap_data$weight_mats,
+        weight_mat = stap_data$weight_mats,
         log_ar = stap_data$log_switch, 
         stap_code = stap_data$stap_code,
         M = ncol(dists_crs),
@@ -240,118 +240,88 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     # track of priors)
     user_covariance <- if (!length(group)) NULL else group[["decov"]]
 
-    if (length(group) && length(group$flist)) {
-        if (length(group$strata)) {
-            # standata$clogit <- TRUE
-            # standata$J <- nlevels(group$strata)
-            # standata$strata <- c(as.integer(group$strata)[y == 1],
-            #                      as.integer(group$strata)[y == 0])
-        }
-        # check_reTrms(group)
-        # decov <- group$decov
-        if (is.null(group$SSfun)) {
-            # standata$SSfun <- 0L
-            # standata$input <- double()
-            # standata$Dose <- double()
-        } else {
-            # standata$SSfun <- group$SSfun
-            # standata$input <- group$input
-            # if (group$SSfun == 5) standata$Dose <- group$Dose
-            # else standata$Dose <- double()
-        }
-        # Z <- t(group$Zt)
-        # group <-
-        #     pad_reTrms(Ztlist = group$Ztlist,
-        #                cnms = group$cnms,
-        #                flist = group$flist)
-        # Z <- group$Z
-        # p <- sapply(group$cnms, FUN = length)
-        # l <- sapply(attr(group$flist, "assign"), function(i)
-        #     nlevels(group$flist[[i]]))
-        # t <- length(l)
-        # b_nms <- make_b_nms(group)
-        # g_nms <- unlist(lapply(1:t, FUN = function(i) {
-        #     paste(group$cnms[[i]], names(group$cnms)[i], sep = "|")
-        # }))
-        # standata$t <- t
-        # standata$p <- as.array(p)
-        # standata$l <- as.array(l)
-        # standata$q <- ncol(Z)
-        # standata$len_theta_L <- sum(choose(p, 2), p)
+    if (length(group)) {
+        check_reTrms(group)
+        decov <- group$decov
+        W <- t(group$Zt)
+        group <-
+            pad_reTrms(Ztlist = group$Ztlist,
+                       cnms = group$cnms,
+                       flist = group$flist)
+        W <- group$Z
+        p <- sapply(group$cnms, FUN = length)
+        l <- sapply(attr(group$flist, "assign"), function(i)
+            nlevels(group$flist[[i]]))
+        t <- length(l)
+        b_nms <- make_b_nms(group)
+        g_nms <- unlist(lapply(1:t, FUN = function(i) {
+            paste(group$cnms[[i]], names(group$cnms)[i], sep = "|")
+        }))
+        standata$t <- t
+        standata$p <- as.array(p)
+        standata$l <- as.array(l)
+        standata$q <- ncol(W)
+        standata$len_theta_L <- sum(choose(p, 2), p)
         if (is_bernoulli) {
-            # parts0 <- extract_sparse_parts(Z[y == 0, , drop = FALSE])
-            # parts1 <- extract_sparse_parts(Z[y == 1, , drop = FALSE])
-            # standata$num_non_zero <- c(length(parts0$w), length(parts1$w))
-            # standata$w0 <- parts0$w
-            # standata$w1 <- parts1$w
-            # standata$v0 <- parts0$v - 1L
-            # standata$v1 <- parts1$v - 1L
-            # standata$u0 <- parts0$u - 1L
-            # standata$u1 <- parts1$u - 1L
+            parts0 <- extract_sparse_parts(W[y == 0, , drop = FALSE])
+            parts1 <- extract_sparse_parts(W[y == 1, , drop = FALSE])
+            standata$num_non_zero <- c(length(parts0$w), length(parts1$w))
+             standata$w0 <- parts0$w
+             standata$w1 <- parts1$w
+             standata$v0 <- parts0$v - 1L
+             standata$v1 <- parts1$v - 1L
+             standata$u0 <- parts0$u - 1L
+             standata$u1 <- parts1$u - 1L
         } else {
-            # parts <- extract_sparse_parts(Z)
-            # standata$num_non_zero <- length(parts$w)
-            # standata$w <- parts$w
-            # standata$v <- parts$v - 1L
-            # standata$u <- parts$u - 1L
+            parts <- extract_sparse_parts(W)
+            standata$num_non_zero <- length(parts$w)
+            standata$w <- parts$w
+            standata$v <- parts$v - 1L
+            standata$u <- parts$u - 1L
         }
-        # standata$shape <- as.array(maybe_broadcast(decov$shape, t))
-        # standata$scale <- as.array(maybe_broadcast(decov$scale, t))
-        # standata$len_concentration <- sum(p[p > 1])
-        # standata$concentration <-
-        #     as.array(maybe_broadcast(decov$concentration, sum(p[p > 1])))
-        # standata$len_regularization <- sum(p > 1)
-        # standata$regularization <-
-        #     as.array(maybe_broadcast(decov$regularization, sum(p > 1)))
-        # standata$special_case <- all(sapply(group$cnms, FUN = function(x) {
-        #     length(x) == 1 && x == "(Intercept)" }))
+         standata$shape <- as.array(maybe_broadcast(decov$shape, t))
+         standata$scale <- as.array(maybe_broadcast(decov$scale, t))
+         standata$len_concentration <- sum(p[p > 1])
+         standata$concentration <-
+             as.array(maybe_broadcast(decov$concentration, sum(p[p > 1])))
+         standata$len_regularization <- sum(p > 1)
+         standata$regularization <-
+             as.array(maybe_broadcast(decov$regularization, sum(p > 1)))
+         standata$special_case <- all(sapply(group$cnms, FUN = function(x) {
+             length(x) == 1 && x == "(Intercept)" }))
     } else { # not multilevel
-        if (length(group)) {
-            # standata$clogit <- TRUE
-            # standata$J <- nlevels(group$strata)
-            # standata$strata <- c(as.integer(group$strata)[y == 1],
-            #                      as.integer(group$strata)[y == 0])
-        }
-        ## to be added later when group terms implemented
-        # standata$t <- 0L
-        # standata$p <- integer(0)
-        # standata$l <- integer(0)
-        # standata$q <- 0L
-        # standata$len_theta_L <- 0L
+        standata$t <- 0L
+        standata$p <- integer(0)
+        standata$l <- integer(0)
+        standata$q <- 0L
+        standata$len_theta_L <- 0L
         if (is_bernoulli) {
-            # standata$num_non_zero <- rep(0L, 2)
-            # standata$w0 <- standata$w1 <- double(0)
-            # standata$v0 <- standata$v1 <- integer(0)
-            # standata$u0 <- standata$u1 <- integer(0)
+            standata$num_non_zero <- rep(0L, 2)
+            standata$w0 <- standata$w1 <- double(0)
+            standata$v0 <- standata$v1 <- integer(0)
+            standata$u0 <- standata$u1 <- integer(0)
         } else {
-            # standata$num_non_zero <- 0L
-            # standata$w <- double(0)
-            # standata$v <- integer(0)
-            # standata$u <- integer(0)
+            standata$num_non_zero <- 0L
+            standata$w <- double(0)
+            standata$v <- integer(0)
+            standata$u <- integer(0)
         }
-        # standata$special_case <- 0L
-        # standata$shape <- standata$scale <- standata$concentration <-
-        #     standata$regularization <- rep(0, 0)
-        # standata$len_concentration <- 0L
-        # standata$len_regularization <- 0L
-        # standata$SSfun <- 0L
-        # standata$input <- double()
-        # standata$Dose <- double()
+        standata$special_case <- 0L
+        standata$shape <- standata$scale <- standata$concentration <-
+            standata$regularization <- rep(0, 0)
+        standata$len_concentration <- 0L
+        standata$len_regularization <- 0L
     }
-
 
     if (!is_bernoulli) {
         standata$Z <- array(ztemp, dim = dim(ztemp))
-        # standata$nnz_Z <- 0L
-        # standata$w_Z <- double(0)
-        # standata$v_Z <- integer(0)
-        # standata$u_Z <- integer(0)
+        standata$nnz_Z <- 0L
+        standata$w_Z <- double(0)
+        standata$v_Z <- integer(0)
+        standata$u_Z <- integer(0)
         standata$y <- y
         standata$weights <- weights
         standata$offset <- offset
-        # standata$K_smooth <- ncol(S)
-        # standata$S <- S
-        # standata$smooth_map <- smooth_map
     }
 
     if (is_continuous) {
@@ -443,6 +413,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
               "beta",
               "theta_s",
               "theta_t",
+              if(length(group)) "b",
+              if(standata$len_theta_L) "theta_L",
               if (is_continuous | is_nb) "aux",
               "mean_PPD")
 

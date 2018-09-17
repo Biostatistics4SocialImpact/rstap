@@ -31,23 +31,6 @@
 #'   See \code{\link[loo]{E_loo}} and \code{\link[loo]{pareto-k-diagnostic}} for
 #'   details on the \code{pareto_k} diagnostic.
 #'   
-#' @examples
-#' \dontrun{
-#' if (!exists("example_model")) example(example_model)
-#' 
-#' # optionally, log-weights can be pre-computed and reused
-#' psis_result <- loo::psis(log_ratios = -log_lik(example_model))
-#' 
-#' loo_probs <- loo_linpred(example_model, type = "mean", transform = TRUE, psis_object = psis_result)
-#' str(loo_probs)
-#' 
-#' loo_pred_var <- loo_predict(example_model, type = "var", psis_object = psis_result)
-#' str(loo_pred_var)
-#' 
-#' loo_pred_ints <- loo_predictive_interval(example_model, prob = 0.8, psis_object = psis_result)
-#' str(loo_pred_ints)
-#' }
-#' 
 loo_predict.stapreg <-
   function(object, 
            type = c("mean", "var", "quantile"), 

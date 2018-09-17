@@ -21,9 +21,12 @@ f2 <- y ~ tap_log(Fast_Food) + sex + Age + stap_log(Coffee_Shops)
 a2 <- y ~ sex + Age
 f3 <- cbind(y1,y2) ~ sex + Age + tap_log(Fast_Food)
 a3 <- cbind(y1,y2) ~ sex + Age
+f4 <- y ~ sex + Age + stap(Coffee_Shops) +(1|ID)
+a4 <- y ~ sex + Age + (1|ID)
 test_that("get_stapless_formula works",{
     expect_equal(get_stapless_formula(f1),a1)
     expect_error(get_stapless_formula(a1))
     expect_equal(get_stapless_formula(f2),a2)
     expect_equal(get_stapless_formula(f3),a3)
+    expect_equal(get_stapless_formula(f4),a4)
 })

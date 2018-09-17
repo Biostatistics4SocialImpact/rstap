@@ -69,7 +69,8 @@ stap_glmer <-
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,
-           id_key = NULL,
+           subject_ID = NULL,
+           measure_ID = NULL,
            max_distance,
            subset,
            weights,
@@ -84,16 +85,18 @@ stap_glmer <-
            prior_aux = exponential(),
            prior_covariance = decov(),
            adapt_delta = NULL) {
-  
+  original_formula <- formula
+  stapless_formula <- get_stapless_formula(formula)
   stap_data <- extract_stap_data(formula)
   crs_data <- extract_crs_data(stap_data,
                                subject_data,
                                distance_data,
                                time_data,
-                               id_key,
+                               id_key = c(subject_ID,measure_ID),
                                max_distance)
   call <- match.call(expand.dots = TRUE)
   mc <- match.call(expand.dots = FALSE)
+  mc$formula <- stapless_formula
   data <- validate_data(subject_data , if_missing = environment(formula))
   family <- validate_family(family)
   mc[[1]] <- quote(lme4::glFormula)
@@ -103,7 +106,7 @@ stap_glmer <-
     mc$prior_PD <- mc$algorithm <- mc$scale <- mc$concentration <- mc$shape <-
     mc$adapt_delta <- mc$... <- NULL
   glmod <- eval(mc, parent.frame())
-  X <- glmod$X
+  Z <- glmod$X
   y <- glmod$fr[, as.character(glmod$formula[2L])]
   if (is.matrix(y) && ncol(y) == 1L)
     y <- as.vector(y)
@@ -125,18 +128,17 @@ stap_glmer <-
     stop("'prior_covariance' can't be NULL.", call. = FALSE)
   group <- glmod$reTrms
   group$decov <- prior_covariance
-  algorithm <- match.arg(algorithm)
-  stanfit <- stan_glm.fit(x = X, y = y, weights = weights,
+  stapfit <- stap_glm.fit(x = X, y = y, weights = weights,
                           offset = offset, family = family,
                           prior = prior, prior_intercept = prior_intercept,
                           prior_aux = prior_aux, prior_PD = prior_PD, 
                           algorithm = algorithm, adapt_delta = adapt_delta,
-                          group = group, QR = QR,  ...)
+                          group = group,  ...)
   sel <- apply(X, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
   X <- X[ , !sel, drop = FALSE]
   Z <- pad_reTrms(Ztlist = group$Ztlist, cnms = group$cnms, 
                   flist = group$flist)$Z
-  colnames(Z) <- b_names(names(stanfit), value = TRUE)
+  colnames(Z) <- b_names(names(stapfit), value = TRUE)
   
   fit <- nlist(stanfit, family, formula, offset, weights, 
                x = cbind(X, Z), y = y, data, call, terms = NULL, model = NULL,

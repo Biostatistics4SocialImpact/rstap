@@ -113,7 +113,7 @@ posterior_predict.stapreg <- function(object, newsubjdata = NULL,newdistancedata
                          offset = offset),
                     dots)
   dat <- do.call("pp_data", pp_data_args)
-  ppargs <- pp_args(object, data = pp_eta(object, dat, draws), m = m)
+  ppargs <- pp_args(object, data = pp_eta(object, dat, draws))
 
   if (is.binomial(family(object, m = m)$family)) {
     ppargs$trials <- pp_binomial_trials(object, newdata, m = m)
@@ -226,24 +226,13 @@ pp_fun <- function(object, m = NULL) {
 # @param data output from pp_eta (named list with eta and stanmat)
 # @param m optional integer specifying the submodel for stanmvreg objects
 # @return named list
-pp_args <- function(object, data, m = NULL) {
+pp_args <- function(object, data) {
   stanmat <- data$stanmat
   eta <- data$eta
   stopifnot(is.stapreg(object), is.matrix(stanmat))
-  if (is.stanmvreg(object) && is.null(m)) STOP_arg_required_for_stanmvreg(m)
   inverse_link <- linkinv(object, m = m)
   if (is.nlmer(object)) inverse_link <- function(x) return(x)
 
-  if (is_polr(object)) {
-    zeta <- stanmat[, grep("|", colnames(stanmat), value = TRUE, fixed = TRUE)]
-    args <- nlist(eta, zeta, linkinv = inverse_link)
-    if ("alpha" %in% colnames(stanmat)) # scobit
-      args$alpha <- stanmat[, "alpha"]
-    return(args)
-  }
-  else if (is_clogit(object)) {
-    return(list(mu = inverse_link(eta)))
-  }
 
   args <- list(mu = inverse_link(eta))
   famname <- family(object, m = m)$family

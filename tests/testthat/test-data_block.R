@@ -1,7 +1,9 @@
 context("test internal coding functions")
+f0 <- y ~ Age + Income
 f1 <- y ~ sex + stap(Fast_Food)
 f2 <- y ~ Age + stap(Fast_Food) + sap(Coffee_Shops)
 f3 <- y ~ Age + stap(Fast_Food,cerf,exp) + sex + tap(Coffee_Shops)
+f4 <- y ~ Age + stap(Fast_Food) + sex + (1|ID)
 m3 <- rbind(c(2,3),c(0,1))
 a1 <- c("Fast_Food"=2)
 a2 <- c(a1,"Coffee_Shops"=0)
@@ -14,12 +16,15 @@ test_that("correctly assigns weights",{
                  matrix(c(c(2,2),c(1,0)),nrow=2))
     expect_equal(get_weight_code(all.names(f3),c("Fast_Food","Coffee_Shops"),c(2,1)),
                  m3)
+    expect_equal(get_weight_code(all.names(f4),'Fast_Food',c(2)),
+                 matrix(c(2,1),nrow=1))
 })
 
 test_that("correctly assigns stap coding",{
     expect_equal(get_stap_code(all.names(f1),'Fast_Food'),a1)
     expect_equal(get_stap_code(all.names(f2),c("Fast_Food","Coffee_Shops")),a2)
     expect_equal(get_stap_code(all.names(f3),c("Fast_Food","Coffee_Shops")),a3)
+    expect_equal(get_stap_code(all.names(f4),"Fast_Food"),a1)
 })
 
 test_that("weight_switch works",{
@@ -46,6 +51,7 @@ f1 <- BMI ~ Age +  sap(Coffee_Shops)
 f2 <- BMI ~ Age + tap(Coffee_Shops)
 f3 <- BMI ~ Age + sap(Fast_Food)
 f4 <- BMI ~ Age + stap(Coffee_Shops)
+f5 <- BMI ~ Age + stap(Coffee_Shops)
 distance_data <- data.frame(subj_id = c(1:10,1:10),
                             BEF = c(rep("Coffee_Shops",10),rep("Fast_Food",10)),
                             dist = rexp(20))
@@ -55,6 +61,12 @@ time_data <- data.frame(subj_id = c(1:10,1:10),
 subj_data <- data.frame(subj_id = 1:10,
                         BMI = rnorm(10,mean = 25, sd = 2),
                         Age = rnorm(10,mean = 35, sd = 10))
+subj_data_long <- rbind(cbind(subj_data,measure_ID = as.integer(1)),
+                        cbind(subj_data,measure_ID = as.integer(2)))
+dist_data_long <- rbind(cbind(distance_data,measure_ID = as.integer(1) ),
+                        cbind(distance_data,measure_ID = as.integer(2)))
+time_data_long <- rbind(cbind(time_data,measure_ID = as.integer(1)),
+                        cbind(time_data,measure_ID = as.integer(2)))
 admat <- matrix(distance_data$dist[1:10],nrow=1)
 rownames(admat) <- "Coffee_Shops"
 admat2 <- matrix(distance_data$dist[11:20],nrow=1)
@@ -78,11 +90,20 @@ a4 <- list(d_mat = admat,
            u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
            u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1))
            )
+a5 <- list(d_mat = cbind(admat,admat),
+           t_mat = cbind(admat4,admat4),
+           u_s = as.array(rbind(cbind(1:10,1:10),
+                                cbind(11:20,11:20)),
+                          dim = c(10,2,1)),
+           u_t = as.array(rbind(cbind(1:10,1:10),
+                                cbind(11:20,11:20)),
+                          dim = c(10,2,1)))
 
 stap_data_1 <- extract_stap_data(f1)
 stap_data_2 <- extract_stap_data(f2)
 stap_data_3 <- extract_stap_data(f3)
 stap_data_4 <- extract_stap_data(f4)
+stap_data_5 <- extract_stap_data(f5)
 
 test_that("extract_crs_data correctly errors when no distance or time data are given",{
     expect_error(extract_crs_data(formula = y ~ X,
@@ -114,4 +135,10 @@ test_that("extract_crs_data correctly extracts data",{
                                   id_key ='subj_id',
                                   max_distance = max(distance_data$dist)),
                  a4)
+    expect_equal(extract_crs_data(stap_data_5,
+                                  subject_data = subj_data_long,
+                                  distance_data = dist_data_long,
+                                  time_data = time_data_long,
+                                  id_key = c('subj_id','measure_ID'),
+                                  max_distance = max(distance_data$dist)),a5)
 })

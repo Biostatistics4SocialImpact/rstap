@@ -205,22 +205,6 @@ model object.</p></td>
   errors.</p></div>
     
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (!<span class='fu'>exists</span>(<span class='st'>"example_model"</span>)) <span class='fu'>example</span>(<span class='no'>example_model</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: no help found for ‘example_model’</span></div><div class='input'><span class='no'>err1</span> <span class='kw'>&lt;-</span> <span class='fu'>predictive_error</span>(<span class='no'>example_model</span>, <span class='kw'>draws</span> <span class='kw'>=</span> <span class='fl'>50</span>)</div><div class='output co'>#&gt; <span class='error'>Error in predictive_error(example_model, draws = 50): object 'example_model' not found</span></div><div class='input'><span class='fu'>hist</span>(<span class='no'>err1</span>)</div><div class='output co'>#&gt; <span class='error'>Error in hist(err1): object 'err1' not found</span></div><div class='input'>
-<span class='co'># Using newdata with a binomial model</span>
-<span class='fu'>formula</span>(<span class='no'>example_model</span>)</div><div class='output co'>#&gt; <span class='error'>Error in formula(example_model): object 'example_model' not found</span></div><div class='input'><span class='no'>nd</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(
- <span class='kw'>size</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>10</span>, <span class='fl'>20</span>),
- <span class='kw'>incidence</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>5</span>, <span class='fl'>10</span>),
- <span class='kw'>period</span> <span class='kw'>=</span> <span class='fu'>factor</span>(<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>)),
- <span class='kw'>herd</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='fl'>1</span>, <span class='fl'>15</span>)
-)
-<span class='no'>err2</span> <span class='kw'>&lt;-</span> <span class='fu'>predictive_error</span>(<span class='no'>example_model</span>, <span class='kw'>newdata</span> <span class='kw'>=</span> <span class='no'>nd</span>, <span class='kw'>draws</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>1234</span>)</div><div class='output co'>#&gt; <span class='error'>Error in predictive_error(example_model, newdata = nd, draws = 10, seed = 1234): object 'example_model' not found</span></div><div class='input'>
-<span class='co'># stapreg vs ppd methods</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>stan_glm</span>(<span class='no'>mpg</span> ~ <span class='no'>wt</span>, <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>mtcars</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>300</span>)</div><div class='output co'>#&gt; <span class='error'>Error in stan_glm(mpg ~ wt, data = mtcars, iter = 300): could not find function "stan_glm"</span></div><div class='input'><span class='no'>preds</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.stapreg.html'>posterior_predict</a></span>(<span class='no'>fit</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>123</span>)</div><div class='output co'>#&gt; <span class='error'>Error in posterior_predict(fit, seed = 123): object 'fit' not found</span></div><div class='input'><span class='fu'>all.equal</span>(
-  <span class='fu'>predictive_error</span>(<span class='no'>fit</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>123</span>),
-  <span class='fu'>predictive_error</span>(<span class='no'>preds</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='no'>fit</span>$<span class='no'>y</span>)
-)</div><div class='output co'>#&gt; <span class='error'>Error in predictive_error(fit, seed = 123): object 'fit' not found</span></div><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -232,9 +216,7 @@ model object.</p></td>
       <li><a href="#note">Note</a></li>
 
       <li><a href="#see-also">See also</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+          </ul>
 
   </div>
 </div>

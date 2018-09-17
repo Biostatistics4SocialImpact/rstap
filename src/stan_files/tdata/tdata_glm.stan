@@ -1,4 +1,3 @@
-
   int<lower=0> len_z_T = 0;
   int<lower=0> len_var_group = sum(p) * (t > 0);
   int<lower=0> len_rho = sum(p) - t;

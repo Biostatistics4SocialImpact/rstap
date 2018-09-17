@@ -6,9 +6,10 @@
 \title{Bayesian spatial-temporal generalized linear models with group-specific terms via Stan}
 \usage{
 stap_glmer(formula, family = gaussian, subject_data = NULL,
-  distance_data = NULL, time_data = NULL, id_key = NULL, max_distance,
-  subset, weights, na.action = getOption("na.action", "na.omit"), offset,
-  contrasts = NULL, ..., prior = normal(), prior_intercept = normal(),
+  distance_data = NULL, time_data = NULL, subject_ID = NULL,
+  measure_ID = NULL, max_distance, subset, weights,
+  na.action = getOption("na.action", "na.omit"), offset, contrasts = NULL,
+  ..., prior = normal(), prior_intercept = normal(),
   prior_stap = normal(), prior_theta = log_normal(location = 1L, scale =
   1L), prior_aux = exponential(), prior_covariance = decov(),
   adapt_delta = NULL)

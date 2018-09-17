@@ -1,5 +1,4 @@
 # Part of the rstap package for estimating model parameters
-# Copyright (C) 2013, 2014, 2015, 2016, 2017 
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -131,6 +130,8 @@ extract_stap_data <- function(formula){
     all_names <- all.names(formula)
     staps <- c("sap","tap","stap","sap_log","tap_log","stap_log")
     stap_covs <- all_names[which(all_names%in% staps) +1]
+    if(length(stap_covs)==0)
+        stop("No stap covariates specified")
     stap_code <- get_stap_code(all_names,stap_covs)
     weight_code <- get_weight_code(all_names,stap_covs,stap_code)
     log_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_log",x))*1
@@ -204,16 +205,16 @@ get_stap_code <- function(all_names,stap_covs){
 #' @param subject_data the subject_data data.frame
 #' @param distance_data the distance data.frame (optional)
 #' @param time_data the time data.frame (optional)
-#' @param id_key string of the id column name to join on across subject, distance and time data
+#' @param id_key string of the id column(s) name to join on across subject, distance and time data. 
 #' @param max_distance  the maximum distance in distance_data
 #' @return a list of the crs data for the spatial and/or temporal data as appropriate 
 extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, id_key, max_distance){
 
+    
     dcol_ix <- validate_distancedata(distance_data,max_distance)
     tcol_ix <- validate_timedata(time_data)
     if(is.null(dcol_ix) & is.null(tcol_ix))
         stop("Neither distance_data, nor time_data submitted to function",",at least one is neccessary for rstap functions")
-
 
     if(stap_data$t_only){
         stap_covs <- stap_data$covariates
@@ -224,30 +225,12 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         stap_col <- colnames(time_data)[t_col_ics[1]]
         tcol <- colnames(time_data)[tcol_ix]
         tdata <- lapply(stap_covs, function(x) time_data[which(time_data[,stap_col] == x), ])
-        if(any(lapply(tdata,nrow)==0)){ 
-           missing <- stap_covs[which(sapply(tdata,nrow)==0)]
-           stap_covs <- stap_covs[which(sapply(tdata,nrow)!=0)]
-           warning(paste("The following stap covariates are not present in time_data:",
-                       paste(missing, collapse = ", ")),
-                   "These will be omitted from the analysis")
-           tdata <- lapply(tdata,function(x) if(nrow(x)!=0) x)
-           tdata[sapply(tdata,is.null)] <- NULL
-       }
+        tdata <- .handle_missing_stap(tdata,stap_covs)
         M <- max(sapply(tdata,nrow))
-        mtdata <- lapply(tdata,function(y) merge(subject_data[,id_key, drop = F], y, by = eval(id_key),
-                                                 all.x = T))
-        t_mat <- lapply(mtdata,function(x) x[!is.na(x[,tcol]),tcol])
-        t_mat <- matrix(Reduce(rbind,lapply(t_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                        nrow = length(stap_covs), ncol = M)
-        rownames(t_mat) <- stap_covs
-        freq <- lapply(1:length(mtdata), function(x) xtabs(~ get(id_key) + get(stap_col),
-                                                 data = mtdata[[x]], addNA = TRUE)[,stap_covs[x]])
-        u_t <- lapply(freq,function(x) cbind(
-                                             replace(dplyr::lag(cumsum(x)),
-                                             is.na(dplyr::lag(cumsum(x))),0)+1,
-                                             cumsum(x)))
-        u_t <- abind::abind(u_t)
-        dimnames(u_t) <- NULL
+        mtdata <- .merge_data(tdata, subject_data,id_key)
+        t_mat <- .get_crs_mat(mtdata,tcol,M,stap_data$Q, stap_covs) 
+        u_t <- .get_crs_u(mtdata,id_key,stap_col,stap_covs)
+
         return(list(d_mat = NA, t_mat = t_mat, u_s = NA, u_t = u_t ))
      }else if(stap_data$d_only){
          stap_covs <- stap_data$covariates
@@ -257,44 +240,25 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
                                  See '?stap_glm'")
         stap_col <- colnames(distance_data)[d_col_ics[1]]
         dcol <- colnames(distance_data)[dcol_ix]
-
-        ##ensure subjects that have zero exposure are included
         ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
                                                                        distance_data[,dcol]<= max_distance)),])
-        if(any(lapply(ddata,nrow)==0)){
-            missing <- stap_covs[which(sapply(ddata,nrow)==0)]
-            stap_covs <- stap_covs[which(sapply(ddata,nrow)!=0)]
-            print(paste("The following stap_covariates are not present in distance_data:",
-                  paste(missing,collapse = ', ')))
-            print("These will be omitted from the analysis")
-            ddata <- lapply(ddata,function(x) if(nrow(x)!=0) x)
-            ddata[sapply(ddata,is.null)] <- NULL
-        }
+        ddata <- .handle_missing_stap(ddata,stap_covs,"distance")
         M <- max(sapply(ddata, nrow))
-        mddata <- lapply(ddata,function(y) merge(subject_data[,id_key, drop = F] , y, by = eval(id_key),
-                                                all.x = T) )
-        d_mat <- lapply(mddata,function(x) x[!is.na(x[,dcol]),dcol])
-        d_mat <- matrix(Reduce(rbind,lapply(d_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                        nrow = length(stap_covs), ncol = M)
-        rownames(d_mat) <- stap_covs
-        freq <- lapply(1:length(mddata), function(x) xtabs(~ get(id_key) + get(stap_col),
-                                             data = mddata[[x]], addNA = TRUE)[,stap_covs[x]])
-        u <- lapply(freq,function(x) cbind(
-            replace(dplyr::lag(cumsum(x)),
-                    is.na(dplyr::lag(cumsum(x))),0)+1,
-                    cumsum(x)))
-        u_s <- abind::abind(u)
-        dimnames(u_s) <- NULL
+        mddata <- .merge_data(ddata,subject_data,id_key)
+        d_mat <- .get_crs_mat(mddata, dcol, M,stap_data$Q, stap_covs)
+        u_s <- .get_crs_u(mddata, id_key, stap_col, stap_covs)
         return(list(d_mat = d_mat, t_mat = NA,  u_s = u_s, u_t = NA))
     } else{
         sap_covs <- sap_covs(stap_data) 
         tap_covs <- tap_covs(stap_data)
         stap_covs <- stap_covs(stap_data)
+        sap_stap <- union(sap_covs,stap_covs)
+        tap_stap <- union(tap_covs,stap_covs)
         
         d_col_ics <- unlist(apply(distance_data, 1,
-                                  function(x) which(x %in% c(sap_covs,stap_covs))))
+                                  function(x) which(x %in% sap_stap)))
         t_col_ics <- unlist(apply(time_data, 1,
-                                  function(x) which(x %in% c(stap_covs,tap_covs))))
+                                  function(x) which(x %in% tap_stap)))
         if(!all(d_col_ics) && !all(t_col_ics) && !all(dst_col_ics) && !all(tst_col_ics))
             stop("Stap covariates - of any kind - must all be in (only) one column
                  of the distance dataframe as a character or factor variable. See '?stap_glm'")
@@ -304,68 +268,96 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         tcol <- colnames(time_data)[tcol_ix]
 
         ##ensure subjects that have zero exposure are included
-        ddata <- lapply(union(sap_covs,stap_covs), function(x) distance_data[which((distance_data[,stap_dcol] == x &
+        ddata <- lapply(sap_stap, function(x) distance_data[which((distance_data[,stap_dcol] == x &
                                                                                            distance_data[,dcol] <= max_distance)),])
-        
-        if(any(lapply(ddata,nrow)==0)){
-            missing <- union(sap_covs,stap_covs)[which(sapply(ddata,nrow)==0)]
-            stap_covs <- union(sap_covs,stap_covs)[which(sapply(ddata,nrow)!=0)]
-            print(paste("The following stap_covariates are not present in distance_data:",
-                  paste(missing,collapse = ', ')))
-            print("These will be omitted from the analysis")
-            ddata <- lapply(ddata,function(x) if(nrow(x)!=0) x)
-            ddata[sapply(ddata,is.null)] <- NULL
-        }
+        ddata <- .handle_missing_stap(ddata,sap_stap, "distance")
 
-        tdata <- lapply(union(tap_covs,stap_covs), function(x) time_data[which(time_data[,stap_tcol] == x),])
+        tdata <- lapply(tap_stap, function(x) time_data[which(time_data[,stap_tcol] == x),])
+        tdata <- .handle_missing_stap(tdata, tap_stap)
 
-        if(any(lapply(tdata,nrow)==0)){
-           missing <- stap_covs[which(sapply(tdata,nrow)==0)]
-           stap_covs <- stap_covs[which(sapply(tdata,nrow)!=0)]
-           warning(paste("The following stap covariates are not present in time_data:",
-                       paste(missing, collapse = ", ")),
-                   "These will be omitted from the analysis")
-           tdata <- lapply(tdata,function(x) if(nrow(x)!=0) x)
-           tdata[sapply(tdata,is.null)] <- NULL
-       }
         M <-  max(sapply(tdata,nrow))
         if(M != max(sapply(ddata,nrow)))
             stop("Something wrong please report bug")
 
-        mtdata <- lapply(tdata, function(x) merge(subject_data[,id_key, drop =F], x, by = eval(id_key),
-                                                  all.x = T) )
-        t_mat <- lapply(mtdata, function(x) x[!is.na(x[,tcol]),tcol])
-        t_mat <- matrix(Reduce(rbind,lapply(t_mat, function(x) if(length(x)!=M) rbind(x,rep(0,M-length(x))) else x)),
-                        nrow= length(union(stap_covs,tap_covs)), ncol = M)
-        rownames(t_mat) <- union(tap_covs,stap_covs)
-        freq <- lapply(1:length(mtdata), function(x) xtabs(~ get(id_key) + get(stap_tcol), 
-                                                 data = mtdata[[x]], addNA = TRUE)[,union(tap_covs,stap_covs)[x]])
-        u_t <- lapply(freq, function(x) cbind(
-                                            replace(dplyr::lag(cumsum(x)),
-                                                    is.na(dplyr::lag(cumsum(x))),0) +1,
-                                            cumsum(x)))
-        u_t <- abind::abind(u_t)
-        dimnames(u_t) <- NULL
-        
+        mtdata <- .merge_data(tdata, subject_data, id_key) 
+        t_mat <-  .get_crs_mat(mtdata, tcol, M, stap_data$Q_t + stap_data$Q_st, tap_stap)
+        u_t <- .get_crs_u(mtdata, id_key, stap_tcol, tap_stap)
 
         
-        mddata <- lapply(ddata, function(y) merge(subject_data[,id_key, drop = F], y, by = eval(id_key),
-                                                 all.x = T))
+        mddata <- .merge_data(ddata, subject_data,id_key) 
+        d_mat <- .get_crs_mat(mddata, dcol, M, stap_data$Q_s + stap_data$Q_st, sap_stap)
+        u_s  <- .get_crs_u(mddata,id_key,stap_dcol,sap_stap)
 
-        d_mat <- lapply(mddata, function(x) x[!is.na(x[,dcol]),dcol])
-        d_mat <- matrix(Reduce(rbind,lapply(d_mat, function(x) if (length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                        nrow = length(union(sap_covs,stap_covs)), ncol = M)
-        rownames(d_mat) <- union(sap_covs,stap_covs)
-        freq <- lapply(1:length(mddata), function(x) xtabs(~get(id_key) + get(stap_dcol),
-                                                 data = mddata[[x]], addNA = TRUE)[,union(sap_covs,stap_covs)[x] ])
-        u_s <- lapply(freq, function(x) cbind(
-                                            replace(dplyr::lag(cumsum(x)),
-                                            is.na(dplyr::lag(cumsum(x))),0) + 1,
-                                            cumsum(x)))
-        u_s <- abind::abind(u_s)
-        dimnames(u_s) <- NULL
         return(list(d_mat = d_mat, t_mat = t_mat, u_s = u_s, u_t = u_t))
     }
 }
 
+
+# handle missing stap
+.handle_missing_stap <- function(data,stap_covs,type_of_data = "time"){
+    if(!any(lapply(data,nrow)==0))
+        return(data)
+    else{
+        missing <- stap_covs[which(sapply(data,nrow)==0)]
+        stap_covs <- stap_covs[which(sapply(data,nrow)!=0)]
+        warning(paste("The following stap covariates are not present in ", type_of_data, 
+                      paste(missing, collapse = ", ")), 
+                "THese will be ommitted from the analysis")
+        data <- lapply(data, function(x) if(nrow(x)!=0) x)
+        data[sapply(data,is.null)] <- NULL
+        return(data)
+    }
+}
+        
+
+# Merge data with either subject id or subject and measure id
+.merge_data <- function(list_data, subject_data, id_key){
+
+    if(length(id_key)==2){
+        subj_id <- id_key[1]
+        m_id <- id_key[2]
+        merged_data <- lapply(list_data, function(y) merge(subject_data[,c(subj_id,m_id), drop = F],
+                                                           y, by = c(eval(subj_id),eval(m_id))))
+        merged_data <- lapply(merged_data, function(y) y[order(y[,m_id],y[,subj_id]),])
+        return(merged_data)
+    }else
+        lapply(list_data, function(y) merge(subject_data[,id_key, drop = F],
+                                                                   y, by = eval(id_key)))
+}
+
+
+# Get time or distance csr matrix from data
+.get_crs_mat <- function(list_data, col_name, M, Q,labels){
+
+    crs_mat <- lapply(list_data, function(x) x[!is.na(x[,col_name]),col_name])
+    crs_mat <- matrix(Reduce(rbind, lapply(crs_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
+                        nrow = Q, ncol = M)
+    rownames(crs_mat) <- labels
+    return(crs_mat)
+}
+
+.get_crs_u <- function(list_data,id_key,stap_col,stap_covs){
+
+    if(length(id_key)==2){
+        freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key[1]) + get(id_key[2]) + get(stap_col),
+                                                              data = list_data[[x]], addNA = TRUE)[,,stap_covs[x]])
+        freq <- lapply(freq,function(x) data.frame(x)[which(data.frame(x)[,"Freq"]!=0), "Freq"])
+        u <- lapply(freq, function(x) cbind(
+                                            replace(dplyr::lag(cumsum(x)),
+                                            is.na(dplyr::lag(cumsum(x))),0) +1,
+                                            cumsum(x)))
+        u <- abind::abind(u)
+        dimnames(u) <- NULL
+        return(u)
+    }else{
+        freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key) + get(stap_col),
+                                                              data = list_data[[x]], addNA = TRUE)[,stap_covs[x]])
+        u <- lapply(freq, function(x) cbind(replace(dplyr::lag(cumsum(x)),
+                                            is.na(dplyr::lag(cumsum(x))),0) +1,
+                                            cumsum(x)))
+        u <- abind::abind(u)
+        dimnames(u) <- NULL
+        return(u)
+    }
+}
 
