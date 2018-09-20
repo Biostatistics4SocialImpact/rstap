@@ -445,7 +445,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
                                          FUN = function(x) x[lower.tri(x,TRUE)]))
                               })
         l <- length(dim(Sigma))
-        end <- tail(dim(Sigma), 1L)
+        end <- utils::tail(dim(Sigma), 1L)
         shift <- grep("^theta_L", names(stapfit@sim$samples[[1]]))[1] - 1L
         if(l==3) for (chain in 1:end) for (param in 1:nrow(Sigma)) {
             stapfit@sim$samples[[chain]][[shift + param]] <- Sigma[param, , chain]

@@ -9,8 +9,7 @@ stap_glm(formula, family = gaussian(), subject_data = NULL,
   max_distance = NULL, max_time = NULL, subset, weights, na.action = NULL,
   offset = NULL, model = TRUE, y = TRUE, contrasts = NULL, ...,
   prior = normal(), prior_intercept = normal(), prior_stap = normal(),
-  prior_theta_s = log_normal(location = 1L, scale = 1L),
-  prior_theta_t = log_normal(location = 1L, scale = 1L),
+  prior_theta = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), adapt_delta = NULL)
 }
 \arguments{
