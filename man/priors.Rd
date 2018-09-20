@@ -12,10 +12,8 @@
 \alias{product_normal}
 \alias{exponential}
 \alias{log_normal}
-\alias{beta_prior}
 \alias{decov}
 \alias{lkj}
-\alias{R2}
 \title{Prior distributions and options}
 \usage{
 normal(location = 0, scale = NULL, autoscale = TRUE)
@@ -38,20 +36,15 @@ exponential(rate = 1, autoscale = TRUE)
 
 log_normal(location = 0, scale = 1)
 
-beta_prior(alpha = 1, beta = 1)
-
 decov(regularization = 1, concentration = 1, shape = 1, scale = 1)
 
 lkj(regularization = 1, scale = 10, df = 1, autoscale = TRUE)
-
-R2(location = NULL, what = c("mode", "mean", "median", "log"))
 }
 \arguments{
 \item{location}{Prior location. In most cases, this is the prior mean, but
 for \code{cauchy} (which is equivalent to \code{student_t} with
 \code{df=1}), the mean does not exist and \code{location} is the prior
-median. The default value is \eqn{0}, except for \code{R2} which has no
-default value for \code{location}.}
+median. The default value is \eqn{0}.}
 
 \item{scale}{Prior scale. The default depends on the family (see
 \strong{Details}).}

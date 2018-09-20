@@ -11,7 +11,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
                          times_crs, u_t,
                          weight_functions,
                          stap_data,
-                         max_distance = 3L,
+                         max_distance = max(dists_crs),
+                         max_time = max(times_crs),
                          weights = rep(1,NROW(y)),
                          offset = rep(0, NROW(y)),
                          family = stats::gaussian(),
@@ -137,8 +138,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     is_gaussian <- is.gaussian(famname)
     is_gamma <- is.gamma(famname)
     is_ig <- is.ig(famname)
-    is_beta <- is.beta(famname)
-    is_continuous <- is_gaussian || is_gamma || is_ig || is_beta
+    is_continuous <- is_gaussian || is_gamma || is_ig 
 
     # require intercept for certain family and link combinations
     if (!has_intercept) {
@@ -179,6 +179,13 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     prior_scale_for_intercept <-
         min(.Machine$double.xmax, prior_scale_for_intercept)
 
+    #if(prior_theta >0L && prior_theta_autoscale){
+    #    prior_theta_s_scale <- pmax(prior_theta_scale, apply(dists_crs,1,mad))
+    #    prior_theta_s_location <- apply(dists_crs,1,median)
+    #    prior_theta_t_scale <- pmax(prior_theta_scale,apply(times_crs,1,mad))
+    #    prior_theta_t_location <- apply(dists,apply(times_crs,1,median))
+    #}
+
     if (length(weights) > 0 && all(weights == 1)) weights <- double()
     if (length(offset)  > 0 && all(offset  == 0)) offset  <- double()
     if(all(is.na(u_s))){
@@ -186,7 +193,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         dists_crs <- array(double(),dim=c(0,0))
         max_distance <- 0 
     }
-    if((is.na(u_t))){
+    if(all(is.na(u_t))){
         u_t <- array(double(),dim=c(0,0))
         times_crs <- array(double(),dim=c(0,0))
         max_time <- 0 
@@ -263,8 +270,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         standata$q <- ncol(W)
         standata$len_theta_L <- sum(choose(p, 2), p)
         if (is_bernoulli) {
-            parts0 <- extract_sparse_parts(W[y == 0, , drop = FALSE])
-            parts1 <- extract_sparse_parts(W[y == 1, , drop = FALSE])
+            parts0 <- rstan::extract_sparse_parts(W[y == 0, , drop = FALSE])
+            parts1 <- rstan::extract_sparse_parts(W[y == 1, , drop = FALSE])
             standata$num_non_zero <- c(length(parts0$w), length(parts1$w))
              standata$w0 <- parts0$w
              standata$w1 <- parts1$w
@@ -273,7 +280,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
              standata$u0 <- parts0$u - 1L
              standata$u1 <- parts1$u - 1L
         } else {
-            parts <- extract_sparse_parts(W)
+            parts <- rstan::extract_sparse_parts(W)
             standata$num_non_zero <- length(parts$w)
             standata$w <- parts$w
             standata$v <- parts$v - 1L
@@ -315,10 +322,6 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
 
     if (!is_bernoulli) {
         standata$Z <- array(ztemp, dim = dim(ztemp))
-        standata$nnz_Z <- 0L
-        standata$w_Z <- double(0)
-        standata$v_Z <- integer(0)
-        standata$u_Z <- integer(0)
         standata$y <- y
         standata$weights <- weights
         standata$offset <- offset
@@ -430,16 +433,47 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     stapfit <- do.call(sampling, sampling_args)
     check <- try(check_stanfit(stapfit))
     if (!isTRUE(check)) return(standata)
+    if(standata$len_theta_L){
+        thetas_ref <- rstan::extract(stapfit, pars = "theta_L", inc_warmup = T,
+                              permuted = F)
+        cnms <- group$cnms
+        nc <- sapply(cnms, FUN = length)
+        nms <- names(cnms)
+        Sigma <- apply(thetas_ref, 1:2, FUN = function(theta) {
+                           Sigma <- lme4::mkVarCorr(sc = 1, cnms, nc, theta, nms)
+                           unlist(sapply(Sigma, simplify = F,
+                                         FUN = function(x) x[lower.tri(x,TRUE)]))
+                              })
+        l <- length(dim(Sigma))
+        end <- tail(dim(Sigma), 1L)
+        shift <- grep("^theta_L", names(stapfit@sim$samples[[1]]))[1] - 1L
+        if(l==3) for (chain in 1:end) for (param in 1:nrow(Sigma)) {
+            stapfit@sim$samples[[chain]][[shift + param]] <- Sigma[param, , chain]
+        }
+        else for (chain in 1:end) {
+            stapfit@sim$samples[[chain]][[shift + 1]] <- Sigma[, chain]
+        }
+        Sigma_nms <- lapply(cnms, FUN = function(grp) {
+                                nm <- outer(grp, grp, FUN = paste, sep = ",")
+                                nm[lower.tri (nm , diag = TRUE)]
+                              })
+        for(j in seq_along(Sigma_nms)){
+            Sigma_nms[[j]] <- paste0(nms[j], ":", Sigma_nms[[j]])
+        }
+        Sigma_nms <- unlist(Sigma_nms)
+    }
     new_names <- c(if (has_intercept) "(Intercept)",
                    colnames(ztemp),
-                   if(stap_data$Q_s>0) rownames(dists_crs),
-                   if(stap_data$Q_t>0) rownames(times_crs),
-                   if(stap_data$Q_s>0) paste0(rownames(dists_crs),'_spatial_scale'),
-                   if(stap_data$Q_t>0) paste0(rownames(times_crs),'_temporal_scale'),
+                   if((stap_data$Q_s + stap_data$Q_st)>0) rownames(dists_crs),
+                   if((stap_data$Q_t)>0) rownames(times_crs), ## only count Q_st once
+                   if((stap_data$Q_s + stap_data$Q_st)>0) paste0(rownames(dists_crs),'_spatial_scale'),
+                   if((stap_data$Q_t + stap_data$Q_st)>0) paste0(rownames(times_crs),'_temporal_scale'),
+                   if(length(group) && length(group$flist)) c (paste0("b[", b_nms, "]")),
                    if (is_gaussian) "sigma",
                    if (is_gamma) "shape",
                    if (is_ig) "lambda",
                    if (is_nb) "reciprocal_dispersion",
+                   if(standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                    "mean_PPD",
                    "log-posterior")
     stapfit@sim$fnames_oi <- new_names
@@ -531,18 +565,17 @@ unpad_reTrms.array <- function(x, columns = TRUE, ...) {
     return(x_keep)
 }
 
-make_b_nms <- function(group, m = NULL, stub = "Long") {
+make_b_nms <- function(group, stub = "Long") {
     group_nms <- names(group$cnms)
     b_nms <- character()
-    m_stub <- if (!is.null(m)) get_m_stub(m, stub = stub) else NULL
     for (i in seq_along(group$cnms)) {
         nm <- group_nms[i]
         nms_i <- paste(group$cnms[[i]], nm)
         levels(group$flist[[nm]]) <- gsub(" ", "_", levels(group$flist[[nm]]))
         if (length(nms_i) == 1) {
-            b_nms <- c(b_nms, paste0(m_stub, nms_i, ":", levels(group$flist[[nm]])))
+            b_nms <- c(b_nms, paste0(nms_i, ":", levels(group$flist[[nm]])))
         } else {
-            b_nms <- c(b_nms, c(t(sapply(paste0(m_stub, nms_i), paste0, ":",
+            b_nms <- c(b_nms, c(t(sapply(paste0(nms_i), paste0, ":",
                                          levels(group$flist[[nm]])))))
         }
     }

@@ -17,7 +17,6 @@
 #' coefficients, intercept, and auxiliary parameters.
 #'
 #' @export
-#' @templateVar armRef (Ch. 3-6)
 #' @templateVar pkg stats
 #' @templateVar pkgfun glm
 #' @templateVar sameargs offset,weights
@@ -38,7 +37,6 @@
 #' @template reference-gelman-hill
 #' @template reference-muth
 #'
-#'
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
 #' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the id_key on which to join the distance and time_data
 #' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)
@@ -46,8 +44,7 @@
 #' @param id_key name of column(s) to join on between subject_data and bef_data
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
 #' @param weights
-#' @param y In \code{stap_glm}, logical scalar indicating whether to
-#'   return the response vector. In \code{stan_glm.fit}, a response vector.
+#' @param y In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.
 #' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 #' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
@@ -62,15 +59,14 @@ stap_glm <- function(formula,
                      distance_data = NULL,
                      time_data = NULL,
                      id_key = NULL,
-                     max_distance,
+                     max_distance = NULL,
+                     max_time = NULL,
                      subset,
                      weights,
                      na.action = NULL,
                      offset = NULL,
                      model = TRUE,
-                     z = FALSE,
                      y = TRUE,
-                     x = FALSE,
                      contrasts = NULL,
                      ...,
                      prior = normal(),
@@ -85,7 +81,8 @@ stap_glm <- function(formula,
                                  distance_data,
                                  time_data,
                                  id_key,
-                                 max_distance)
+                                 max_distance,
+                                 max_time)
     original_formula <- formula
     stapless_formula <- get_stapless_formula(formula)
     family <- validate_family(family)
@@ -122,7 +119,8 @@ stap_glm <- function(formula,
                             u_t = crs_data$u_t,
                             stap_data = stap_data,
                             weights = weights,
-                            max_distance = max_distance,
+                            max_distance = crs_data$max_distance,
+                            max_time = crs_data$max_time,
                             offset = offset, family = family,
                             prior = prior,
                             prior_intercept = prior_intercept,

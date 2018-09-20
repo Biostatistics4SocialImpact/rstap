@@ -76,19 +76,27 @@ rownames(admat4) <- "Coffee_Shops"
 a1 <-  list(d_mat = admat,
             t_mat = NA,
             u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
-            u_t = NA)
+            u_t = NA,
+            max_distance = max(distance_data$dist),
+            max_time = NULL)
 a2 <- list(d_mat = NA,
-           t_mat = admat,
+           t_mat = admat4,
            u_s = NA,
-           u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1)))
+           u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
+           max_distance = NULL,
+           max_time = max(time_data$time))
 a3 <- list(d_mat = admat2,
            t_mat = NA,
            u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
-           u_t = NA)
+           u_t = NA,
+           max_distance = max(distance_data$dist),
+           max_time = NULL)
 a4 <- list(d_mat = admat,
            t_mat = admat4,
            u_s = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
-           u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1))
+           u_t = as.array(cbind(1:10,1:10),dim=c(10,2,1)),
+           max_distance = max(distance_data$dist),
+           max_time = max(time_data$time)
            )
 a5 <- list(d_mat = cbind(admat,admat),
            t_mat = cbind(admat4,admat4),
@@ -97,7 +105,9 @@ a5 <- list(d_mat = cbind(admat,admat),
                           dim = c(10,2,1)),
            u_t = as.array(rbind(cbind(1:10,1:10),
                                 cbind(11:20,11:20)),
-                          dim = c(10,2,1)))
+                          dim = c(10,2,1)),
+           max_distance = max(distance_data$dist),
+           max_time = max(time_data$time))
 
 stap_data_1 <- extract_stap_data(f1)
 stap_data_2 <- extract_stap_data(f2)
@@ -117,28 +127,35 @@ test_that("extract_crs_data correctly extracts data",{
                                   distance_data = distance_data,
                                   time_data = NULL,
                                   id_key = 'subj_id',
-                                  max_distance = max(distance_data$dist)),
+                                  max_distance = max(distance_data$dist),
+                                  max_time = NULL),
                  a1)
     expect_equal(extract_crs_data(stap_data_2,subj_data,
-                                  time_data = distance_data,
+                                  distance_data = NULL,
+                                  time_data = time_data,
                                   id_key = 'subj_id',
-                                  max_distance = max(distance_data$dist)),
+                                  max_distance = NULL,
+                                  max_time = max(time_data$time)),
                  a2)
     expect_equal(extract_crs_data(stap_data_3,subj_data,
                                   distance_data = distance_data,
+                                  time_data = NULL,
                                   id_key = 'subj_id',
-                                  max_distance = max(distance_data$dist)),
+                                  max_distance = max(distance_data$dist),
+                                  max_time = NULL),
                  a3)
     expect_equal(extract_crs_data(stap_data_4,subject_data = subj_data,
                                   distance_data = distance_data,
                                   time_data = time_data,
                                   id_key ='subj_id',
-                                  max_distance = max(distance_data$dist)),
+                                  max_distance = max(distance_data$dist),
+                                  max_time = max(time_data$time)),
                  a4)
     expect_equal(extract_crs_data(stap_data_5,
                                   subject_data = subj_data_long,
                                   distance_data = dist_data_long,
                                   time_data = time_data_long,
                                   id_key = c('subj_id','measure_ID'),
-                                  max_distance = max(distance_data$dist)),a5)
+                                  max_distance = max(distance_data$dist),
+                                  max_time = max(time_data$time)),a5)
 })

@@ -172,7 +172,7 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
         }else if(stap_code[ix] == 1){
             if(temp %in% c("cerf","exp","wei"))
                 stop("cerf, wei and exponential functions  are reserved for spatial decay only")
-            if(temp %in% c("erf","exp"))
+            if(temp %in% c("erf","exp","cwei"))
                 w[ix,2] <- w_codes[[temp]]
             else
                 w[ix,2] <- 1
@@ -207,14 +207,17 @@ get_stap_code <- function(all_names,stap_covs){
 #' @param time_data the time data.frame (optional)
 #' @param id_key string of the id column(s) name to join on across subject, distance and time data. 
 #' @param max_distance  the maximum distance in distance_data
+#' @param max_time  the maximum distance in time_data 
 #' @return a list of the crs data for the spatial and/or temporal data as appropriate 
-extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, id_key, max_distance){
+extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, id_key, max_distance, max_time){
 
     
     dcol_ix <- validate_distancedata(distance_data,max_distance)
     tcol_ix <- validate_timedata(time_data)
     if(is.null(dcol_ix) & is.null(tcol_ix))
         stop("Neither distance_data, nor time_data submitted to function",",at least one is neccessary for rstap functions")
+    if(is.null(max_distance) & !is.null(distance_data)) max_distance <- max(distance_data[,dcol_ix])
+    if(is.null(max_time) & !is.null(time_data)) max_time <- max(time_data[,tcol_ix])
 
     if(stap_data$t_only){
         stap_covs <- stap_data$covariates
@@ -231,7 +234,9 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         t_mat <- .get_crs_mat(mtdata,tcol,M,stap_data$Q, stap_covs) 
         u_t <- .get_crs_u(mtdata,id_key,stap_col,stap_covs)
 
-        return(list(d_mat = NA, t_mat = t_mat, u_s = NA, u_t = u_t ))
+        return(list(d_mat = NA, t_mat = t_mat, u_s = NA, u_t = u_t,
+                    max_distance = max_distance,
+                    max_time = max_time))
      }else if(stap_data$d_only){
          stap_covs <- stap_data$covariates
          d_col_ics <- unlist(apply(distance_data, 1, function(x) which(x %in% stap_covs)))
@@ -247,7 +252,9 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         mddata <- .merge_data(ddata,subject_data,id_key)
         d_mat <- .get_crs_mat(mddata, dcol, M,stap_data$Q, stap_covs)
         u_s <- .get_crs_u(mddata, id_key, stap_col, stap_covs)
-        return(list(d_mat = d_mat, t_mat = NA,  u_s = u_s, u_t = NA))
+        return(list(d_mat = d_mat, t_mat = NA,  u_s = u_s, u_t = NA,
+                    max_distance = max_distance,
+                    max_time = max_time))
     } else{
         sap_covs <- sap_covs(stap_data) 
         tap_covs <- tap_covs(stap_data)
@@ -259,7 +266,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
                                   function(x) which(x %in% sap_stap)))
         t_col_ics <- unlist(apply(time_data, 1,
                                   function(x) which(x %in% tap_stap)))
-        if(!all(d_col_ics) && !all(t_col_ics) && !all(dst_col_ics) && !all(tst_col_ics))
+        if(!all(d_col_ics) && !all(t_col_ics) && !all(d_col_ics) && !all(t_col_ics))
             stop("Stap covariates - of any kind - must all be in (only) one column
                  of the distance dataframe as a character or factor variable. See '?stap_glm'")
         stap_dcol <- colnames(distance_data)[d_col_ics[1]]
@@ -288,7 +295,8 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         d_mat <- .get_crs_mat(mddata, dcol, M, stap_data$Q_s + stap_data$Q_st, sap_stap)
         u_s  <- .get_crs_u(mddata,id_key,stap_dcol,sap_stap)
 
-        return(list(d_mat = d_mat, t_mat = t_mat, u_s = u_s, u_t = u_t))
+        return(list(d_mat = d_mat, t_mat = t_mat, u_s = u_s, u_t = u_t, 
+                    max_distance = max_distance, max_time = max_time))
     }
 }
 

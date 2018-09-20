@@ -162,7 +162,7 @@ nsap.stapreg <- function(object)
 #' @name nfix
 #' @param object a A fitted model object
 #' @param ... Arguments to methods.
-#' @return number of fixed effects- non spatial temporal aggregated predictors
+#' @return number of fixed effects -  neither staps nor random effects
 #' @export
 #' @seealso \code{\link{nfix.stapreg}}
 nfix <- function(object, ...)
@@ -376,7 +376,7 @@ model.matrix.stapreg <- function(object, subject_data) {
 #'   that both default to \code{FALSE}.
 #' 
 formula.stapreg <- function(x, ..., m = NULL) {
-  if (is.mer(x) && !isTRUE(x$stan_function == "stan_gamm4")) return(formula_mer(x, ...))
+  #if (is.mer(x)) return(formula_mer(x, ...))
   x$formula
 }
 

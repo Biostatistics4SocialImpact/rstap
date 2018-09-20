@@ -7,8 +7,8 @@
 \title{In-sample or out-of-sample predictive errors}
 \usage{
 \method{predictive_error}{stapreg}(object, newsubjdata = NULL,
-  newdistdata = NULL, draws = NULL, re.form = NULL, seed = NULL,
-  offset = NULL, ...)
+  newdistancedata = NULL, newtimedata = NULL, draws = NULL,
+  re.form = NULL, seed = NULL, offset = NULL, ...)
 
 \method{predictive_error}{ppd}(object, y, ...)
 }

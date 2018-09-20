@@ -79,18 +79,19 @@ print.stapreg <- function(x, digits = 1, ...) {
   
   cat("\n------\n")
 
-  #mer <- is.mer(x)
-  #gamm <- isTRUE(x$stan_function == "stan_gamm4")
-  #ord <- is_polr(x) && !("(Intercept)" %in% rownames(x$stan_summary))
+  mer <- is.mer(x)
 
   aux_nms <- .aux_name(x)
   
     
-    if (isTRUE(x$stan_function %in% c("stan_lm", "stan_aov"))) {
+  if (isTRUE(x$stan_function %in% c("stan_lm", "stan_aov"))) {
       aux_nms <- c("R2", "log-fit_ratio", aux_nms)
-    }
+   }
     mat <- as.matrix(x$stapfit) # don't used as.matrix.stapreg method b/c want access to mean_PPD
     nms <- setdiff(rownames(x$stap_summary), c("log-posterior", aux_nms))
+
+    if(mer) 
+        nms <- setdiff(nms, grep("b\\[", nms, value = TRUE))
     
     ppd_nms <- grep("^mean_PPD", nms, value = TRUE)
     nms <- setdiff(nms, ppd_nms)
@@ -99,6 +100,9 @@ print.stapreg <- function(x, digits = 1, ...) {
     estimates <- .median_and_madsd(coef_mat)
     ppd_estimates <- .median_and_madsd(ppd_mat)
 
+    if(mer) 
+        estimates <- estimates[!grepl("^SIgma\\[", rownames(estimates)),, drop = F]
+
     .printfr(estimates, digits, ...)
     
     if (length(aux_nms)) {
@@ -106,10 +110,14 @@ print.stapreg <- function(x, digits = 1, ...) {
       cat("\nAuxiliary parameter(s):\n")
       .printfr(aux_estimates, digits, ...)
     }
-    if (!is_clogit(x)) {
-      cat("\nSample avg. posterior predictive distribution of y:\n")
-      .printfr(ppd_estimates, digits, ...)
+    if(mer){
+        cat("\nError terms:\n")
+        print(VarCorr(x), digits = digits + 1, ...)
+        cat("Num.levels:",
+            paste(names(ngrps(x)), unname(ngrps(x)), collapse = ", "), "\n")
     }
+    cat("\nSample avg. posterior predictive distribution of y:\n")
+    .printfr(ppd_estimates, digits, ...)
   
   cat("\n------\n")
   cat("* For help interpreting the printed output see ?print.stapreg\n")

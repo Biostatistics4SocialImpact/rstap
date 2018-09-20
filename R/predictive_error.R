@@ -58,7 +58,8 @@
 predictive_error.stapreg <-
   function(object,
            newsubjdata = NULL,
-           newdistdata = NULL,
+           newdistancedata = NULL,
+           newtimedata = NULL,
            draws = NULL,
            re.form = NULL,
            seed = NULL,
@@ -76,7 +77,9 @@ predictive_error.stapreg <-
     
     ytilde <- posterior_predict(
       object,
-      newdata = newdata,
+      newsubjdata = newsubjdata,
+      newdistdata = newdistdata,
+      newtimedata = newtimedata,
       draws = draws,
       offset = offset,
       seed = seed,

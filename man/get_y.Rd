@@ -3,11 +3,17 @@
 \name{get_y}
 \alias{get_y}
 \alias{get_z}
+\alias{get_x}
+\alias{get_z.default}
 \title{Extract X, Y or Z from a stapreg object}
 \usage{
 get_y(object, ...)
 
 get_z(object, ...)
+
+get_x(object, ...)
+
+\method{get_z}{default}(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object returned by one of the 

@@ -70,8 +70,6 @@ log_lik.stapreg <- function(object, newdata = NULL, offset = NULL, ...) {
 ll_fun <- function(x) {
   validate_stapreg_object(x)
   f <- family(x)
-  if (is.nlmer(x)) 
-    return(.ll_nlmer_i)
   fun <- paste0(".ll_", family(x)$family, "_i")
   get(fun, mode = "function")
 }
@@ -105,12 +103,12 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
     form <- as.formula(formula(object)) # in case formula is string
     y <- eval(form[[2L]], newdata)
   } else if (has_newdata) {
-    ppdat <- pp_data(object, as.data.frame(newdata), offset = offset, m = m)
+    ppdat <- pp_data(object, as.data.frame(newdata), offset = offset)
     pp_eta_dat <- pp_eta(object, ppdat)
     eta <- pp_eta_dat$eta
     stanmat <- pp_eta_dat$stanmat
     x <- ppdat$x
-    form <- as.formula(formula(object, m = m))
+    form <- as.formula(formula(object))
     y <- eval(form[[2L]], newdata)
   } else {
     stanmat <- as.matrix.stapreg(object)
@@ -124,18 +122,7 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
   }
   
     fname <- f$family
-    if (is.nlmer(object)) {
-      draws <- list(mu = posterior_linpred(object, newdata = newdata),
-                    sigma = stanmat[,"sigma"])
-      data <- data.frame(y)
-      data$offset <- if (has_newdata) offset else object$offset
-      if (model_has_weights(object)) {
-        data$weights <- object$weights
-      }
-      data$i_ <- seq_len(nrow(data))  # for nlmer need access to i inside .ll_nlmer_i
-      return(nlist(data, draws, S = NROW(draws$mu), N = nrow(data)))
-      
-    } else if (!is.binomial(fname)) {
+    if (!is.binomial(fname)) {
       data <- data.frame(y,z,stap_exp)
     } else {
       if (NCOL(y) == 2L) {
@@ -147,7 +134,7 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
           y <- fac2bin(y)
         stopifnot(all(y %in% c(0, 1)))
       }
-      data <- data.frame(y, trials, x)
+      data <- data.frame(y, trials, z, stap_exp)
     }
     delta <- setdiff(names(coef(object)), coef_names(object$stap_data))
     draws$delta <- stanmat[, delta, drop = FALSE]
@@ -163,9 +150,9 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
   data$offset <- if (has_newdata) offset else object$offset
   if (model_has_weights(object))
     data$weights <- object$weights
-    
+  
   if (is.mer(object)) {
-    b_sel <- if (is.null(nms)) b_names(colnames(stanmat)) else nms$y_b[[m]]
+    b_sel <-  b_names(colnames(stanmat)) 
     b <- stanmat[, b_sel, drop = FALSE]
     if (has_newdata) {
       Z_names <- ppdat$Z_names
@@ -175,11 +162,11 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
         b <- pp_b_ord(b, Z_names)
       }
       if (is.null(ppdat$Zt)) z <- matrix(NA, nrow = nrow(x), ncol = 0)
-      else z <- t(ppdat$Zt)
+      else w <- t(ppdat$Zt)
     } else {
-      z <- get_z(object)
+      w <- get_w(object)
     }
-    data <- cbind(data, as.matrix(z)[1:NROW(x),, drop = FALSE])
+    data <- cbind(data, as.matrix(w)[1:NROW(x),, drop = FALSE])
     draws$beta <- cbind(draws$beta, b)
   }
   

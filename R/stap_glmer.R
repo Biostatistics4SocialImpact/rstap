@@ -21,7 +21,6 @@
 #' unknown covariance matrices with flexible priors.
 #' 
 #' @export
-#' @templateVar armRef (Ch. 11-15)
 #' @templateVar fun stap_glmer, stap_lmer 
 #' @templateVar pkg lme4
 #' @templateVar pkgfun glmer
@@ -71,7 +70,8 @@ stap_glmer <-
            time_data = NULL,
            subject_ID = NULL,
            measure_ID = NULL,
-           max_distance,
+           max_distance = NULL,
+           max_time = NULL,
            subset,
            weights,
            na.action = getOption("na.action", "na.omit"),
@@ -81,7 +81,8 @@ stap_glmer <-
            prior = normal(),
            prior_intercept = normal(),
            prior_stap = normal(),
-           prior_theta = log_normal(location = 1L, scale = 1L),
+           prior_theta_s = log_normal(location = 1L, scale = 1L),
+           prior_theta_t = log_normal(location = 1L, scale = 1L),
            prior_aux = exponential(),
            prior_covariance = decov(),
            adapt_delta = NULL) {
@@ -93,7 +94,8 @@ stap_glmer <-
                                distance_data,
                                time_data,
                                id_key = c(subject_ID,measure_ID),
-                               max_distance)
+                               max_distance,
+                               max_time)
   call <- match.call(expand.dots = TRUE)
   mc <- match.call(expand.dots = FALSE)
   mc$formula <- stapless_formula
@@ -104,7 +106,9 @@ stap_glmer <-
   mc$data <- subject_data
   mc$prior <- mc$prior_intercept <- mc$prior_covariance <- mc$prior_aux <-
     mc$prior_PD <- mc$algorithm <- mc$scale <- mc$concentration <- mc$shape <-
-    mc$adapt_delta <- mc$... <- NULL
+    mc$adapt_delta <- mc$... <- mc$subject_data <- mc$distance_data <- mc$time_data <- 
+      mc$subject_ID <- mc$measure_ID <- mc$max_distance <- 
+      mc$max_time <- mc$prior_stap <- mc$prior_theta <- NULL
   glmod <- eval(mc, parent.frame())
   Z <- glmod$X
   y <- glmod$fr[, as.character(glmod$formula[2L])]
@@ -128,21 +132,47 @@ stap_glmer <-
     stop("'prior_covariance' can't be NULL.", call. = FALSE)
   group <- glmod$reTrms
   group$decov <- prior_covariance
-  stapfit <- stap_glm.fit(x = X, y = y, weights = weights,
+  stapfit <- stap_glm.fit(y = y,z = Z, 
+                          dists_crs = crs_data$d_mat,
+                          u_s = crs_data$u_s,
+                          times_crs = crs_data$t_mat,
+                          u_t = crs_data$u_t,
+                          stap_data = stap_data,
+                          max_distance = crs_data$max_distance,
+                          max_time =crs_data$max_time,
+                          weights = weights,
                           offset = offset, family = family,
-                          prior = prior, prior_intercept = prior_intercept,
-                          prior_aux = prior_aux, prior_PD = prior_PD, 
-                          algorithm = algorithm, adapt_delta = adapt_delta,
+                          prior = prior,
+                          prior_intercept = prior_intercept,
+                          prior_stap = prior_stap,
+                          prior_aux = prior_aux, 
+                          prior_theta = prior_theta,
+                          adapt_delta = adapt_delta,
                           group = group,  ...)
-  sel <- apply(X, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
-  X <- X[ , !sel, drop = FALSE]
-  Z <- pad_reTrms(Ztlist = group$Ztlist, cnms = group$cnms, 
+  sel <- apply(Z, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
+  Z <- Z[ , !sel, drop = FALSE]
+  W <- pad_reTrms(Ztlist = group$Ztlist, cnms = group$cnms, 
                   flist = group$flist)$Z
-  colnames(Z) <- b_names(names(stapfit), value = TRUE)
+  colnames(W) <- b_names(names(stapfit), value = TRUE)
   
-  fit <- nlist(stanfit, family, formula, offset, weights, 
-               x = cbind(X, Z), y = y, data, call, terms = NULL, model = NULL,
-               na.action = attr(glmod$fr, "na.action"), contrasts, algorithm, glmod, 
+  fit <- nlist(stapfit, family,
+               formula = original_formula,
+               stap_data = stap_data,
+               subject_data,
+               distance_data,
+               time_data,
+               dists_crs = crs_data$d_mat,
+               times_crs = crs_data$t_mat,
+               u_s = crs_data$u_s,
+               u_t = crs_data$u_t,
+               max_distance = max_distance,
+               offset, weights,
+               z = Z, w = W, 
+               y = y, data,
+               call, terms = NULL,
+               model = NULL,
+               na.action = attr(glmod$fr, "na.action"), 
+               contrasts, glmod, 
                stan_function = "stap_glmer")
   out <- stapreg(fit)
   class(out) <- c(class(out), "lmerMod")

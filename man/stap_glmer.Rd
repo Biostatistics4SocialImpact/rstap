@@ -7,11 +7,12 @@
 \usage{
 stap_glmer(formula, family = gaussian, subject_data = NULL,
   distance_data = NULL, time_data = NULL, subject_ID = NULL,
-  measure_ID = NULL, max_distance, subset, weights,
-  na.action = getOption("na.action", "na.omit"), offset, contrasts = NULL,
-  ..., prior = normal(), prior_intercept = normal(),
-  prior_stap = normal(), prior_theta = log_normal(location = 1L, scale =
-  1L), prior_aux = exponential(), prior_covariance = decov(),
+  measure_ID = NULL, max_distance = NULL, max_time = NULL, subset,
+  weights, na.action = getOption("na.action", "na.omit"), offset,
+  contrasts = NULL, ..., prior = normal(), prior_intercept = normal(),
+  prior_stap = normal(), prior_theta_s = log_normal(location = 1L, scale =
+  1L), prior_theta_t = log_normal(location = 1L, scale = 1L),
+  prior_aux = exponential(), prior_covariance = decov(),
   adapt_delta = NULL)
 
 stap_lmer(formula, subject_data = NULL, distance_data = NULL,
@@ -136,7 +137,7 @@ The \code{stap_glmer} function is similar in syntax to
 \references{
 Gelman, A. and Hill, J. (2007). \emph{Data Analysis Using
   Regression and Multilevel/Hierarchical Models.} Cambridge University Press,
-  Cambridge, UK. (Ch. 11-15)
+  Cambridge, UK.
 
 Muth, C., Oravecz, Z., and Gabry, J. (2018)
 User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinystan.

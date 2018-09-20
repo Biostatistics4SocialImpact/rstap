@@ -93,8 +93,10 @@
 #'
 #' \code{\link{predictive_error}} and \code{\link{predictive_interval}}.
 #'
-posterior_predict.stapreg <- function(object, newsubjdata = NULL,newdistancedata = NULL,
-                                      newtimedata = NULL, draws = NULL,
+posterior_predict.stapreg <- function(object, newsubjdata = NULL, 
+                                      newdistancedata = NULL,
+                                      newtimedata = NULL,
+                                      draws = NULL,
                                       re.form = NULL, fun = NULL, seed = NULL,
                                       offset = NULL, ...) {
   if (!is.null(seed))
@@ -115,18 +117,18 @@ posterior_predict.stapreg <- function(object, newsubjdata = NULL,newdistancedata
   dat <- do.call("pp_data", pp_data_args)
   ppargs <- pp_args(object, data = pp_eta(object, dat, draws))
 
-  if (is.binomial(family(object, m = m)$family)) {
-    ppargs$trials <- pp_binomial_trials(object, newdata, m = m)
+  if (is.binomial(family(object)$family)) {
+    ppargs$trials <- pp_binomial_trials(object, newdata)
   }
 
-  ppfun <- pp_fun(object, m = m)
+  ppfun <- pp_fun(object)
   ytilde <- do.call(ppfun, ppargs)
   if (!is.null(newdata) && nrow(newdata) == 1L)
     ytilde <- t(ytilde)
   if (!is.null(fun))
     ytilde <- do.call(fun, list(ytilde))
   
-  if (is.null(newdata)) colnames(ytilde) <- rownames(model.frame(object, m = m))
+  if (is.null(newdata)) colnames(ytilde) <- rownames(model.frame(object))
   else colnames(ytilde) <- rownames(newdata)  
   
   # if function is called from posterior_traj then add mu as attribute
@@ -141,10 +143,8 @@ posterior_predict.stapreg <- function(object, newsubjdata = NULL,newdistancedata
 # internal ----------------------------------------------------------------
 
 # functions to draw from the various posterior predictive distributions
-pp_fun <- function(object, m = NULL) {
-  suffix <- if (is_polr(object)) "polr" else 
-            if (is_clogit(object)) "clogit" else 
-            family(object, m = m)$family
+pp_fun <- function(object) {
+  suffix <- family(object)$family
 
   get(paste0(".pp_", suffix), mode = "function")
 }
@@ -157,16 +157,6 @@ pp_fun <- function(object, m = NULL) {
 .pp_binomial <- function(mu, trials) {
   t(sapply(1:nrow(mu), function(s) {
     rbinom(ncol(mu), size = trials, prob = mu[s, ])
-  }))
-}
-.pp_clogit <- function(mu, strata) {
-  t(sapply(1:nrow(mu), function(s) {
-    unlist(by(mu[s,], INDICES = list(strata), FUN = rmultinom, n = 1, size = 1))
-  }))
-}
-.pp_beta <- function(mu, phi) {
-  t(sapply(1:nrow(mu), function(s) {
-    rbeta(ncol(mu), mu[s,] * phi[s], (1 - mu[s, ]) * phi[s])
   }))
 }
 .pp_poisson <- function(mu) {
@@ -198,59 +188,30 @@ pp_fun <- function(object, m = NULL) {
     .rinvGauss(ncol(mu), mu = mu[s,], lambda = lambda[s])
   }))
 }
-.pp_polr <- function(eta, zeta, linkinv, alpha = NULL) {
-  n <- ncol(eta)
-  q <- ncol(zeta)
-  if (!is.null(alpha)) {
-    pr <- linkinv(eta)^alpha
-    if (NROW(eta) == 1) {
-      pr <- matrix(pr, nrow = 1)
-    }
-    t(sapply(1:NROW(eta), FUN = function(s) {
-      rbinom(NCOL(eta), size = 1, prob = pr[s, ])
-    }))
-  } else {
-    t(sapply(1:NROW(eta), FUN = function(s) {
-      tmp <- matrix(zeta[s, ], n, q, byrow = TRUE) - eta[s, ]
-      cumpr <- matrix(linkinv(tmp), ncol = q)
-      fitted <- t(apply(cumpr, 1L, function(x) diff(c(0, x, 1))))
-      apply(fitted, 1, function(p) which(rmultinom(1, 1, p) == 1))
-    }))
-  }
-}
 
 
 # create list of arguments to pass to the function returned by pp_fun
 #
 # @param object stapreg 
 # @param data output from pp_eta (named list with eta and stanmat)
-# @param m optional integer specifying the submodel for stanmvreg objects
 # @return named list
 pp_args <- function(object, data) {
   stanmat <- data$stanmat
   eta <- data$eta
   stopifnot(is.stapreg(object), is.matrix(stanmat))
-  inverse_link <- linkinv(object, m = m)
-  if (is.nlmer(object)) inverse_link <- function(x) return(x)
-
+  inverse_link <- linkinv(object)
 
   args <- list(mu = inverse_link(eta))
-  famname <- family(object, m = m)$family
-  m_stub <- get_m_stub(m, stub = get_stub(object))
+  famname <- family(object)$family
   if (is.gaussian(famname)) {
-    args$sigma <- stanmat[, paste0(m_stub, "sigma")]
+    args$sigma <- stanmat[, "sigma"]
   } else if (is.gamma(famname)) {
-    args$shape <- stanmat[, paste0(m_stub, "shape")]
+    args$shape <- stanmat[, "shape"]
   } else if (is.ig(famname)) {
-    args$lambda <- stanmat[, paste0(m_stub, "lambda")]
+    args$lambda <- stanmat[, "lambda"]
   } else if (is.nb(famname)) {
-    args$size <- stanmat[, paste0(m_stub, "reciprocal_dispersion")]
-  } else if (is.beta(famname)) {
-    args$phi <- data$phi
-    if (is.null(args$phi)) {
-      args$phi <- linkinv(object$family_phi)(data$phi_linpred)
-    }
-  }
+    args$size <- stanmat[, "reciprocal_dispersion"]
+  } 
   args
 }
 
@@ -295,24 +256,8 @@ pp_eta <- function(object, data, draws = NULL) {
     }
     eta <- eta + as.matrix(b %*% data$Zt)
   }
-  if (is.nlmer(object)) {
-    if (is.null(data$arg1)) eta <- linkinv(object)(eta)
-    else eta <- linkinv(object)(eta, data$arg1, data$arg2)
-    eta <- t(eta)
-  }
   
   out <- nlist(eta, stanmat)
-  
-  if (inherits(object, "betareg")) {
-    z_vars <- colnames(stanmat)[grepl("(phi)", colnames(stanmat))]
-    omega <- stanmat[, z_vars]
-    if (length(z_vars) == 1 && z_vars == "(phi)") {
-      out$phi <- stanmat[, "(phi)"] 
-    } else {
-      out$phi_linpred <- linear_predictor(as.matrix(omega), as.matrix(data$z_betareg), data$offset)
-    }
-  }
-  
   return(out)
 }
 
@@ -363,7 +308,7 @@ pp_binomial_trials <- function(object, newdata = NULL, m = NULL) {
       rep(1, NROW(y)) else rep(1, NROW(newdata))
   } else {
     trials <- if (is.null(newdata)) 
-      rowSums(y) else rowSums(eval(formula(object, m = m)[[2L]], newdata))
+      rowSums(y) else rowSums(eval(formula(object)[[2L]], newdata))
   }
   return(trials)
 }

@@ -19,15 +19,11 @@ pp_data <-
            newdata = NULL,
            re.form = NULL,
            offset = NULL,
-           m = NULL,
            ...) {
     validate_stapreg_object(object)
     if (is.mer(object)) {
-      if (is.nlmer(object))
-        out <- .pp_data_nlmer(object, newdata = newdata, re.form = re.form, m = m, ...)
-      else
-        out <- .pp_data_mer(object, newdata = newdata, re.form = re.form, m = m, ...)
-      if (!is.null(offset)) out$offset <- offset
+       out <- .pp_data_mer(object, newdata = newdata, re.form = re.form, ...)
+       if (!is.null(offset)) out$offset <- offset
       return(out)
     }
     .pp_data(object, newdata = newdata, offset = offset, ...)
@@ -67,43 +63,6 @@ pp_data <-
   return(nlist(x, offset = offset, Zt = z$Zt, Z_names = z$Z_names))
 }
 
-# for models fit using stap_nlmer
-.pp_data_nlmer <- function(object, newdata, re.form, offset = NULL, m = NULL, ...) {
-  inputs <- parse_nlf_inputs(object$glmod$respMod)
-  if (is.null(newdata)) {
-    arg1 <- arg2 <- NULL
-  } else if (object$family$link == "inv_SSfol") {
-    arg1 <- newdata[[inputs[2]]]
-    arg2 <- newdata[[inputs[3]]]
-  } else {
-    arg1 <- newdata[[inputs[2]]]
-    arg2 <- NULL
-  }
-  f <- formula(object, m = m)
-  if (!is.null(re.form) && !is.na(re.form)) {
-    f <- as.character(f)
-    f[3] <- as.character(re.form)
-    f <- as.formula(f[-1])
-  }
-  if (is.null(newdata)) newdata <- model.frame(object)
-  else {
-    yname <- names(model.frame(object))[1]
-    newdata[[yname]] <- 0
-  }
-  mc <- match.call(expand.dots = FALSE)
-  mc$re.form <- mc$offset <- mc$object <- mc$newdata <- NULL
-  mc$data <- newdata
-  mc$formula <- f
-  mc$start <- fixef(object)
-  nlf <- nlformula(mc)
-  offset <- .pp_data_offset(object, newdata, offset)
-
-  group <- with(nlf$reTrms, pad_reTrms(Ztlist, cnms, flist))
-  if (!is.null(re.form) && !is(re.form, "formula") && is.na(re.form)) 
-    group$Z@x <- 0
-  return(nlist(x = nlf$X, offset = offset, Z = group$Z,
-               Z_names = make_b_nms(group), arg1, arg2))
-}
 
 # the functions below are heavily based on a combination of 
 # lme4:::predict.merMod and lme4:::mkNewReTrms, although they do also have 
@@ -111,13 +70,12 @@ pp_data <-
 .pp_data_mer_x <- function(object, newdata, ...) {
   x <- get_x(object)
   if (is.null(newdata)) return(x)
-  form <- if (is.null(m)) attr(object$glmod$fr, "formula") else 
-    formula(object, m = m)
+  form <-  attr(object$glmod$fr, "formula")
   L <- length(form)
   form[[L]] <- lme4::nobars(form[[L]])
   RHS <- formula(substitute(~R, list(R = form[[L]])))
-  Terms <- terms(object, m = m)
-  mf <- model.frame(object, m = m)
+  Terms <- terms(object)
+  mf <- model.frame(object)
   ff <- formula(form)
   vars <- rownames(attr(terms.formula(ff), "factors"))
   mf <- mf[vars]
@@ -132,31 +90,31 @@ pp_data <-
 
 .pp_data_mer_z <- function(object, newdata, re.form = NULL,
                            allow.new.levels = TRUE, na.action = na.pass, 
-                           m = NULL, ...) {
+                           ...) {
   NAcheck <- !is.null(re.form) && !is(re.form, "formula") && is.na(re.form)
   fmla0check <- (is(re.form, "formula") && 
                    length(re.form) == 2 && 
                    identical(re.form[[2]], 0))
   if (NAcheck || fmla0check) return(list())
   if (is.null(newdata) && is.null(re.form)) {
-    Z <- get_z(object, m = m) 
+    Z <- get_z(object) 
     return(list(Zt = t(Z)))
   } else if (is.null(newdata)) {
     rfd <- mfnew <- model.frame(object)
   } else {
-    terms_fixed <- delete.response(terms(object, fixed.only = TRUE, m = m))
+    terms_fixed <- delete.response(terms(object, fixed.only = TRUE))
     mfnew <- model.frame(terms_fixed, newdata, na.action = na.action)
     newdata.NA <- newdata
     if (!is.null(fixed.na.action <- attr(mfnew,"na.action"))) {
       newdata.NA <- newdata.NA[-fixed.na.action,]
     }
-    tt <- delete.response(terms(object, random.only = TRUE, m = m))
+    tt <- delete.response(terms(object, random.only = TRUE))
     rfd <- model.frame(tt, newdata.NA, na.action = na.pass)
     if (!is.null(fixed.na.action))
       attr(rfd,"na.action") <- fixed.na.action
   }
   if (is.null(re.form)) 
-    re.form <- justRE(formula(object, m = m))
+    re.form <- justRE(formula(object))
   if (!inherits(re.form, "formula"))
     stop("'re.form' must be NULL, NA, or a formula.")
   if (length(fit.na.action <- attr(mfnew,"na.action")) > 0) {
@@ -166,17 +124,16 @@ pp_data <-
   if (!allow.new.levels && any(vapply(ReTrms$flist, anyNA, NA)))
     stop("NAs are not allowed in prediction data",
          " for grouping variables unless 'allow.new.levels' is TRUE.")
-  ns.re <- names(re <- ranef(object, m = m))
+  ns.re <- names(re <- ranef(object))
   nRnms <- names(Rcnms <- ReTrms$cnms)
   if (!all(nRnms %in% ns.re))
     stop("Grouping factors specified in re.form that were not present in original model.")
   new_levels <- lapply(ReTrms$flist, function(x) levels(factor(x)))
   Zt <- ReTrms$Zt
-  Z_names <- make_b_nms(ReTrms, m = m, stub = get_stub(object))
+  Z_names <- make_b_nms(ReTrms)
   z <- nlist(Zt = ReTrms$Zt, Z_names)
   return(z)
 }
-
 
 
 # handle offsets ----------------------------------------------------------

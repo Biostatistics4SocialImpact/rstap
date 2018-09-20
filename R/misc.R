@@ -421,12 +421,7 @@ is.gamma <- function(x) x == "Gamma"
 is.ig <- function(x) x == "inverse.gaussian"
 is.nb <- function(x) x == "neg_binomial_2"
 is.poisson <- function(x) x == "poisson"
-is.beta <- function(x) x == "beta" || x == "Beta regression"
 
-# test if a stapreg object has class clogit
-is_clogit <- function(object) {
-  is(object, "clogit")
-}
 # Maybe broadcast
 #
 # @param x A vector or scalar.
@@ -534,13 +529,16 @@ validate_stapreg_object <- function(x, call. = FALSE) {
 #' @return For \code{get_x} and \code{get_z}, a matrix. For \code{get_y}, either
 #'   a vector or a matrix, depending on how the response variable was specified.
 get_y <- function(object, ...) UseMethod("get_y")
+
 #' @rdname get_y
 #' @export
 get_z <- function(object, ...) UseMethod("get_z")
-#' @rdname get_x
+
+#' @rdname get_y
 #' @export
 get_x <- function(object, ...) UseMethod("get_x")
 
+#' @rdname get_y
 #' @export
 get_z.default <- function(object, ...){
     object[["z"]] %ORifNULL% model.matrix(object)
@@ -557,8 +555,14 @@ get_x.default <- function(object, ...)
 get_x.lmerMod <- function(object, ...) {
   object$glmod$X %ORifNULL% stop("X not found")
 }
+
 #' @export
-get_z.lmerMod <- function(object, ...) {
+get_z.lmerMod <- function(object, ...){
+    object$glmod$X %ORifNULL% stop("X not found")
+}
+
+#' @export
+get_w.lmerMod <- function(object, ...) {
   Zt <- object$glmod$reTrms$Zt %ORifNULL% stop("Z not found")
   t(Zt)
 }

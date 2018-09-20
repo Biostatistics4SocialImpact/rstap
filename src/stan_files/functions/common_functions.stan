@@ -361,3 +361,25 @@
       else
         return(out);
 }
+
+  /**
+   * Assign appropriate exposure to covariate based upon 
+   * possible log transform and selected weight function
+   *
+   * @param log_switch binary indicator indicating whether or not to log transform exposure weights
+   * @param stap_code 0-2 code indicating what kind of spatial-temporal exposure to aggregate
+   * @param w weight function array
+   */ 
+  real assign_st_exposure(int log_switch, int w_s,int w_t, int[,] u_s, int[,] u_t, vector dists, vector time, real theta_s, real theta_t, int q, int n){
+
+      real out;
+      if(u_s[n,(q*2)-1] > u_s[n,(q*2)])
+          return(0);
+      else
+          out = sum(get_weights(dists[u_s[n,(q*2)-1] :  u_s[n,(q*2)]] * inv(theta_s), w_s, theta_s) .*
+          get_weights(time[u_t[n,(q*2)-1] : u_t[n,(q*2)]] * inv(theta_t), w_t, theta_t));
+      if(log_switch == 1)
+        return(log(out));
+      else
+        return(out);
+}

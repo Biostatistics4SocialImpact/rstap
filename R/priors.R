@@ -29,8 +29,7 @@
 #' @param location Prior location. In most cases, this is the prior mean, but
 #'   for \code{cauchy} (which is equivalent to \code{student_t} with
 #'   \code{df=1}), the mean does not exist and \code{location} is the prior
-#'   median. The default value is \eqn{0}, except for \code{R2} which has no
-#'   default value for \code{location}. 
+#'   median. The default value is \eqn{0}. 
 #' @param scale Prior scale. The default depends on the family (see
 #'   \strong{Details}).
 #' @param df,df1,df2 Prior degrees of freedom. The default is \eqn{1} for 
@@ -300,12 +299,6 @@ log_normal <- function(location = 0, scale = 1){
 
 #' @rdname priors
 #' @export
-beta_prior <- function(alpha = 1, beta = 1){
-    nlist(dist = "beta",location = alpha, scale = beta, df = NA)  
-}
-
-#' @rdname priors
-#' @export
 #' @param regularization Exponent for an LKJ prior on the correlation matrix in
 #'   the \code{decov} or \code{lkj} prior. The default is \eqn{1}, implying a 
 #'   joint uniform prior.
@@ -333,15 +326,6 @@ lkj <- function(regularization = 1, scale = 10, df = 1, autoscale = TRUE) {
   nlist(dist = "lkj", regularization, scale, df, autoscale)
 }
 
-#' @rdname priors
-#' @export
-R2 <- function(location = NULL, what = c("mode", "mean", "median", "log")) {
-  what <- match.arg(what)
-  validate_R2_location(location, what)
-  list(dist = "R2", location = location, what = what, df = 0, scale = 0)
-}
-
-
 # internal ------------------------------------------------------------------------
 
 # Check for positive scale or df parameter (NULL ok)
@@ -357,38 +341,4 @@ validate_parameter_value <- function(x) {
             stop (nm, "should be positive", .call = FALSE)
     }
     invisible(TRUE)
-}
-
-# Throw informative error if 'location' isn't valid for the particular 'what' 
-# specified or isn't the right length.
-#
-# @param location,what User's location and what arguments to R2()
-# @return Either an error is thrown or TRUE is returned invisibly.
-#
-validate_R2_location <- function(location = NULL, what) {
-  stopifnot(is.numeric(location))
-  if (length(location) > 1)
-    stop(
-      "The 'R2' function only accepts a single value for 'location', ",
-      "which applies to the prior R^2. ",
-      "If you are trying to put different priors on different coefficients ", 
-      "rather than specify a joint prior via 'R2', you can use stan_glm ",
-      "which accepts a wider variety of priors, many of which allow ", 
-      "specifying arguments as vectors.", 
-      call. = FALSE
-    )
-  
-  if (what == "log") {
-    if (location >= 0)
-      stop("If 'what' is 'log' then location must be negative.", call. = FALSE)
-  } else if (what == "mode") {
-    if (location <= 0 || location > 1)
-      stop("If 'what' is 'mode', location must be in (0,1].", 
-           call. = FALSE)
-  } else { # "mean", "median"
-    if (location <= 0 || location >= 1)
-      stop("If 'what' is 'mean' or 'median', location must be in (0,1).", 
-           call. = FALSE)
-  }
-  invisible(TRUE)
 }

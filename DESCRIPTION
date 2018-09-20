@@ -2,7 +2,7 @@ Package: rstap
 Type: Package
 Version: 0.0.0.9000
 Title: Spatiotemporal Aggregated Predictor Models via stan 
-Description: Estimates previously compiled stap regression models using the 'rstan' package, which provides the R interface to the Stan C++ library for Bayesian estimation. Users specify models via a custom R syntax with a formula and data.frame plus additional arguments for priors.
+Description: Estimates previously compiled stap regression models using the 'rstan' package. Users specify models via a custom R syntax with a formula and data.frame plus additional arguments for priors.
 License: GPL (>=3)
 Authors@R: person("Adam", "Peterson", , "atpvyc@umich.edu", c("aut", "cre"))
 URL: https://biostatistics4socialimpact.github.io/rstap
@@ -31,6 +31,7 @@ NeedsCompilation: yes
 RoxygenNote: 6.0.1
 Suggests:
     testthat,
+    digest,
     knitr,
     rmarkdown,
     pkgdown

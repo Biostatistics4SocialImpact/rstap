@@ -196,14 +196,6 @@ set_plotting_fun <- function(plotfun = NULL) {
   )
 }
 
-# check if plotfun is ok to use with vb or optimization
-validate_plotfun_for_opt_or_vb <- function(plotfun) {
-  plotfun <- mcmc_function_name(plotfun)
-  if (needs_chains(plotfun) || 
-      grepl("_rhat|_neff|_nuts_", plotfun))
-    STOP_sampling_only(plotfun)
-}
-
 
 
 # pairs method ------------------------------------------------------------
@@ -294,28 +286,6 @@ pairs.stapreg <-
     )
     
   }
-
-
-#' plot_stap
-#' 
-#' @export
-#' @param object a fitted stapreg object
-#' @param pars a specific parameter to plot
-#' @param regex_pars a string to run through regex  for matching
-#' @return a plot with the appropriate  weight function and scale
-plot_stap <- function(object, pars, regex_pars) UseMethod("plot_stap") 
-
-plot_stap.stapreg <- function(object, pars, regex_pars){
-
-    d <- seq(from = 0, to = object$max_distance)
-    med <- coef(object)
-    coef_names <- coef_names(object_stap_data)
-    med <- med[which(names(med) %in% coef_names)]
-    pi_s <- posterior_interval(object,pars,regex_pars)
-}
-
-
-
 
 # internal for pairs.stapreg ----------------------------------------------
 

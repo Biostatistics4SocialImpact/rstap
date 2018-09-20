@@ -67,7 +67,3 @@
     target += lognormal_lpdf(theta_s|prior_mean_for_theta, prior_scale_for_theta);
     target += lognormal_lpdf(theta_t|prior_mean_for_theta, prior_scale_for_theta);
   }
-  else if(prior_dist_for_theta == 9){
-    target += beta_lpdf(theta_s|prior_mean_for_theta, prior_df_for_theta);
-    target += beta_lpdf(theta_t|prior_mean_for_theta, prior_df_for_theta);
-  }

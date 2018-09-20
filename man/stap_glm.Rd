@@ -5,11 +5,12 @@
 \title{Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan}
 \usage{
 stap_glm(formula, family = gaussian(), subject_data = NULL,
-  distance_data = NULL, time_data = NULL, id_key = NULL, max_distance,
-  subset, weights, na.action = NULL, offset = NULL, model = TRUE,
-  z = FALSE, y = TRUE, x = FALSE, contrasts = NULL, ...,
+  distance_data = NULL, time_data = NULL, id_key = NULL,
+  max_distance = NULL, max_time = NULL, subset, weights, na.action = NULL,
+  offset = NULL, model = TRUE, y = TRUE, contrasts = NULL, ...,
   prior = normal(), prior_intercept = normal(), prior_stap = normal(),
-  prior_theta = log_normal(location = 1L, scale = 1L),
+  prior_theta_s = log_normal(location = 1L, scale = 1L),
+  prior_theta_t = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), adapt_delta = NULL)
 }
 \arguments{
@@ -32,8 +33,7 @@ rarely specified.}
 
 \item{offset, weights}{Same as \code{\link[stats]{glm}}.}
 
-\item{y}{In \code{stap_glm}, logical scalar indicating whether to
-return the response vector. In \code{stan_glm.fit}, a response vector.}
+\item{y}{In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.}
 
 \item{...}{Further arguments passed to the function in the \pkg{rstap} 
 to specify \code{iter}, \code{chains}, \code{cores}, \code{refresh}, etc.}
@@ -131,7 +131,7 @@ as detailed in in --need to add citation --
 \references{
 Gelman, A. and Hill, J. (2007). \emph{Data Analysis Using
   Regression and Multilevel/Hierarchical Models.} Cambridge University Press,
-  Cambridge, UK. (Ch. 3-6)
+  Cambridge, UK.
 
 Muth, C., Oravecz, Z., and Gabry, J. (2018)
 User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinystan.

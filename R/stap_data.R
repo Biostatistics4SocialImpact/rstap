@@ -53,63 +53,48 @@ stap_data <- function(object) {
     return(out)
 }
 
-#' @export
 coef_names <- function(x)
     UseMethod("coef_names")
 
-#' @export
 sap_covs <- function(x)
     UseMethod("sap_covs")
 
-#' @export
 tap_covs <- function(x)
     UseMethod("tap_covs")
 
-#' @export
 stap_covs <- function(x)
     UseMethod("stap_covs")
 
-#' @export
 any_sap <- function(x)
     UseMethod("any_sap")
 
-#' @export
 any_tap <- function(x)
     UseMethod("any_tap")
 
-#' @export
 any_stap <- function(x)
     UseMethod("any_stap")
 
-#' @export
 check_dups <- function(x)
     UseMethod("check_dups")
 
-#' @export
 sap_covs.stap_data <- function(object)
     object$covariates[which(object$stap_code==0)]
 
-#' @export
 tap_covs.stap_data <- function(object)
     object$covariates[which(object$stap_code==1)]
 
-#' @export
 stap_covs.stap_data <- function(object)
     object$covariates[which(object$stap_code==2)]
 
-#' @export
 any_sap.stap_data <- function(object)
     object$any_s
 
-#' @export
 any_tap.stap_data <- function(object)
     object$any_t
 
-#' @export
 any_stap.stap_data <- function(object)
     object$any_st
 
-#' @export
 coef_names.stap_data <- function(object){
     get_name <- function(x,y){
         switch(x+1,
@@ -121,9 +106,7 @@ coef_names.stap_data <- function(object){
     }
     as.vector(sapply(1:object$Q,function(z) get_name(object$stap_code[z],object$covariates[z])))
 }
-#' checks for duplicates in stap,sap,tap designation
-#' @export
-#'
+
 check_dups.stap_data <- function(object){
     sap <- sap_covs(object)
     tap <- tap_covs(object)
@@ -144,18 +127,15 @@ check_dups.stap_data <- function(object){
         stop("A BEF may only be given one kind of stap specification
              either (exclusively) stap or tap or sap")
 }
-#' @export
+
 coef_names.default <- function(object)
     warning("coef_names is only used for stap_data classes")
 
-#' @export
 sap_covs.default <- function(object)
     warning("sap_covs is only used for stap_data classes")
 
-#' @export
 tap_covs.default <- function(object)
     warning("sap_covs is only used for stap_data classes")
 
-#' @export
 any_tap.default <- function(object)
     warning("any_tap is only used for stap_data classes")
