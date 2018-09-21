@@ -64,6 +64,9 @@
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting - Multiple Timepoints </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -95,25 +98,19 @@
     
     
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-<span class="co">#&gt; Warning: package 'dplyr' was built under R version 3.5.1</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'dplyr'</span>
-<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     filter, lag</span>
-<span class="co">#&gt; The following objects are masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
 <span class="kw">library</span>(tidyr)
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(rstap)
-<span class="co">#&gt; Loading required package: Rcpp</span></code></pre></div>
-<div id="data-structure-complexities" class="section level1">
+<span class="kw">library</span>(plot3D)</code></pre></div>
+<div id="staps-in-a-longitudinal-setting" class="section level1">
 <h1 class="hasAnchor">
-<a href="#data-structure-complexities" class="anchor"></a>Data Structure Complexities</h1>
+<a href="#staps-in-a-longitudinal-setting" class="anchor"></a>STAPs in a Longitudinal setting</h1>
 <p>Spatial-temporal aggregated predictor (STAP) models extension in the longitudinal setting incorporates heirarchical variance components to account for within subject or group-level correlation.</p>
-<p>This setting also involves a different data structure, since exposure to built environment features now occurs across time, and subjects can move across time or space. dropping out of studies and built-environment features - stores - may close or open, the map and covariate space is dynamic. This requires a secondary id to join on in addition to the typical ‘id_key’. We’ll demonstrate this and the stap model using the simple case of homogenously distributed built environment features, with subjects measured across two time points.</p>
-<p>Below we can see what the data for this kind of model might look like.</p>
+<p>This setting also involves a substantially different data structure, since exposure to built environment features now occurs across time and subjects can move across time or space. Additionally since subjects may drop out of a study and built-environment features - stores - may close or open, the staps are neccessarily different at each measurement. The inclusion of these repeated measures, requires a secondary id to join on in addition to the typical <code>id_key</code> for the <code>distance_data</code> and <code>time_data</code> arguments to the <code>stap_glmer</code> function. We’ll demonstrate this and the stap model with random effects using the simple case of homogenously distributed built environment features, with subjects measured across two time points.</p>
+<div id="measurement-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#measurement-data" class="anchor"></a>Measurement Data</h2>
+<p>Below we can see what the data, when initially measured, might look like before preparing it for model fitting.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">list</span>(<span class="st">'Subject Spatial-Temporal Data'</span> =<span class="st"> </span>subj_data,
      <span class="st">"BEF Spatial-Temporal Data"</span> =<span class="st"> </span>bef_data)
 <span class="co">#&gt; $`Subject Spatial-Temporal Data`</span>
@@ -163,22 +160,30 @@
 <span class="co">#&gt;  9     5     1 1956-09-22   50.6 2000-10-14    44.1          1</span>
 <span class="co">#&gt; 10     5     1 1956-09-22  107.  2003-06-28    46.8          2</span>
 <span class="co">#&gt; # ... with 281 more rows</span></code></pre></div>
-<p>In order to join these datasets, a new ID has to be created to associate the spatial-temporal data with a specific measurement date. We create this ID to include all spatial data up to and including the measurement date for each subject. Note that for subjects one and two there are two rows, corresponding to the two measurements. In contrast, subject nine has four rows, and two of them will be removed, so that the first measurement is associated with the subjects move in 1991. Note that any subject associated with a given measurement ID will also be associated with any subsequent measurement ID - this is is because the STAP model assumes exposure is relevant at each measurement.</p>
+</div>
+<div id="transforming-the-measured-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#transforming-the-measured-data" class="anchor"></a>Transforming the Measured Data</h2>
+<p>In order to join these datasets, a new ID has to be created to associate the spatial-temporal data with a specific measurement date. We create this ID to include all spatial data up to and including the measurement date for each subject.</p>
+<p>Note that for subjects one and two there are two rows, corresponding to the two measurements. In contrast, subject nine has four rows, corresponding to the fact that subject 9’s move before the two measurements results in both locations of 9’s residence being associated with all measurements subsequently measured.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/join.html">left_join</a></span>(subj_fdata,<span class="dt">by=</span><span class="st">"ID"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(ID <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>))
-<span class="co">#&gt; # A tibble: 8 x 11</span>
-<span class="co">#&gt;         x      y date          ID class     sex DOB        Income</span>
-<span class="co">#&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;date&gt;     &lt;int&gt; &lt;chr&gt;   &lt;int&gt; &lt;date&gt;      &lt;dbl&gt;</span>
-<span class="co">#&gt; 1 -0.701  -0.412 1974-05-11     1 Subject     1 1956-08-11   99.2</span>
-<span class="co">#&gt; 2 -0.701  -0.412 1974-05-11     1 Subject     1 1956-08-11  196. </span>
-<span class="co">#&gt; 3 -0.415   0.622 1976-03-04     2 Subject     0 1953-09-23   62.6</span>
-<span class="co">#&gt; 4 -0.415   0.622 1976-03-04     2 Subject     0 1953-09-23  155. </span>
-<span class="co">#&gt; 5 -0.0141 -0.708 1985-09-21     9 Subject     1 1966-04-06   66.8</span>
-<span class="co">#&gt; 6 -0.0141 -0.708 1985-09-21     9 Subject     1 1966-04-06  129. </span>
-<span class="co">#&gt; 7  0.315  -0.145 1991-11-14     9 Subject     1 1966-04-06   66.8</span>
-<span class="co">#&gt; 8  0.315  -0.145 1991-11-14     9 Subject     1 1966-04-06  129. </span>
-<span class="co">#&gt; # ... with 3 more variables: measure_date &lt;date&gt;, Age &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   measure_ID &lt;dbl&gt;</span></code></pre></div>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(ID <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/select.html">select</a></span>(ID,measure_ID,x,y,date,measure_date)
+<span class="co">#&gt; # A tibble: 8 x 6</span>
+<span class="co">#&gt;      ID measure_ID       x      y date       measure_date</span>
+<span class="co">#&gt;   &lt;int&gt;      &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;date&gt;     &lt;date&gt;      </span>
+<span class="co">#&gt; 1     1          1 -0.701  -0.412 1974-05-11 2000-02-19  </span>
+<span class="co">#&gt; 2     1          2 -0.701  -0.412 1974-05-11 2001-07-20  </span>
+<span class="co">#&gt; 3     2          1 -0.415   0.622 1976-03-04 2000-03-20  </span>
+<span class="co">#&gt; 4     2          2 -0.415   0.622 1976-03-04 2001-12-06  </span>
+<span class="co">#&gt; 5     9          1 -0.0141 -0.708 1985-09-21 2000-03-14  </span>
+<span class="co">#&gt; 6     9          2 -0.0141 -0.708 1985-09-21 2003-01-25  </span>
+<span class="co">#&gt; 7     9          1  0.315  -0.145 1991-11-14 2000-03-14  </span>
+<span class="co">#&gt; 8     9          2  0.315  -0.145 1991-11-14 2003-01-25</span></code></pre></div>
+</div>
+<div id="stores-opening-and-closing-subjects-moving-in-the-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#stores-opening-and-closing-subjects-moving-in-the-data" class="anchor"></a>Stores Opening and Closing, Subjects Moving in the Data</h2>
 <p>Here we can see the effect of a store closing (BEF_ID 10) and a subject moving (subj_ID 9) on the data structure. Note that first row’s time is ~25.8 years which reflects the time spent since the <em>subject</em> first moved to their location. Since neither the subject nor the business moves by the subject’s second measurement in July of 2001, we see that the distances betwen subject 1 and Coffee Shop 1 stay constant, and the time increases according to the difference in measurement date, only.</p>
 <p>In contrast, we see the effect of a subject moving for subj_ID 9. Here (s)he has twice as many measurements to show her/his exposure to the same coffee shop at the different locations where subj 9 lived. This is shown most evidently in the constant exposure for for coffee shops at the 1985 location for subject 9. Since subject 9 moved after ~6 years, and coffee shop 1 hadn’t closed at that time, subject 9 only has 6 years of exposure to that coffee shop at that distance. Following this we can see a steadily increasing exposure until the coffee shop closes in 2002, roughly a year before the subject’s second measurement in ’03.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">td_data  <span class="op">%&gt;%</span><span class="st"> </span>
@@ -199,11 +204,16 @@
 <span class="co">#&gt; 11       9          2     10 2003-01-25   1961-05-18 2002-09-23 1985-09-21</span>
 <span class="co">#&gt; 12       9          2     10 2003-01-25   1961-05-18 2002-09-23 1991-11-14</span>
 <span class="co">#&gt; # ... with 3 more variables: class &lt;chr&gt;, dist &lt;dbl&gt;, time &lt;time&gt;</span></code></pre></div>
-<p>If we were to assume a simple model</p>
+</div>
+</div>
+<div id="simulating-and-estimating-a-stap-model" class="section level1">
+<h1 class="hasAnchor">
+<a href="#simulating-and-estimating-a-stap-model" class="anchor"></a>Simulating and Estimating a STAP model</h1>
+<p>If we were to assume the following model from the previous data set-up</p>
 <p><span class="math display">\[
 E[Y_{ij}|b_i] = \alpha + Z_1\delta_{Income} + Z_{2}\delta_{sex} + Z_{3}\delta_{Age} + X(\theta_s,\theta_t)\beta_{Coffee} + b_i
 \]</span> Where <span class="math display">\[
-X(\theta_s,\theta_t) = \big(\sum_{d\in\mathcal{D}} w_d(\frac{d}{\theta_s}) w_t(\frac{t}{\theta_t}) \big )
+X(\theta_s,\theta_t) = \sum_{d\in\mathcal{D}} w_d(\frac{d}{\theta_s}) w_t(\frac{t}{\theta_t}) 
 \]</span></p>
 <p>and simulate it under the following fixed values</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">alpha &lt;-<span class="st"> </span><span class="dv">22</span>
@@ -214,13 +224,24 @@ theta_t &lt;-<span class="st"> </span><span class="dv">34</span>
 sigma &lt;-<span class="st"> </span><span class="dv">2</span>
 tau &lt;-<span class="st"> </span><span class="fl">1.5</span>
 d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(td_data<span class="op">$</span>dist), <span class="dt">by =</span> <span class="fl">0.01</span>)
-t &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">as.numeric</span>(<span class="kw">max</span>(td_data<span class="op">$</span>time)), <span class="dt">by =</span> <span class="fl">0.01</span>)
+t &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">as.numeric</span>(<span class="kw">max</span>(td_data<span class="op">$</span>time)), <span class="dt">by =</span> <span class="fl">0.05</span>)
 w_s &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span>theta_s)
-w_t &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erf</a></span>(t<span class="op">/</span>theta_t)
-<span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
-<span class="kw">plot</span>(d,w_s,<span class="dt">type=</span><span class="st">'l'</span>, <span class="dt">main=</span><span class="st">"Spatial Decay"</span>)
-<span class="kw">plot</span>(t,w_t,<span class="dt">type =</span> <span class="st">"l"</span>, <span class="dt">main =</span> <span class="st">"Temporal Accumulation"</span>,<span class="dt">xlab=</span><span class="st">'years'</span>)</code></pre></div>
-<p><img src="longitudinal-I_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+w_t &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erf</a></span>(t<span class="op">/</span>theta_t)</code></pre></div>
+<p>We could see the individual spatial and temporal exposure functions</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
+<span class="kw">plot</span>(d,w_s,<span class="dt">type=</span><span class="st">'l'</span>, <span class="dt">main=</span><span class="st">"Spatial Decay"</span>,<span class="dt">xlab =</span> <span class="st">"Distance"</span>, <span class="dt">ylab =</span><span class="st">"Exposure"</span>)
+<span class="kw">plot</span>(t,w_t,<span class="dt">type =</span> <span class="st">"l"</span>, <span class="dt">main =</span> <span class="st">"Temporal Accumulation"</span>,<span class="dt">xlab=</span><span class="st">'years'</span>, <span class="dt">ylab =</span> <span class="st">"Exposure"</span>)</code></pre></div>
+<p><img src="longitudinal-I_files/figure-html/s-t-exp-1.png" width="700"></p>
+<p>As well as the joint spatial-temporal exposure</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st_exp &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>,<span class="dt">nrow=</span><span class="kw">length</span>(d),<span class="dt">ncol=</span><span class="kw">length</span>(t))
+<span class="cf">for</span>(d_ix <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(d)){
+    <span class="cf">for</span>(t_ix <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(t))
+        st_exp[d_ix,t_ix] &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d[d_ix]<span class="op">/</span>theta_s)<span class="op">*</span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erf</a></span>(t[t_ix]<span class="op">/</span>theta_t)
+}
+<span class="kw"><a href="http://www.rdocumentation.org/packages/plot3D/topics/persp3D">persp3D</a></span>(d,t,st_exp,<span class="dt">phi =</span> <span class="dv">15</span>,<span class="dt">theta =</span> <span class="dv">45</span>,<span class="dt">xlab=</span><span class="st">"Distance"</span>,
+        <span class="dt">ylab=</span><span class="st">"Time (years)"</span>, <span class="dt">zlab =</span> <span class="st">"Exposure"</span>, <span class="dt">ticktype=</span><span class="st">'detailed'</span>,
+        <span class="dt">main =</span> <span class="st">"Spatial Temporal Exposure Across Space and Time"</span>)</code></pre></div>
+<p><img src="longitudinal-I_files/figure-html/st_exp_plot-1.png" width="700"></p>
 <p>This will result in the following exposure densities</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">td_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_ID,measure_ID,date) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span>(<span class="dt">dist_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s)),
@@ -230,7 +251,7 @@ w_t &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="k
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(Exposure_Type <span class="op">!=</span><span class="st"> "total_exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>Exposure,<span class="dt">fill=</span>Exposure_Type)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>(<span class="dt">alpha=</span><span class="fl">0.4</span>)  <span class="op">+</span><span class="st"> </span>
 <span class="st">        </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>()</code></pre></div>
-<p><img src="longitudinal-I_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="longitudinal-I_files/figure-html/separate_exposure-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">td_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_ID,measure_ID,date) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span>(<span class="dt">dist_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s)),
               <span class="dt">time_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erf</a></span>(<span class="kw">as.numeric</span>(time)<span class="op">/</span>theta_t)),
@@ -239,42 +260,11 @@ w_t &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="k
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(Exposure_Type <span class="op">==</span><span class="st"> "total_exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>Exposure,<span class="dt">fill=</span>Exposure_Type)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>()  <span class="op">+</span><span class="st"> </span>
 <span class="st">        </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>()</code></pre></div>
-<p><img src="longitudinal-I_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p><img src="longitudinal-I_files/figure-html/total_exposure-1.png" width="700"></p>
 <p>Below we see that after scaling and centering, the average exposure is higher for the second measurement. This makes sense because we’d expect individuals temporal exposure to continue to accumulate after the first measurement.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Xs &lt;-<span class="st"> </span>td_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_ID,measure_ID,date) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span>(<span class="dt">dist_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s)),
-              <span class="dt">time_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erf</a></span>(<span class="kw">as.numeric</span>(time)<span class="op">/</span>theta_t)),
-              <span class="dt">total_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s) <span class="op">*</span><span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(<span class="kw">as.numeric</span>(time)<span class="op">/</span>theta_t)) ) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"Exposure"</span>),<span class="dt">key=</span><span class="st">'Exposure_Type'</span>,<span class="dt">value=</span><span class="st">"Exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(Exposure_Type <span class="op">==</span><span class="st"> "total_exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_ID,measure_ID) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span>(<span class="dt">Exposure =</span> <span class="kw">sum</span>(Exposure)) <span class="op">%&gt;%</span><span class="st">  </span>## sum multiple dates (moves) to a single outcome measurement
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/spread">spread</a></span>(measure_ID,Exposure) <span class="op">%&gt;%</span><span class="st">  </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">j_1 =</span> (<span class="st">`</span><span class="dt">1</span><span class="st">`</span> <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(.<span class="op">$</span><span class="st">`</span><span class="dt">1</span><span class="st">`</span>)) <span class="op">/</span><span class="st"> </span><span class="kw">sd</span>(.<span class="op">$</span><span class="st">`</span><span class="dt">1</span><span class="st">`</span>),
-           <span class="dt">j_2 =</span> (<span class="st">`</span><span class="dt">2</span><span class="st">`</span> <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(.<span class="op">$</span><span class="st">`</span><span class="dt">2</span><span class="st">`</span>,<span class="dt">na.rm=</span>T)) <span class="op">/</span><span class="st"> </span><span class="kw">sd</span>(.<span class="op">$</span><span class="st">`</span><span class="dt">2</span><span class="st">`</span>,<span class="dt">na.rm=</span>T)) <span class="op">%&gt;%</span><span class="st"> </span>## Needed because some subjects missing for second measurement
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/select.html">select</a></span>(subj_ID,j_<span class="dv">1</span>,j_<span class="dv">2</span>)
-
-subj_fdata &lt;-<span class="st"> </span>subj_fdata <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/join.html">left_join</a></span>(Xs <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(j_<span class="dv">1</span>,j_<span class="dv">2</span>,<span class="dt">key =</span> <span class="st">"measure_ID"</span>,<span class="dt">value=</span><span class="st">"Coffee_Shop"</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">measure_ID =</span> (measure_ID<span class="op">==</span><span class="st">"j_2"</span>)<span class="op">*</span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>),
-                                       <span class="dt">by=</span><span class="kw">c</span>(<span class="st">"ID"</span>=<span class="st">"subj_ID"</span>,<span class="st">"measure_ID"</span>))
-
-subj_fdata &lt;-<span class="st"> </span>subj_fdata <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/join.html">left_join</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">ID=</span><span class="dv">1</span><span class="op">:</span>num_subj_init,
-                                                  <span class="dt">ran_int =</span> <span class="kw">rnorm</span>(<span class="dt">n=</span>num_subj_init,<span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> tau)))
-<span class="co">#&gt; Joining, by = "ID"</span>
-
-Xs <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(j_<span class="dv">1</span>,j_<span class="dv">2</span>,<span class="dt">key=</span><span class="st">"measurement"</span>,<span class="dt">value=</span><span class="st">"exposure"</span>) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>exposure,<span class="dt">fill=</span>measurement)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>(<span class="dt">alpha=</span><span class="fl">0.3</span>)  <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>()</code></pre></div>
-<p><img src="longitudinal-I_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lme_inf &lt;-<span class="st"> </span>lme4<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/lme4/topics/modular">glFormula</a></span>(<span class="dt">formula =</span>  measure_ID <span class="op">~</span>
-<span class="st">                               </span><span class="kw">I</span>((Income<span class="op">-</span><span class="kw">mean</span>(Income))<span class="op">/</span><span class="kw">sd</span>(Income) ) <span class="op">+</span><span class="st"> </span>
-<span class="st">                               </span>sex <span class="op">+</span><span class="st"> </span>
-<span class="st">                               </span><span class="kw">I</span>((Age <span class="op">-</span><span class="kw">mean</span>(Age))<span class="op">/</span><span class="kw">sd</span>(Age)) <span class="op">+</span><span class="st"> </span>
-<span class="st">                               </span>Coffee_Shop <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>ID),
-                     <span class="dt">data =</span> subj_fdata,<span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link=</span><span class="st">'identity'</span>))
-Z &lt;-<span class="st"> </span>lme_inf<span class="op">$</span>X
-y &lt;-<span class="st"> </span>Z <span class="op">%*%</span><span class="st"> </span><span class="kw">c</span>(alpha,delta,beta) <span class="op">+</span><span class="st"> </span>subj_fdata<span class="op">$</span>ran_int <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="kw">nrow</span>(Z),<span class="dt">mean =</span> <span class="dv">0</span>,<span class="dt">sd =</span> sigma)
-<span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
-<span class="kw">hist</span>(y[<span class="dv">1</span><span class="op">:</span>num_subj_init], <span class="dt">xlab =</span> <span class="st">"BMI"</span>,<span class="dt">main=</span><span class="st">"First Measurement"</span>)
-<span class="kw">hist</span>(y[num_subj_init<span class="op">+</span><span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(y)], <span class="dt">xlab=</span> <span class="st">"BMI"</span>, <span class="dt">main=</span><span class="st">"Second Measurement"</span>)</code></pre></div>
-<p><img src="longitudinal-I_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+<pre><code>#&gt; Joining, by = "ID"</code></pre>
+<p><img src="longitudinal-I_files/figure-html/create_exposure-1.png" width="700"></p>
+<p><img src="longitudinal-I_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_fdata &lt;-<span class="st"> </span>subj_fdata <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/join.html">left_join</a></span>(<span class="kw">cbind</span>(lme_inf<span class="op">$</span>fr,y),<span class="dt">by=</span><span class="kw">c</span>(<span class="st">"ID"</span>,<span class="st">"measure_ID"</span>))  <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">sex =</span> sex.x, <span class="dt">Coffee_Shop=</span> Coffee_Shop.x,<span class="dt">subj_ID=</span>ID,
            <span class="dt">centered_income =</span> <span class="st">`</span><span class="dt">I((Income - mean(Income))/sd(Income))</span><span class="st">`</span>,
@@ -344,15 +334,15 @@ y &lt;-<span class="st"> </span>Z <span class="op">%*%</span><span class="st"> <
                   <span class="dt">chains =</span> <span class="dv">3</span>,
                   <span class="dt">iter =</span> <span class="fl">1E3</span>,
                   <span class="dt">cores =</span> <span class="dv">3</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cbind</span>(<span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit)[<span class="dv">1</span><span class="op">:</span><span class="dv">7</span>,],<span class="dt">Truth=</span><span class="kw">c</span>(alpha,delta,beta,theta_s,theta_t))
-<span class="co">#&gt;                                     5%        95% Truth</span>
-<span class="co">#&gt; (Intercept)                21.88554745 22.6233155 22.00</span>
-<span class="co">#&gt; centered_income            -0.64233872 -0.1224059 -0.35</span>
-<span class="co">#&gt; sex                        -0.03986070  0.9040435  1.10</span>
-<span class="co">#&gt; centered_age                1.03251487  1.5141293  1.20</span>
-<span class="co">#&gt; Coffee_Shop                 0.07807833  0.6254521  0.50</span>
-<span class="co">#&gt; Coffee_Shop_spatial_scale   0.25876330 14.0449708  0.80</span>
-<span class="co">#&gt; Coffee_Shop_temporal_scale  0.06963218 53.0675458 34.00</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">est_mat &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit)[<span class="dv">1</span><span class="op">:</span><span class="dv">7</span>,],<span class="dt">Truth=</span><span class="kw">c</span>(alpha,delta,beta,theta_s,theta_t)) 
+par_nms &lt;-<span class="st"> </span><span class="kw">rownames</span>(est_mat)
+est_mat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">parameters=</span>par_nms) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>parameters,<span class="dt">y=</span>Truth)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_point">geom_point</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_linerange">geom_linerange</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">ymin=</span><span class="st">`</span><span class="dt">5%</span><span class="st">`</span>,<span class="dt">ymax=</span><span class="st">`</span><span class="dt">95%</span><span class="st">`</span>)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/coord_flip">coord_flip</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Estimate Boundaries with True Values"</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ylab</a></span>(<span class="st">"Parameter Units"</span>)</code></pre></div>
+<p><img src="longitudinal-I_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
   </div>
 
@@ -361,7 +351,14 @@ y &lt;-<span class="st"> </span>Z <span class="op">%*%</span><span class="st"> <
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#data-structure-complexities">Data Structure Complexities</a></li>
+<li>
+<a href="#staps-in-a-longitudinal-setting">STAPs in a Longitudinal setting</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#measurement-data">Measurement Data</a></li>
+      <li><a href="#transforming-the-measured-data">Transforming the Measured Data</a></li>
+      <li><a href="#stores-opening-and-closing-subjects-moving-in-the-data">Stores Opening and Closing, Subjects Moving in the Data</a></li>
+      </ul>
+</li>
+      <li><a href="#simulating-and-estimating-a-stap-model">Simulating and Estimating a STAP model</a></li>
       </ul>
 </div>
       </div>

@@ -81,8 +81,7 @@ stap_glmer <-
            prior = normal(),
            prior_intercept = normal(),
            prior_stap = normal(),
-           prior_theta_s = log_normal(location = 1L, scale = 1L),
-           prior_theta_t = log_normal(location = 1L, scale = 1L),
+           prior_theta = log_normal(location = 1L, scale = 1L),
            prior_aux = exponential(),
            prior_covariance = decov(),
            adapt_delta = NULL) {
