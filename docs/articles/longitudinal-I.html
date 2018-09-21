@@ -97,16 +97,13 @@
 
     
     
+<p>Spatial-temporal aggregated predictor (STAP) models extension in the longitudinal setting incorporates heirarchical variance components to account for within subject or group-level correlation.</p>
+<p>This setting also involves a substantially different data structure, since exposure to built environment features now occurs across time and subjects can move across time or space. Additionally since subjects may drop out of a study and built-environment features - stores - may close or open, the staps are neccessarily different at each measurement. The inclusion of these repeated measures, requires a secondary id to join on in addition to the typical <code>id_key</code> for the <code>distance_data</code> and <code>time_data</code> arguments to the <code>stap_glmer</code> function. We’ll demonstrate this and the stap model with random effects using the simple case of homogenously distributed built environment features, with subjects measured across two time points.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
 <span class="kw">library</span>(tidyr)
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(rstap)
 <span class="kw">library</span>(plot3D)</code></pre></div>
-<div id="staps-in-a-longitudinal-setting" class="section level1">
-<h1 class="hasAnchor">
-<a href="#staps-in-a-longitudinal-setting" class="anchor"></a>STAPs in a Longitudinal setting</h1>
-<p>Spatial-temporal aggregated predictor (STAP) models extension in the longitudinal setting incorporates heirarchical variance components to account for within subject or group-level correlation.</p>
-<p>This setting also involves a substantially different data structure, since exposure to built environment features now occurs across time and subjects can move across time or space. Additionally since subjects may drop out of a study and built-environment features - stores - may close or open, the staps are neccessarily different at each measurement. The inclusion of these repeated measures, requires a secondary id to join on in addition to the typical <code>id_key</code> for the <code>distance_data</code> and <code>time_data</code> arguments to the <code>stap_glmer</code> function. We’ll demonstrate this and the stap model with random effects using the simple case of homogenously distributed built environment features, with subjects measured across two time points.</p>
 <div id="measurement-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#measurement-data" class="anchor"></a>Measurement Data</h2>
@@ -204,7 +201,6 @@
 <span class="co">#&gt; 11       9          2     10 2003-01-25   1961-05-18 2002-09-23 1985-09-21</span>
 <span class="co">#&gt; 12       9          2     10 2003-01-25   1961-05-18 2002-09-23 1991-11-14</span>
 <span class="co">#&gt; # ... with 3 more variables: class &lt;chr&gt;, dist &lt;dbl&gt;, time &lt;time&gt;</span></code></pre></div>
-</div>
 </div>
 <div id="simulating-and-estimating-a-stap-model" class="section level1">
 <h1 class="hasAnchor">
@@ -351,13 +347,9 @@ est_mat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li>
-<a href="#staps-in-a-longitudinal-setting">STAPs in a Longitudinal setting</a><ul class="nav nav-pills nav-stacked">
 <li><a href="#measurement-data">Measurement Data</a></li>
       <li><a href="#transforming-the-measured-data">Transforming the Measured Data</a></li>
       <li><a href="#stores-opening-and-closing-subjects-moving-in-the-data">Stores Opening and Closing, Subjects Moving in the Data</a></li>
-      </ul>
-</li>
       <li><a href="#simulating-and-estimating-a-stap-model">Simulating and Estimating a STAP model</a></li>
       </ul>
 </div>
