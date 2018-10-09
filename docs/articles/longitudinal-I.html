@@ -64,7 +64,7 @@
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
-      <a href="../articles/longitudinal-ii.html">Longitudinal Setting - Multiple Timepoints </a>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
     </li>
     <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
@@ -108,55 +108,190 @@
 <h2 class="hasAnchor">
 <a href="#measurement-data" class="anchor"></a>Measurement Data</h2>
 <p>Below we can see what the data, when initially measured, might look like before preparing it for model fitting.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">list</span>(<span class="st">'Subject Spatial-Temporal Data'</span> =<span class="st"> </span>subj_data,
-     <span class="st">"BEF Spatial-Temporal Data"</span> =<span class="st"> </span>bef_data)
-<span class="co">#&gt; $`Subject Spatial-Temporal Data`</span>
-<span class="co">#&gt; # A tibble: 167 x 5</span>
-<span class="co">#&gt;           x      y date          ID class  </span>
-<span class="co">#&gt;       &lt;dbl&gt;  &lt;dbl&gt; &lt;date&gt;     &lt;int&gt; &lt;chr&gt;  </span>
-<span class="co">#&gt;  1 -0.701   -0.412 1974-05-11     1 Subject</span>
-<span class="co">#&gt;  2 -0.415    0.622 1976-03-04     2 Subject</span>
-<span class="co">#&gt;  3 -0.924   -0.314 1976-04-15     3 Subject</span>
-<span class="co">#&gt;  4 -0.700   -0.700 1986-12-24     4 Subject</span>
-<span class="co">#&gt;  5 -0.00932 -0.262 1987-07-17     5 Subject</span>
-<span class="co">#&gt;  6 -0.624    0.272 1974-01-31     6 Subject</span>
-<span class="co">#&gt;  7  0.296   -0.401 1988-06-05     7 Subject</span>
-<span class="co">#&gt;  8  0.607   -0.418 1975-01-01     8 Subject</span>
-<span class="co">#&gt;  9 -0.0141  -0.708 1985-09-21     9 Subject</span>
-<span class="co">#&gt; 10 -0.557    0.561 1971-08-03    10 Subject</span>
-<span class="co">#&gt; # ... with 157 more rows</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; $`BEF Spatial-Temporal Data`</span>
-<span class="co">#&gt; # A tibble: 55 x 6</span>
-<span class="co">#&gt;         x       y date_open  date_close    ID class      </span>
-<span class="co">#&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;date&gt;     &lt;date&gt;     &lt;int&gt; &lt;chr&gt;      </span>
-<span class="co">#&gt;  1  0.624  0.916  1969-05-14 NA             1 Coffee_Shop</span>
-<span class="co">#&gt;  2 -0.351 -0.796  1963-10-23 NA             2 Coffee_Shop</span>
-<span class="co">#&gt;  3  0.893 -0.839  1960-09-12 NA             3 Coffee_Shop</span>
-<span class="co">#&gt;  4  0.199 -0.140  1965-04-20 NA             4 Coffee_Shop</span>
-<span class="co">#&gt;  5 -0.822  0.841  1962-06-28 NA             5 Coffee_Shop</span>
-<span class="co">#&gt;  6 -0.673 -0.549  1968-02-01 NA             6 Coffee_Shop</span>
-<span class="co">#&gt;  7  0.177  0.0337 1963-10-15 NA             7 Coffee_Shop</span>
-<span class="co">#&gt;  8  0.364 -0.404  1963-12-30 NA             8 Coffee_Shop</span>
-<span class="co">#&gt;  9  0.430  0.812  1968-10-09 NA             9 Coffee_Shop</span>
-<span class="co">#&gt; 10 -0.383 -0.621  1961-05-18 2002-09-23    10 Coffee_Shop</span>
-<span class="co">#&gt; # ... with 45 more rows</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>(<span class="kw">head</span>(subj_data))</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="right">x</th>
+<th align="right">y</th>
+<th align="left">date</th>
+<th align="right">ID</th>
+<th align="left">class</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">-0.7010789</td>
+<td align="right">-0.4122513</td>
+<td align="left">1974-05-11</td>
+<td align="right">1</td>
+<td align="left">Subject</td>
+</tr>
+<tr class="even">
+<td align="right">-0.4152146</td>
+<td align="right">0.6216578</td>
+<td align="left">1976-03-04</td>
+<td align="right">2</td>
+<td align="left">Subject</td>
+</tr>
+<tr class="odd">
+<td align="right">-0.9235991</td>
+<td align="right">-0.3144340</td>
+<td align="left">1976-04-15</td>
+<td align="right">3</td>
+<td align="left">Subject</td>
+</tr>
+<tr class="even">
+<td align="right">-0.7000457</td>
+<td align="right">-0.7004710</td>
+<td align="left">1986-12-24</td>
+<td align="right">4</td>
+<td align="left">Subject</td>
+</tr>
+<tr class="odd">
+<td align="right">-0.0093243</td>
+<td align="right">-0.2621985</td>
+<td align="left">1987-07-17</td>
+<td align="right">5</td>
+<td align="left">Subject</td>
+</tr>
+<tr class="even">
+<td align="right">-0.6240887</td>
+<td align="right">0.2715783</td>
+<td align="left">1974-01-31</td>
+<td align="right">6</td>
+<td align="left">Subject</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>(<span class="kw">head</span>(bef_data))</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="right">x</th>
+<th align="right">y</th>
+<th align="left">date_open</th>
+<th align="left">date_close</th>
+<th align="right">ID</th>
+<th align="left">class</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.6235991</td>
+<td align="right">0.9160860</td>
+<td align="left">1969-05-14</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="left">Coffee_Shop</td>
+</tr>
+<tr class="even">
+<td align="right">-0.3509599</td>
+<td align="right">-0.7960043</td>
+<td align="left">1963-10-23</td>
+<td align="left">NA</td>
+<td align="right">2</td>
+<td align="left">Coffee_Shop</td>
+</tr>
+<tr class="odd">
+<td align="right">0.8930943</td>
+<td align="right">-0.8389746</td>
+<td align="left">1960-09-12</td>
+<td align="left">NA</td>
+<td align="right">3</td>
+<td align="left">Coffee_Shop</td>
+</tr>
+<tr class="even">
+<td align="right">0.1987246</td>
+<td align="right">-0.1403757</td>
+<td align="left">1965-04-20</td>
+<td align="left">NA</td>
+<td align="right">4</td>
+<td align="left">Coffee_Shop</td>
+</tr>
+<tr class="odd">
+<td align="right">-0.8223150</td>
+<td align="right">0.8408805</td>
+<td align="left">1962-06-28</td>
+<td align="left">NA</td>
+<td align="right">5</td>
+<td align="left">Coffee_Shop</td>
+</tr>
+<tr class="even">
+<td align="right">-0.6727366</td>
+<td align="right">-0.5488446</td>
+<td align="left">1968-02-01</td>
+<td align="left">NA</td>
+<td align="right">6</td>
+<td align="left">Coffee_Shop</td>
+</tr>
+</tbody>
+</table>
 <p>The third and final dataset involves the subject specific data and the dates at which the measurements were taken.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_fdata <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(ID)
-<span class="co">#&gt; # A tibble: 291 x 7</span>
-<span class="co">#&gt;       ID   sex DOB        Income measure_date   Age measure_ID</span>
-<span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;date&gt;      &lt;dbl&gt; &lt;date&gt;       &lt;dbl&gt;      &lt;dbl&gt;</span>
-<span class="co">#&gt;  1     1     1 1956-08-11   99.2 2000-02-19    43.6          1</span>
-<span class="co">#&gt;  2     1     1 1956-08-11  196.  2001-07-20    45.0          2</span>
-<span class="co">#&gt;  3     2     0 1953-09-23   62.6 2000-03-20    46.5          1</span>
-<span class="co">#&gt;  4     2     0 1953-09-23  155.  2001-12-06    48.2          2</span>
-<span class="co">#&gt;  5     3     1 1968-10-01   21.8 2000-03-10    31.5          1</span>
-<span class="co">#&gt;  6     3     1 1968-10-01  117.  2002-07-02    33.8          2</span>
-<span class="co">#&gt;  7     4     1 1954-06-01   89.9 2000-10-11    46.4          1</span>
-<span class="co">#&gt;  8     4     1 1954-06-01  145.  2002-01-07    47.6          2</span>
-<span class="co">#&gt;  9     5     1 1956-09-22   50.6 2000-10-14    44.1          1</span>
-<span class="co">#&gt; 10     5     1 1956-09-22  107.  2003-06-28    46.8          2</span>
-<span class="co">#&gt; # ... with 281 more rows</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_fdata <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(ID) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>() <span class="op">%&gt;%</span><span class="st">  </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="right">ID</th>
+<th align="right">sex</th>
+<th align="left">DOB</th>
+<th align="right">Income</th>
+<th align="left">measure_date</th>
+<th align="right">Age</th>
+<th align="right">measure_ID</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">1956-08-11</td>
+<td align="right">99.24412</td>
+<td align="left">2000-02-19</td>
+<td align="right">43.55342</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">1956-08-11</td>
+<td align="right">195.50595</td>
+<td align="left">2001-07-20</td>
+<td align="right">44.96986</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="left">1953-09-23</td>
+<td align="right">62.59116</td>
+<td align="left">2000-03-20</td>
+<td align="right">46.52055</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="left">1953-09-23</td>
+<td align="right">155.15809</td>
+<td align="left">2001-12-06</td>
+<td align="right">48.23562</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="left">1968-10-01</td>
+<td align="right">21.77823</td>
+<td align="left">2000-03-10</td>
+<td align="right">31.46027</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="left">1968-10-01</td>
+<td align="right">116.94324</td>
+<td align="left">2002-07-02</td>
+<td align="right">33.77260</td>
+<td align="right">2</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="transforming-the-measured-data" class="section level2">
 <h2 class="hasAnchor">
@@ -165,18 +300,83 @@
 <p>Note that for subjects one and two there are two rows, corresponding to the two measurements. In contrast, subject nine has four rows, corresponding to the fact that subject 9’s move before the two measurements results in both locations of 9’s residence being associated with all measurements subsequently measured.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subj_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/join.html">left_join</a></span>(subj_fdata,<span class="dt">by=</span><span class="st">"ID"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(ID <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/select.html">select</a></span>(ID,measure_ID,x,y,date,measure_date)
-<span class="co">#&gt; # A tibble: 8 x 6</span>
-<span class="co">#&gt;      ID measure_ID       x      y date       measure_date</span>
-<span class="co">#&gt;   &lt;int&gt;      &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;date&gt;     &lt;date&gt;      </span>
-<span class="co">#&gt; 1     1          1 -0.701  -0.412 1974-05-11 2000-02-19  </span>
-<span class="co">#&gt; 2     1          2 -0.701  -0.412 1974-05-11 2001-07-20  </span>
-<span class="co">#&gt; 3     2          1 -0.415   0.622 1976-03-04 2000-03-20  </span>
-<span class="co">#&gt; 4     2          2 -0.415   0.622 1976-03-04 2001-12-06  </span>
-<span class="co">#&gt; 5     9          1 -0.0141 -0.708 1985-09-21 2000-03-14  </span>
-<span class="co">#&gt; 6     9          2 -0.0141 -0.708 1985-09-21 2003-01-25  </span>
-<span class="co">#&gt; 7     9          1  0.315  -0.145 1991-11-14 2000-03-14  </span>
-<span class="co">#&gt; 8     9          2  0.315  -0.145 1991-11-14 2003-01-25</span></code></pre></div>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/select.html">select</a></span>(ID,measure_ID,x,y,date,measure_date) <span class="op">%&gt;%</span><span class="st"> </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="right">ID</th>
+<th align="right">measure_ID</th>
+<th align="right">x</th>
+<th align="right">y</th>
+<th align="left">date</th>
+<th align="left">measure_date</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">-0.7010789</td>
+<td align="right">-0.4122513</td>
+<td align="left">1974-05-11</td>
+<td align="left">2000-02-19</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">-0.7010789</td>
+<td align="right">-0.4122513</td>
+<td align="left">1974-05-11</td>
+<td align="left">2001-07-20</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">-0.4152146</td>
+<td align="right">0.6216578</td>
+<td align="left">1976-03-04</td>
+<td align="left">2000-03-20</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="right">-0.4152146</td>
+<td align="right">0.6216578</td>
+<td align="left">1976-03-04</td>
+<td align="left">2001-12-06</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">1</td>
+<td align="right">-0.0141227</td>
+<td align="right">-0.7079604</td>
+<td align="left">1985-09-21</td>
+<td align="left">2000-03-14</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">-0.0141227</td>
+<td align="right">-0.7079604</td>
+<td align="left">1985-09-21</td>
+<td align="left">2003-01-25</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">1</td>
+<td align="right">0.3148266</td>
+<td align="right">-0.1445037</td>
+<td align="left">1991-11-14</td>
+<td align="left">2000-03-14</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">0.3148266</td>
+<td align="right">-0.1445037</td>
+<td align="left">1991-11-14</td>
+<td align="left">2003-01-25</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="stores-opening-and-closing-subjects-moving-in-the-data" class="section level2">
 <h2 class="hasAnchor">
@@ -184,23 +384,168 @@
 <p>Here we can see the effect of a store closing (BEF_ID 10) and a subject moving (subj_ID 9) on the data structure. Note that first row’s time is ~25.8 years which reflects the time spent since the <em>subject</em> first moved to their location. Since neither the subject nor the business moves by the subject’s second measurement in July of 2001, we see that the distances betwen subject 1 and Coffee Shop 1 stay constant, and the time increases according to the difference in measurement date, only.</p>
 <p>In contrast, we see the effect of a subject moving for subj_ID 9. Here (s)he has twice as many measurements to show her/his exposure to the same coffee shop at the different locations where subj 9 lived. This is shown most evidently in the constant exposure for for coffee shops at the 1985 location for subject 9. Since subject 9 moved after ~6 years, and coffee shop 1 hadn’t closed at that time, subject 9 only has 6 years of exposure to that coffee shop at that distance. Following this we can see a steadily increasing exposure until the coffee shop closes in 2002, roughly a year before the subject’s second measurement in ’03.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">td_data  <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(subj_ID <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">9</span>),bef_ID<span class="op">%in%</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">10</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(subj_ID,measure_ID,bef_ID)
-<span class="co">#&gt; # A tibble: 12 x 10</span>
-<span class="co">#&gt;    subj_ID measure_ID bef_ID measure_date date_open  date_close date      </span>
-<span class="co">#&gt;      &lt;int&gt;      &lt;dbl&gt;  &lt;int&gt; &lt;date&gt;       &lt;date&gt;     &lt;date&gt;     &lt;date&gt;    </span>
-<span class="co">#&gt;  1       1          1      1 2000-02-19   1969-05-14 NA         1974-05-11</span>
-<span class="co">#&gt;  2       1          1     10 2000-02-19   1961-05-18 2002-09-23 1974-05-11</span>
-<span class="co">#&gt;  3       1          2      1 2001-07-20   1969-05-14 NA         1974-05-11</span>
-<span class="co">#&gt;  4       1          2     10 2001-07-20   1961-05-18 2002-09-23 1974-05-11</span>
-<span class="co">#&gt;  5       9          1      1 2000-03-14   1969-05-14 NA         1985-09-21</span>
-<span class="co">#&gt;  6       9          1      1 2000-03-14   1969-05-14 NA         1991-11-14</span>
-<span class="co">#&gt;  7       9          1     10 2000-03-14   1961-05-18 2002-09-23 1985-09-21</span>
-<span class="co">#&gt;  8       9          1     10 2000-03-14   1961-05-18 2002-09-23 1991-11-14</span>
-<span class="co">#&gt;  9       9          2      1 2003-01-25   1969-05-14 NA         1985-09-21</span>
-<span class="co">#&gt; 10       9          2      1 2003-01-25   1969-05-14 NA         1991-11-14</span>
-<span class="co">#&gt; 11       9          2     10 2003-01-25   1961-05-18 2002-09-23 1985-09-21</span>
-<span class="co">#&gt; 12       9          2     10 2003-01-25   1961-05-18 2002-09-23 1991-11-14</span>
-<span class="co">#&gt; # ... with 3 more variables: class &lt;chr&gt;, dist &lt;dbl&gt;, time &lt;time&gt;</span></code></pre></div>
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(subj_ID <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">9</span>),bef_ID<span class="op">%in%</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">10</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(subj_ID,measure_ID,bef_ID) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="right">subj_ID</th>
+<th align="right">measure_ID</th>
+<th align="right">bef_ID</th>
+<th align="left">measure_date</th>
+<th align="left">date_open</th>
+<th align="left">date_close</th>
+<th align="left">date</th>
+<th align="left">class</th>
+<th align="right">dist</th>
+<th align="left">time</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">2000-02-19</td>
+<td align="left">1969-05-14</td>
+<td align="left">NA</td>
+<td align="left">1974-05-11</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">1.8759668</td>
+<td align="left">25.794521 days</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">10</td>
+<td align="left">2000-02-19</td>
+<td align="left">1961-05-18</td>
+<td align="left">2002-09-23</td>
+<td align="left">1974-05-11</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">0.3802869</td>
+<td align="left">25.794521 days</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">2001-07-20</td>
+<td align="left">1969-05-14</td>
+<td align="left">NA</td>
+<td align="left">1974-05-11</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">1.8759668</td>
+<td align="left">27.210959 days</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">10</td>
+<td align="left">2001-07-20</td>
+<td align="left">1961-05-18</td>
+<td align="left">2002-09-23</td>
+<td align="left">1974-05-11</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">0.3802869</td>
+<td align="left">27.210959 days</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">2000-03-14</td>
+<td align="left">1969-05-14</td>
+<td align="left">NA</td>
+<td align="left">1985-09-21</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">1.7447681</td>
+<td align="left">6.150685 days</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">2000-03-14</td>
+<td align="left">1969-05-14</td>
+<td align="left">NA</td>
+<td align="left">1991-11-14</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">1.1046226</td>
+<td align="left">8.336986 days</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">1</td>
+<td align="right">10</td>
+<td align="left">2000-03-14</td>
+<td align="left">1961-05-18</td>
+<td align="left">2002-09-23</td>
+<td align="left">1985-09-21</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">0.3793350</td>
+<td align="left">6.150685 days</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">1</td>
+<td align="right">10</td>
+<td align="left">2000-03-14</td>
+<td align="left">1961-05-18</td>
+<td align="left">2002-09-23</td>
+<td align="left">1991-11-14</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">0.8455503</td>
+<td align="left">8.336986 days</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">2003-01-25</td>
+<td align="left">1969-05-14</td>
+<td align="left">NA</td>
+<td align="left">1985-09-21</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">1.7447681</td>
+<td align="left">6.150685 days</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">2003-01-25</td>
+<td align="left">1969-05-14</td>
+<td align="left">NA</td>
+<td align="left">1991-11-14</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">1.1046226</td>
+<td align="left">11.205479 days</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">10</td>
+<td align="left">2003-01-25</td>
+<td align="left">1961-05-18</td>
+<td align="left">2002-09-23</td>
+<td align="left">1985-09-21</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">0.3793350</td>
+<td align="left">6.150685 days</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">10</td>
+<td align="left">2003-01-25</td>
+<td align="left">1961-05-18</td>
+<td align="left">2002-09-23</td>
+<td align="left">1991-11-14</td>
+<td align="left">Coffee_Shop</td>
+<td align="right">0.8455503</td>
+<td align="left">10.865753 days</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="simulating-and-estimating-a-stap-model" class="section level1">
 <h1 class="hasAnchor">
@@ -238,24 +583,7 @@ w_t &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="k
         <span class="dt">ylab=</span><span class="st">"Time (years)"</span>, <span class="dt">zlab =</span> <span class="st">"Exposure"</span>, <span class="dt">ticktype=</span><span class="st">'detailed'</span>,
         <span class="dt">main =</span> <span class="st">"Spatial Temporal Exposure Across Space and Time"</span>)</code></pre></div>
 <p><img src="longitudinal-I_files/figure-html/st_exp_plot-1.png" width="700"></p>
-<p>This will result in the following exposure densities</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">td_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_ID,measure_ID,date) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span>(<span class="dt">dist_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s)),
-              <span class="dt">time_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erf</a></span>(<span class="kw">as.numeric</span>(time)<span class="op">/</span>theta_t)),
-              <span class="dt">total_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s) <span class="op">*</span><span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(<span class="kw">as.numeric</span>(time)<span class="op">/</span>theta_t)) ) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"Exposure"</span>),<span class="dt">key=</span><span class="st">"Exposure_Type"</span>,<span class="dt">value =</span> <span class="st">"Exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(Exposure_Type <span class="op">!=</span><span class="st"> "total_exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>Exposure,<span class="dt">fill=</span>Exposure_Type)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>(<span class="dt">alpha=</span><span class="fl">0.4</span>)  <span class="op">+</span><span class="st"> </span>
-<span class="st">        </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>()</code></pre></div>
-<p><img src="longitudinal-I_files/figure-html/separate_exposure-1.png" width="700"></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">td_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_ID,measure_ID,date) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span>(<span class="dt">dist_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s)),
-              <span class="dt">time_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erf</a></span>(<span class="kw">as.numeric</span>(time)<span class="op">/</span>theta_t)),
-              <span class="dt">total_exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(dist<span class="op">/</span>theta_s) <span class="op">*</span><span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(<span class="kw">as.numeric</span>(time)<span class="op">/</span>theta_t))) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"Exposure"</span>),<span class="dt">key=</span><span class="st">"Exposure_Type"</span>,<span class="dt">value =</span> <span class="st">"Exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(Exposure_Type <span class="op">==</span><span class="st"> "total_exposure"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>Exposure,<span class="dt">fill=</span>Exposure_Type)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_density">geom_density</a></span>()  <span class="op">+</span><span class="st"> </span>
-<span class="st">        </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>()</code></pre></div>
+<p>This results in the following exposure density across the population.</p>
 <p><img src="longitudinal-I_files/figure-html/total_exposure-1.png" width="700"></p>
 <p>Below we see that after scaling and centering, the average exposure is higher for the second measurement. This makes sense because we’d expect individuals temporal exposure to continue to accumulate after the first measurement.</p>
 <pre><code>#&gt; Joining, by = "ID"</code></pre>
@@ -270,52 +598,41 @@ w_t &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="k
            <span class="st">`</span><span class="dt">I((Income - mean(Income))/sd(Income))</span><span class="st">`</span>)</code></pre></div>
 <p>The final datasets passed to the <code>stap_glmer</code> function will then be the subject specific data, and the td data above containing the subject ID, the BEF class label and the distance or time. These are displayed below</p>
 <pre><code>#&gt; $subject_data
-#&gt; # A tibble: 291 x 8
-#&gt;    subj_ID Income measure_ID   Age ran_int     y   sex Coffee_Shop
-#&gt;      &lt;int&gt;  &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;       &lt;dbl&gt;
-#&gt;  1       1   99.2          1  43.6   0.148  24.6     1      -0.509
-#&gt;  2       2   62.6          1  46.5   0.243  23.9     0      -0.611
-#&gt;  3       3   21.8          1  31.5   0.480  18.6     1      -0.686
-#&gt;  4       4   89.9          1  46.4   1.03   25.8     1       0.353
-#&gt;  5       5   50.6          1  44.1   1.01   24.4     1       0.807
-#&gt;  6       6   19.5          1  40.7  -0.184  23.1     1      -0.722
-#&gt;  7       7   67.2          1  46.7   0.127  27.1     1       0.789
-#&gt;  8       8   79.1          1  41.6  -0.387  21.8     0      -0.571
-#&gt;  9       9   66.8          1  34.0  -0.345  24.4     1       4.12 
-#&gt; 10      10   67.2          1  48.9  -1.79   22.5     0      -0.883
-#&gt; # ... with 281 more rows
+#&gt; 
+#&gt; 
+#&gt;  subj_ID     Income   measure_ID        Age      ran_int          y   sex   Coffee_Shop
+#&gt; --------  ---------  -----------  ---------  -----------  ---------  ----  ------------
+#&gt;        1   99.24412            1   43.55342    0.1479640   25.43510     1     1.1533478
+#&gt;        2   62.59116            1   46.52055    0.2428797   24.30122     0     0.2231945
+#&gt;        3   21.77823            1   31.46027    0.4803896   19.03419     1     0.1501119
+#&gt;        4   89.85819            1   46.39452    1.0326631   25.48276     1    -0.3327526
+#&gt;        5   50.64930            1   44.09041    1.0108777   24.13782     1     0.2136020
+#&gt;        6   19.49446            1   40.70411   -0.1844054   23.72924     1     0.6041888
 #&gt; 
 #&gt; $distance_data
-#&gt; # A tibble: 17,875 x 6
-#&gt;    subj_ID measure_ID date       bef_ID class        dist
-#&gt;      &lt;int&gt;      &lt;dbl&gt; &lt;date&gt;      &lt;int&gt; &lt;chr&gt;       &lt;dbl&gt;
-#&gt;  1       1          1 1974-05-11      1 Coffee_Shop  1.88
-#&gt;  2       2          1 1976-03-04      1 Coffee_Shop  1.08
-#&gt;  3       3          1 1976-04-15      1 Coffee_Shop  1.98
-#&gt;  4       4          1 1986-12-24      1 Coffee_Shop  2.09
-#&gt;  5       5          1 1987-07-17      1 Coffee_Shop  1.34
-#&gt;  6       6          1 1974-01-31      1 Coffee_Shop  1.40
-#&gt;  7       7          1 1988-06-05      1 Coffee_Shop  1.36
-#&gt;  8       8          1 1975-01-01      1 Coffee_Shop  1.33
-#&gt;  9       9          1 1985-09-21      1 Coffee_Shop  1.74
-#&gt; 10       9          1 1991-11-14      1 Coffee_Shop  1.10
-#&gt; # ... with 17,865 more rows
+#&gt; 
+#&gt; 
+#&gt;  subj_ID   measure_ID  date          bef_ID  class              dist
+#&gt; --------  -----------  -----------  -------  ------------  ---------
+#&gt;        1            1  1974-05-11         1  Coffee_Shop    1.875967
+#&gt;        2            1  1976-03-04         1  Coffee_Shop    1.079732
+#&gt;        3            1  1976-04-15         1  Coffee_Shop    1.976867
+#&gt;        4            1  1986-12-24         1  Coffee_Shop    2.089328
+#&gt;        5            1  1987-07-17         1  Coffee_Shop    1.337515
+#&gt;        6            1  1974-01-31         1  Coffee_Shop    1.404320
 #&gt; 
 #&gt; $time_data
-#&gt; # A tibble: 17,875 x 6
-#&gt;    subj_ID measure_ID date       bef_ID class       time            
-#&gt;      &lt;int&gt;      &lt;dbl&gt; &lt;date&gt;      &lt;int&gt; &lt;chr&gt;       &lt;time&gt;          
-#&gt;  1       1          1 1974-05-11      1 Coffee_Shop 25.7945205479452
-#&gt;  2       2          1 1976-03-04      1 Coffee_Shop 24.0602739726027
-#&gt;  3       3          1 1976-04-15      1 Coffee_Shop 23.9178082191781
-#&gt;  4       4          1 1986-12-24      1 Coffee_Shop 13.8082191780822
-#&gt;  5       5          1 1987-07-17      1 Coffee_Shop 13.2547945205479
-#&gt;  6       6          1 1974-01-31      1 Coffee_Shop 26.6904109589041
-#&gt;  7       7          1 1988-06-05      1 Coffee_Shop 12.5205479452055
-#&gt;  8       8          1 1975-01-01      1 Coffee_Shop 25.3780821917808
-#&gt;  9       9          1 1985-09-21      1 Coffee_Shop 6.15068493150685
-#&gt; 10       9          1 1991-11-14      1 Coffee_Shop 8.33698630136986
-#&gt; # ... with 17,865 more rows</code></pre>
+#&gt; 
+#&gt; 
+#&gt;  subj_ID   measure_ID  date          bef_ID  class         time          
+#&gt; --------  -----------  -----------  -------  ------------  --------------
+#&gt;        1            1  1974-05-11         1  Coffee_Shop   25.79452 days 
+#&gt;        2            1  1976-03-04         1  Coffee_Shop   24.06027 days 
+#&gt;        3            1  1976-04-15         1  Coffee_Shop   23.91781 days 
+#&gt;        4            1  1986-12-24         1  Coffee_Shop   13.80822 days 
+#&gt;        5            1  1987-07-17         1  Coffee_Shop   13.25479 days 
+#&gt;        6            1  1974-01-31         1  Coffee_Shop   26.69041 days</code></pre>
+<p>Fitting the data with priors that reflect our relative uncertainty about the spatial and temporal scales…</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glmer.html">stap_glmer</a></span>(y <span class="op">~</span><span class="st"> </span>centered_income <span class="op">+</span><span class="st">  </span>sex <span class="op">+</span><span class="st"> </span>centered_age <span class="op">+</span><span class="st"> </span><span class="kw">stap</span>(Coffee_Shop) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>subj_ID),
                   <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link=</span><span class="st">'identity'</span>),
                   <span class="dt">subject_data =</span> homog_longitudinal_subject_data,
@@ -325,19 +642,16 @@ w_t &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="k
                   <span class="dt">prior_intercept =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">25</span>, <span class="dt">scale =</span> <span class="dv">4</span>, <span class="dt">autoscale =</span> F),
                   <span class="dt">prior =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">4</span>,<span class="dt">autoscale=</span>F),
                   <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">4</span>),
-                  <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">2</span>),
+                  <span class="dt">prior_theta =</span> <span class="kw">list</span>(<span class="dt">Coffee_Shop =</span> <span class="kw">list</span>(<span class="dt">spatial =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>,
+                                                                             <span class="dt">scale =</span> <span class="dv">1</span>),
+                                                        <span class="dt">temporal =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">2</span>, 
+                                                                              <span class="dt">scale =</span> <span class="dv">2</span>))),
                   <span class="dt">max_distance =</span> <span class="dv">3</span>, <span class="dt">max_time =</span> <span class="dv">50</span>,
-                  <span class="dt">chains =</span> <span class="dv">3</span>,
-                  <span class="dt">iter =</span> <span class="fl">1E3</span>,
+                  <span class="dt">chains =</span> <span class="dv">4</span>,
+                  <span class="dt">iter =</span> <span class="fl">2E3</span>,
                   <span class="dt">cores =</span> <span class="dv">3</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">est_mat &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit)[<span class="dv">1</span><span class="op">:</span><span class="dv">7</span>,],<span class="dt">Truth=</span><span class="kw">c</span>(alpha,delta,beta,theta_s,theta_t)) 
-par_nms &lt;-<span class="st"> </span><span class="kw">rownames</span>(est_mat)
-est_mat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">parameters=</span>par_nms) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>parameters,<span class="dt">y=</span>Truth)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_point">geom_point</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_linerange">geom_linerange</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">ymin=</span><span class="st">`</span><span class="dt">5%</span><span class="st">`</span>,<span class="dt">ymax=</span><span class="st">`</span><span class="dt">95%</span><span class="st">`</span>)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/coord_flip">coord_flip</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Estimate Boundaries with True Values"</span>) <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ylab</a></span>(<span class="st">"Parameter Units"</span>)</code></pre></div>
+<p>we can now look at our estimates.</p>
+<p>While there remains a large degree of uncertainty about the temporal scale - we did specify a large scale after all - we’ve captured the general trend well enough to capture the true scales as well as the effect of the coffee shops on the mean.</p>
 <p><img src="longitudinal-I_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
   </div>
