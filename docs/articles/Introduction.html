@@ -250,31 +250,7 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="fl">6E2</span>) ## include all data
-<span class="co">#&gt; </span>
-<span class="co">#&gt; SAMPLING FOR MODEL 'stap_continuous' NOW (CHAIN 1).</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.004751 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 47.51 seconds.</span>
-<span class="co">#&gt; Adjust your expectations accordingly!</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Iteration:   1 / 600 [  0%]  (Warmup)</span>
-<span class="co">#&gt; Iteration:  60 / 600 [ 10%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 120 / 600 [ 20%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 180 / 600 [ 30%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 240 / 600 [ 40%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 300 / 600 [ 50%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 301 / 600 [ 50%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 360 / 600 [ 60%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 420 / 600 [ 70%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 480 / 600 [ 80%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 540 / 600 [ 90%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 600 / 600 [100%]  (Sampling)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 16.2483 seconds (Warm-up)</span>
-<span class="co">#&gt;                10.2762 seconds (Sampling)</span>
-<span class="co">#&gt;                26.5245 seconds (Total)</span></code></pre></div>
+                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>, <span class="dt">cores =</span> <span class="dv">4</span>) ## include all data</code></pre></div>
 <p>We’ll first look at the quick summary contained in the model’s print-out</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit
 <span class="co">#&gt; stap_glm</span>
@@ -287,7 +263,7 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
 <span class="co">#&gt;  temporal predictors:  0</span>
 <span class="co">#&gt; ------</span>
 <span class="co">#&gt;                         Median MAD_SD</span>
-<span class="co">#&gt; (Intercept)             22.4    0.1  </span>
+<span class="co">#&gt; (Intercept)             22.3    0.1  </span>
 <span class="co">#&gt; sexF                    -0.9    0.2  </span>
 <span class="co">#&gt; Fast_Food                1.2    0.1  </span>
 <span class="co">#&gt; Fast_Food_spatial_scale  0.4    0.1  </span>
@@ -312,19 +288,19 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
 <span class="co">#&gt;  family:       gaussian [identity]</span>
 <span class="co">#&gt;  formula:      y ~ sex + sap(Fast_Food)</span>
 <span class="co">#&gt;  priors:       see help('prior_summary')</span>
-<span class="co">#&gt;  sample:       300 (posterior sample size)</span>
+<span class="co">#&gt;  sample:       4000 (posterior sample size)</span>
 <span class="co">#&gt;  observations: 550</span>
 <span class="co">#&gt;  Spatial Predictors:   1</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Estimates:</span>
 <span class="co">#&gt;                           mean    sd      2.5%    25%     50%     75%  </span>
-<span class="co">#&gt; (Intercept)                22.4     0.1    22.1    22.3    22.4    22.4</span>
+<span class="co">#&gt; (Intercept)                22.3     0.1    22.1    22.3    22.3    22.4</span>
 <span class="co">#&gt; sexF                       -0.9     0.2    -1.3    -1.0    -0.9    -0.8</span>
 <span class="co">#&gt; Fast_Food                   1.2     0.1     1.0     1.1     1.2     1.2</span>
 <span class="co">#&gt; Fast_Food_spatial_scale     0.4     0.1     0.3     0.4     0.4     0.4</span>
-<span class="co">#&gt; sigma                       2.3     0.1     2.2     2.3     2.3     2.3</span>
+<span class="co">#&gt; sigma                       2.3     0.1     2.2     2.2     2.3     2.3</span>
 <span class="co">#&gt; mean_PPD                   22.0     0.1    21.7    21.9    22.0    22.1</span>
-<span class="co">#&gt; log-posterior           -1246.1     1.6 -1250.0 -1247.1 -1245.8 -1244.9</span>
+<span class="co">#&gt; log-posterior           -1246.1     1.6 -1250.1 -1247.0 -1245.8 -1244.9</span>
 <span class="co">#&gt;                           97.5%</span>
 <span class="co">#&gt; (Intercept)                22.6</span>
 <span class="co">#&gt; sexF                       -0.5</span>
@@ -336,13 +312,13 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Diagnostics:</span>
 <span class="co">#&gt;                         mcse Rhat n_eff</span>
-<span class="co">#&gt; (Intercept)             0.0  1.0  300  </span>
-<span class="co">#&gt; sexF                    0.0  1.0  300  </span>
-<span class="co">#&gt; Fast_Food               0.0  1.0  300  </span>
-<span class="co">#&gt; Fast_Food_spatial_scale 0.0  1.0  300  </span>
-<span class="co">#&gt; sigma                   0.0  1.0  300  </span>
-<span class="co">#&gt; mean_PPD                0.0  1.0  300  </span>
-<span class="co">#&gt; log-posterior           0.1  1.0  126  </span>
+<span class="co">#&gt; (Intercept)             0.0  1.0  4000 </span>
+<span class="co">#&gt; sexF                    0.0  1.0  4000 </span>
+<span class="co">#&gt; Fast_Food               0.0  1.0  4000 </span>
+<span class="co">#&gt; Fast_Food_spatial_scale 0.0  1.0  4000 </span>
+<span class="co">#&gt; sigma                   0.0  1.0  4000 </span>
+<span class="co">#&gt; mean_PPD                0.0  1.0  4000 </span>
+<span class="co">#&gt; log-posterior           0.0  1.0  1844 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).</span></code></pre></div>
 <p>Checking our estimates, the model captures the true values very well. <img src="Introduction_files/figure-html/results_1-1.png" width="700"></p>
@@ -367,31 +343,7 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> <span class="fl">1.25</span>, <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="fl">6E2</span>)
-<span class="co">#&gt; </span>
-<span class="co">#&gt; SAMPLING FOR MODEL 'stap_continuous' NOW (CHAIN 1).</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.001519 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 15.19 seconds.</span>
-<span class="co">#&gt; Adjust your expectations accordingly!</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Iteration:   1 / 600 [  0%]  (Warmup)</span>
-<span class="co">#&gt; Iteration:  60 / 600 [ 10%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 120 / 600 [ 20%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 180 / 600 [ 30%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 240 / 600 [ 40%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 300 / 600 [ 50%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 301 / 600 [ 50%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 360 / 600 [ 60%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 420 / 600 [ 70%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 480 / 600 [ 80%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 540 / 600 [ 90%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 600 / 600 [100%]  (Sampling)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 10.9411 seconds (Warm-up)</span>
-<span class="co">#&gt;                5.36801 seconds (Sampling)</span>
-<span class="co">#&gt;                16.3091 seconds (Total)</span></code></pre></div>
+                <span class="dt">max_distance =</span> <span class="fl">1.25</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>, <span class="dt">cores =</span> <span class="dv">4</span>)</code></pre></div>
 <p>We excluded about half of the total data (not exactly even across individuals)</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(dists<span class="op">&lt;=</span><span class="fl">1.25</span>)<span class="op">/</span><span class="kw">sum</span>(dists<span class="op">&gt;=</span><span class="dv">0</span>) 
 <span class="co">#&gt; [1] 0.4793719</span></code></pre></div>
@@ -462,31 +414,7 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="fl">6E2</span>)  ## including unneccessary data
-<span class="co">#&gt; </span>
-<span class="co">#&gt; SAMPLING FOR MODEL 'stap_continuous' NOW (CHAIN 1).</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.011272 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 112.72 seconds.</span>
-<span class="co">#&gt; Adjust your expectations accordingly!</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Iteration:   1 / 600 [  0%]  (Warmup)</span>
-<span class="co">#&gt; Iteration:  60 / 600 [ 10%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 120 / 600 [ 20%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 180 / 600 [ 30%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 240 / 600 [ 40%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 300 / 600 [ 50%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 301 / 600 [ 50%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 360 / 600 [ 60%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 420 / 600 [ 70%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 480 / 600 [ 80%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 540 / 600 [ 90%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 600 / 600 [100%]  (Sampling)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 35.9221 seconds (Warm-up)</span>
-<span class="co">#&gt;                22.7868 seconds (Sampling)</span>
-<span class="co">#&gt;                58.709 seconds (Total)</span></code></pre></div>
+                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">cores =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>)  ## including unneccessary data</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">edf &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit)[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>,<span class="dv">1</span>],<span class="kw">coef</span>(fit),<span class="kw"><a href="../reference/posterior_interval.stapreg.html">posterior_interval</a></span>(fit)[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>,<span class="dv">2</span>],
       <span class="kw">c</span>(alpha,delta,beta,theta)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">transmute</a></span>(<span class="dt">lower=</span> V1, 
