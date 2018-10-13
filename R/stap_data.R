@@ -56,6 +56,12 @@ stap_data <- function(object) {
 coef_names <- function(x)
     UseMethod("coef_names")
 
+beta_names <- function(x)
+    UseMethod("beta_names")
+
+theta_names <- function(x)
+    UseMethod("theta_names")
+
 sap_covs <- function(x)
     UseMethod("sap_covs")
 
@@ -105,6 +111,18 @@ coef_names.stap_data <- function(object){
                  paste0(y,"_temporal_scale")))
     }
     as.vector(sapply(1:object$Q,function(z) get_name(object$stap_code[z],object$covariates[z])))
+}
+
+beta_names.stap_data <- function(object){
+    nms <- coef_names(object)
+    bt_nms <- grep("_scale",nms,invert=T,value=T)
+    return(bt_nms)
+}
+
+theta_names.stap_data <- function(object){
+    nms <- coef_names(object)
+    th_nms <- grep("_scale",nms,value=T)
+    return(th_nms)
 }
 
 check_dups.stap_data <- function(object){

@@ -22,10 +22,6 @@ student_t(df = 1, location = 0, scale = NULL, autoscale = TRUE)
 
 cauchy(location = 0, scale = NULL, autoscale = TRUE)
 
-hs(df = 3, global_df = 1, global_scale = 1)
-
-hs_plus(df1 = 3, df2 = 3, global_df = 1, global_scale = 1)
-
 laplace(location = 0, scale = NULL, autoscale = TRUE)
 
 lasso(df = 1, location = 0, scale = NULL, autoscale = TRUE)

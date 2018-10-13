@@ -2,19 +2,6 @@
 functions {
 #include /functions/common_functions.stan
 #include /functions/continuous_likelihoods.stan
-  /** 
-  * faster version of csr_matrix_times_vector
-  * declared here and defined in C++
-  *
-  * @param m Integer number of rows
-  * @param n Integer number of columns
-  * @param w Vector (see reference manual)
-  * @param v Integer array (see reference manual)
-  * @param u Integer array (see reference manual)
-  * @param b Vector that is multiplied from the left by the CSR matrix
-  * @return A vector that is the product of the CSR matrix and b
-  */
-  vector csr_matrix_times_vector2(int m, int n, vector w, int[] v, int[] u, vector b);
 }
 data{
     // declares N, K, Z, zbar
@@ -61,13 +48,6 @@ transformed parameters {
 
   // defines beta, delta, X, X_tilde
 #include /tparameters/tparameters_glm.stan
-  if (prior_dist_for_aux == 0) // none
-    aux = aux_unscaled;
-  else {
-    aux = prior_scale_for_aux * aux_unscaled;
-    if (prior_dist_for_aux <= 2) // normal or student_t
-      aux = aux + prior_mean_for_aux;
-  }
   if (t > 0) {
     if (special_case == 1) {
       int start = 1;

@@ -1,5 +1,5 @@
 
-context("test-validate_distancedata.R")
+context("test validate_distancedata")
 testdata <- data.frame(id = 1:5,
                        BEF = rep("FF",5),
                        Distance = rnorm(5))

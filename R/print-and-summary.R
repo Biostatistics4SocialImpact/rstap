@@ -101,7 +101,7 @@ print.stapreg <- function(x, digits = 1, ...) {
     ppd_estimates <- .median_and_madsd(ppd_mat)
 
     if(mer) 
-        estimates <- estimates[!grepl("^SIgma\\[", rownames(estimates)),, drop = F]
+        estimates <- estimates[!grepl("^Sigma\\[", rownames(estimates)),, drop = F]
 
     .printfr(estimates, digits, ...)
     

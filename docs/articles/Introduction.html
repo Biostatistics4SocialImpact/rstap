@@ -130,6 +130,7 @@ X_i(\theta) = \sum_{d \in \mathcal{D}_i} \mathcal{K}_s(\frac{d}{\theta})
 Z &lt;-<span class="st"> </span><span class="kw">rbinom</span>(<span class="dt">n =</span> num_subj, <span class="dt">prob =</span> .<span class="dv">45</span>, <span class="dt">size =</span> <span class="dv">1</span>)
 delta &lt;-<span class="st"> </span><span class="op">-</span>.<span class="dv">8</span>
 theta &lt;-<span class="st"> </span>.<span class="dv">5</span>
+theta_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="dv">3</span>
 beta &lt;-<span class="st"> </span><span class="fl">1.2</span>
 sigma &lt;-<span class="st"> </span><span class="fl">2.3</span></code></pre></div>
 <p>supposing we use <strong>all</strong> the features simulated in the space, then this results in the following dataset, with the following marginal distribution of the outcome, <span class="math inline">\(y\)</span>.</p>
@@ -390,6 +391,50 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
 <span class="co">#&gt;                3.18952 seconds (Total)</span></code></pre></div>
 <p>We can now see that our spatial scale and the corresponding effect are biased <img src="Introduction_files/figure-html/results_3-1.png" width="700"></p>
 <p>The shift in estimate, in addition to increased noise, is to be expected since we’re increasingly missing informative data for our spatial parameter.</p>
+</div>
+<div id="extreme-missing-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#extreme-missing-data" class="anchor"></a>Extreme Missing data</h2>
+<p>To show the consequences of using an extreme inclusion distance - extreme with respect to the true terminal inclusion distance - we simulate the data under an alternate scale. Note that the following exposure curve does not even terminate at the maximum distance between a “Fast Food” store and a subject.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists), <span class="dt">by =</span> <span class="fl">0.01</span>)
+X_theta_one &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span>theta_<span class="dv">2</span>)
+<span class="kw">plot</span>(d,X_theta_one,<span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exposure Decay Function"</span>, <span class="dt">xlab =</span> <span class="st">"Distance"</span>,
+     <span class="dt">ylab =</span> <span class="st">"Exposure"</span>,<span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<p>Fitting the model on a reduced domain of distances from the terminating distance,results in an highly inflated estimate of the spatial scale, as the posterior will attempt to approximate the second graph shown below - an exposure relationship that is approaching uniform on the domain of distances “observed”.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(d,X_theta_one,<span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exposure Decay Function - reduced domain"</span>, <span class="dt">xlab =</span> <span class="st">"Distance"</span>,
+     <span class="dt">ylab =</span> <span class="st">"Exposure"</span>,<span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">0</span>,.<span class="dv">5</span>))</code></pre></div>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p>Simulating a dataset under this model and fitting an rstap model to it with the restricted domain…</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]),
+                       <span class="kw">as.matrix</span>(bef_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]))
+X &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(x<span class="op">/</span>theta_<span class="dv">2</span>)))
+## center and scale the exposure effect for ease of exposition/numerical stability
+X_tilde &lt;-<span class="st"> </span>(X<span class="op">-</span><span class="kw">mean</span>(X))<span class="op">/</span><span class="kw">sd</span>(X) 
+y &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X_tilde<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)
+
+subject_data &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj,
+                           <span class="dt">y =</span> y,
+                           <span class="dt">sex =</span> <span class="kw">factor</span>(Z,<span class="dt">labels=</span><span class="kw">c</span>(<span class="st">"M"</span>,<span class="st">"F"</span>)))
+
+fit_unif &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food), <span class="dt">subject_data =</span> subject_data,
+                <span class="dt">distance_data =</span> distance_data,
+                <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
+                <span class="dt">id_key =</span> <span class="st">'subj_id'</span>,
+                <span class="dt">prior =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>,<span class="dt">autoscale =</span> F),
+                <span class="dt">prior_intercept =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">25</span>, <span class="dt">scale =</span> <span class="dv">5</span>, <span class="dt">autoscale =</span> F),
+                <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
+                <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
+                <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
+                <span class="dt">max_distance =</span> .<span class="dv">25</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>,<span class="dt">cores =</span> <span class="dv">4</span>) </code></pre></div>
+<p>We can see a much wider estimate of the scale parameter, as well as the corresponding effect. <img src="Introduction_files/figure-html/unif_scale_estimates-1.png" width="700"></p>
+<p>Here is a plot of the estimate on the full domain of the data - we can see that the exposure function approximation becomes less accurate on the set of distances not included in the model.</p>
+<p><img src="Introduction_files/figure-html/unif_scale_full_domain-1.png" width="700"></p>
+<p>As can be seen below, the approximation is quite good on the reduced domain, but the reduced number of distances results in a wider uncertainty interval, and the constrained domain results in an inflated estimate.</p>
+<pre><code>#&gt; Warning: Removed 209 rows containing missing values (geom_path).
+
+#&gt; Warning: Removed 209 rows containing missing values (geom_path).</code></pre>
+<p><img src="Introduction_files/figure-html/unif_scale_red_domain-1.png" width="700"></p>
 <div id="inclusion-of-superflous-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#inclusion-of-superflous-data" class="anchor"></a>Inclusion of superflous data</h3>
@@ -461,6 +506,7 @@ edf <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">rbin
 <a href="#motivation">Motivation</a><ul class="nav nav-pills nav-stacked">
 <li><a href="#mis-specified-inclusion-distance">Mis-Specified Inclusion Distance</a></li>
       <li><a href="#informative-data-excluded">Informative data excluded</a></li>
+      <li><a href="#extreme-missing-data">Extreme Missing data</a></li>
       <li><a href="#caveats">Caveats</a></li>
       </ul>
 </li>

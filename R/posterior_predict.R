@@ -31,8 +31,9 @@
 #'
 #' @templateVar stapregArg object
 #' @template args-stapreg-object
-#' @param newdata Optionally, a data frame in which to look for variables with
-#'   which to predict. If omitted, the model matrix is used. If \code{newdata}
+#' @param newsubjdata Optionally, a data frame of the subject-specific data
+#'   in which to look for variables with which to predict.
+#'   If omitted, the original datasets are used. If \code{newsubjdata}
 #'   is provided and any variables were transformed (e.g. rescaled) in the data
 #'   used to fit the model, then these variables must also be transformed in
 #'   \code{newdata}. This only applies if variables were transformed before
@@ -40,6 +41,11 @@
 #'   transformations were specified inside the model formula. Also see the Note
 #'   section below for a note about using the \code{newdata} argument with with
 #'   binomial models.
+#' @param newdistdata If newsubjdata is provided a data frame of the subject-distance
+#'       must also be given for models with a spatial component
+#' @param newtimedata If newsubjdata is provided, a data frame of the subject-time data
+#'       must also be given for models with a temporal component
+#'
 #' @param draws An integer indicating the number of draws to return. The default
 #'   and maximum number of draws is the size of the posterior sample.
 #' @param re.form If \code{object} contains \code{\link[=stan_glmer]{group-level}}
@@ -68,7 +74,7 @@
 #'   distribution.
 #'
 #' @note For binomial models with a number of trials greater than one (i.e., not
-#'   Bernoulli models), if \code{newdata} is specified then it must include all
+#'   Bernoulli models), if \code{newsubjdata} is specified then it must include all
 #'   variables needed for computing the number of binomial trials to use for the
 #'   predictions. For example if the left-hand side of the model formula is
 #'   \code{cbind(successes, failures)} then both \code{successes} and
@@ -93,11 +99,16 @@
 #'
 #' \code{\link{predictive_error}} and \code{\link{predictive_interval}}.
 #'
-posterior_predict.stapreg <- function(object, newsubjdata = NULL, 
-                                      newdistancedata = NULL,
+posterior_predict.stapreg <- function(object, 
+                                      newsubjdata = NULL, 
+                                      newdistdata = NULL,
                                       newtimedata = NULL,
                                       draws = NULL,
-                                      re.form = NULL, fun = NULL, seed = NULL,
+                                      subject_ID = NULL,
+                                      measure_ID = NULL,
+                                      re.form = NULL, 
+                                      fun = NULL,
+                                      seed = NULL,
                                       offset = NULL, ...) {
   if (!is.null(seed))
     set.seed(seed)
@@ -105,36 +116,51 @@ posterior_predict.stapreg <- function(object, newsubjdata = NULL,
     fun <- match.fun(fun)
 
   dots <- list(...)
-  m <- NULL
   stanmat <- NULL
   
-  newdata <- validate_newdata(newdata)
+  prediction_data <- validate_predictiondata(newsubjdata, newdistdata, newtimedata)
+  if(!is.null(prediction_data$newsubjdata)){
+      newsubjdata <- prediction_data$newsubjdata
+      if(!is.null(prediction_data$newdistdata))
+          newdistdata <- prediction_data$newdistdata
+      if(!is.null(prediction_data$newtimedata))
+          newtimedata <- prediction_data$newtimedata
+   } else{
+       newsubjdata <- NULL
+       newdistdata <- NULL
+       newtimedata <- NULL
+  }
+
+  id_key <- if(is.null(measure_ID)) subject_ID else c(subject_ID,measure_ID)
+
   pp_data_args <- c(list(object,
-                         newdata = newdata,
+                         newsubjdata = newsubjdata,
+                         newdistdata = newdistdata,
+                         newtimedata = newtimedata,
                          re.form = re.form,
-                         offset = offset),
+                         offset = offset,
+                         id_key = id_key),
                     dots)
+
+  
   dat <- do.call("pp_data", pp_data_args)
+
   ppargs <- pp_args(object, data = pp_eta(object, dat, draws))
 
   if (is.binomial(family(object)$family)) {
-    ppargs$trials <- pp_binomial_trials(object, newdata)
+    ppargs$trials <- pp_binomial_trials(object, newsubjdata)
   }
 
   ppfun <- pp_fun(object)
   ytilde <- do.call(ppfun, ppargs)
-  if (!is.null(newdata) && nrow(newdata) == 1L)
+  if (!is.null(newsubjdata) && nrow(newsubjdata) == 1L)
     ytilde <- t(ytilde)
-  if (!is.null(fun))
+  if(!is.null(fun))
     ytilde <- do.call(fun, list(ytilde))
   
-  if (is.null(newdata)) colnames(ytilde) <- rownames(model.frame(object))
-  else colnames(ytilde) <- rownames(newdata)  
+  if (is.null(newsubjdata)) colnames(ytilde) <- rownames(model.frame(object))
+  else colnames(ytilde) <- rownames(newsubjdata)  
   
-  # if function is called from posterior_traj then add mu as attribute
-  fn <- tryCatch(sys.call(-3)[[1]], error = function(e) NULL)
-  if (!is.null(fn) && grepl("posterior_traj", deparse(fn), fixed = TRUE))
-    return(structure(ytilde, mu = ppargs$mu, class = c("ppd", class(ytilde))))
   
   structure(ytilde, class = c("ppd", class(ytilde)))
 }
@@ -222,8 +248,9 @@ pp_args <- function(object, data) {
 # @param draws Number of draws
 # @return Linear predictor "eta" and matrix of posterior draws "stanmat". 
 pp_eta <- function(object, data, draws = NULL) {
-  x <- data$x
-  S <- if (is.null(stanmat)) posterior_sample_size(object) else nrow(stanmat)
+  z <- data$z
+  x <- data$x 
+  S <- posterior_sample_size(object) 
   if (is.null(draws))
     draws <- S
   if (draws > S) {
@@ -234,18 +261,31 @@ pp_eta <- function(object, data, draws = NULL) {
   some_draws <- isTRUE(draws < S)
   if (some_draws)
     samp <- sample(S, draws)
-  if (is.null(stanmat)) {
-    stanmat <- if (is.null(data$Zt)) 
-      as.matrix.stapreg(object) else as.matrix(object$stanfit)
+
+  stanmat <- if (is.null(data$w)) 
+      as.matrix.stapreg(object) else as.matrix(object$stapfit)
+  delta_sel <- seq_len(ncol(z)) 
+  delta <- cbind(stanmat[, delta_sel , drop = FALSE],1)
+  stap_coefs_nms <- grep("_scale", coef_names(object$stap_data), 
+                          invert = T, value = T)
+
+  beta <- stanmat[,stap_coefs_nms,drop =F]
+
+  if (some_draws){
+    delta <- delta[samp, , drop = FALSE]
+    beta <- beta[samp,,drop=F] 
+    x <- x[samp,,,drop=F]
   }
-  nms <-  NULL  
-  beta_sel <- if (is.null(nms)) seq_len(ncol(x)) else nms$y[[m]]
-  beta <- stanmat[, beta_sel, drop = FALSE]
-  if (some_draws)
-    beta <- beta[samp, , drop = FALSE]
-  eta <- linear_predictor(beta, x, data$offset)
-  if (!is.null(data$Zt)) {
-    b_sel <- if (is.null(nms)) grepl("^b\\[", colnames(stanmat)) else nms$y_b[[m]]
+  num_draws <- if(some_draws) draws else S
+  if(object$stap_data$Q == 1)
+      x_beta <- sapply(1:length(num_draws), function(i) x[i,,] * beta[i,])
+  else
+      x_beta <- sapply(1:length(num_draws), function(i) x[i,,] %*% t(beta[i,,drop=F]))
+   
+
+  eta <- linear_predictor(delta, cbind(z,x_beta), data$offset)
+  if (!is.null(data$w)) {
+    b_sel <- grepl("^b\\[", colnames(stanmat)) 
     b <- stanmat[, b_sel, drop = FALSE]
     if (some_draws)
       b <- b[samp, , drop = FALSE]

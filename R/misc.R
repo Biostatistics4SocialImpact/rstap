@@ -164,6 +164,48 @@ validate_newdata <- function(x) {
   x <- as.data.frame(x)
   drop_redundant_dims(x)
 }
+#' Validate prediction data for posterior_predict, log_lik, etc.
+#' 
+#' Doesn't check if the correct variables are included
+#' just that the new subject, distance and/or time data are 
+#' data frames if they are included and returns a NULL value 
+#' In the return list if they are not. Ensures that if a new
+#' subject data is submitted, that a new distance or
+#' time dataset are also included.
+#' @param newsdata newsubject data
+#' @param newddata
+#' @param newtdata
+#' @return a list with a dataframe or NULL for each of the possible new datasets
+validate_predictiondata <- function(newsdata, newddata, newtdata) {
+
+    if(is.null(newsdata) & is.null(newddata) & is.null(newtdata))
+        return(NULL)
+
+    new_subjs <- !is.null(newsdata)
+    new_d <- !is.null(newddata)
+    new_t <- !is.null(newtdata)
+    if((new_subjs & !new_d) & (new_subjs & !new_t))
+        stop("If new subject data is specified it must be submitted with either new distance data, new time data or both", .call = F)
+    newsdata <- check_data_frame(newsdata,new_subjs)
+    newddata <- check_data_frame(newddata,new_d)
+    newtdata <- check_data_frame(newtdata,new_t)
+    return(nlist(newsubjdata = newsdata, newdistdata = newddata, newtimedata = newtdata))
+
+}
+
+check_data_frame <- function(x,indicator){
+    if(indicator){
+        if(!is.data.frame(x))
+            stop("If new data is specified it must be a data frame. ", call. = F)
+    }
+    if(any(is.na(x)))
+        stop("NAs are not allowed in any specified 'newdata'.", call. = F)
+    if(!indicator)
+        return(NULL)
+    x <- as.data.frame(x)
+    drop_redundant_dims(x)
+    return(x)
+}
 
 #' Validate distance_data
 #'
@@ -540,6 +582,10 @@ get_x <- function(object, ...) UseMethod("get_x")
 
 #' @rdname get_y
 #' @export
+get_w <- function(object, ...) UseMethod("get_w")
+
+#' @rdname get_y
+#' @export
 get_z.default <- function(object, ...){
     object[["z"]] %ORifNULL% model.matrix(object)
 }
@@ -553,7 +599,7 @@ get_x.default <- function(object, ...)
 
 #' @export
 get_x.lmerMod <- function(object, ...) {
-  object$glmod$X %ORifNULL% stop("X not found")
+  object[["x"]]
 }
 
 #' @export

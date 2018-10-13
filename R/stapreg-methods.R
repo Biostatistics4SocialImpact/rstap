@@ -219,7 +219,8 @@ vcov.stapreg <- function(object, correlation = FALSE, ...) {
 #' 
 fixef.stapreg <- function(object, ...) {
   coefs <- object$coefficients
-  #coefs[b_names(names(coefs), invert = TRUE)]
+  coefs <- coefs[b_names(names(coefs), invert = TRUE)]
+  return(coefs)
 }
 
 #' @rdname stapreg-methods
@@ -287,12 +288,12 @@ sigma.stapreg <- function(object, ...) {
 #' @importFrom nlme VarCorr
 #' @importFrom stats cov2cor
 VarCorr.stapreg <- function(x, sigma = 1, ...) {
-  dots <- list(...) # used to pass stanmat with a single draw for posterior_survfit
+  dots <- list(...) 
   mat <- if ("stanmat" %in% names(dots)) as.matrix(dots$stanmat) else as.matrix(x)
   cnms <- .cnms(x)
   useSc <- "sigma" %in% colnames(mat)
   if (useSc) sc <- mat[,"sigma"] else sc <- 1
-  Sigma <- colMeans(mat[,grepl("^Sigma\\[", colnames(mat)), drop = FALSE])
+  Sigma <- apply(mat[,grepl("^Sigma\\[", colnames(mat)), drop = FALSE],2,mean)
   nc <- vapply(cnms, FUN = length, FUN.VALUE = 1L)
   nms <- names(cnms)
   ncseq <- seq_along(nc)
@@ -376,7 +377,7 @@ model.matrix.stapreg <- function(object, subject_data) {
 #'   that both default to \code{FALSE}.
 #' 
 formula.stapreg <- function(x, ..., m = NULL) {
-  #if (is.mer(x)) return(formula_mer(x, ...))
+  if (is.mer(x)) return(formula_mer(x, ...))
   x$formula
 }
 
@@ -386,8 +387,11 @@ formula.stapreg <- function(x, ..., m = NULL) {
 #' @param x,fixed.only,random.only,... See lme4:::terms.merMod.
 #' 
 terms.stapreg <- function(x, ..., fixed.only = TRUE, random.only = FALSE) {
-  if (!is.mer(x))
-    return(NextMethod("terms"))
+  if (!is.mer(x)){
+      tt <- NextMethod("terms")
+      return(tt)
+  }
+      
   
   fr <- x$glmod$fr
   if (missing(fixed.only) && random.only) 

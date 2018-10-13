@@ -33,11 +33,9 @@
 #' @param scale Prior scale. The default depends on the family (see
 #'   \strong{Details}).
 #' @param df,df1,df2 Prior degrees of freedom. The default is \eqn{1} for 
-#'   \code{student_t}, in which case it is equivalent to \code{cauchy}. For the 
-#'   hierarchical shrinkage priors (\code{hs} and \code{hs_plus}) the degrees of
-#'   freedom parameter(s) default to \eqn{3}. For the \code{product_normal} 
-#'   prior, the degrees of freedom parameter must be an integer (vector) that is
-#'   at least \eqn{2} (the default).
+#'   \code{student_t}, in which case it is equivalent to \code{cauchy}.
+#'   For the \code{product_normal}   prior, the degrees of freedom 
+#'   parameter must be an integer (vector) that is  at least \eqn{2} (the default).
 #' @param global_df,global_scale Optional arguments for the hierarchical
 #'   shrinkage priors. See the \emph{Hierarchical shrinkage family} section
 #'   below.
@@ -72,7 +70,8 @@
 #'   \item \code{student_t(df, location, scale)}
 #'   \item \code{cauchy(location, scale)}
 #'   }
-#'   Each of these functions also takes an argument \code{autoscale}.
+#'   Each of these functions also takes an argument \code{autoscale} which is relevant 
+#'   if used for any of the non-stap related parameters. It is not used otherwise.
 #'   
 #'   For the prior distribution for the intercept, \code{location}, 
 #'   \code{scale}, and \code{df} should be scalars. As the 
@@ -88,45 +87,6 @@
 #'   If the \code{autoscale} argument is \code{TRUE} (the default), then the 
 #'   scales will be further adjusted as described above in the documentation of 
 #'   the \code{autoscale} argument in the \strong{Arguments} section.
-#' }
-#' \subsection{Hierarchical shrinkage family}{
-#'   Family members:
-#'   \itemize{
-#'   \item \code{hs(df, global_df, global_scale)}
-#'   \item \code{hs_plus(df1, df2, global_df, global_scale)}
-#'   }
-#'   
-#'   The hierarchical shrinkage priors are normal with a mean of zero and a 
-#'   standard deviation that is also a random variable. The traditional 
-#'   hierarchical shrinkage prior utilizes a standard deviation that is 
-#'   distributed half Cauchy with a median of zero and a scale parameter that is
-#'   also half Cauchy. This is called the "horseshoe prior". The hierarchical 
-#'   shrinkage (\code{hs}) prior in the \pkg{rstanarm} package instead utilizes 
-#'   a half Student t distribution for the standard deviation (with 3 degrees of
-#'   freedom by default), as described by Piironen and Vehtari (2015). It is
-#'   possible to change the \code{df} argument, the prior degrees of freedom, to
-#'   obtain less or more shrinkage. Traditionally the standard deviation
-#'   parameter is then scaled by the square root of a \emph{global} half Cauchy 
-#'   parameter, although \pkg{rstanarm} allows setting \code{global_df} and 
-#'   \code{global_scale} arguments, in which case this global parameter is 
-#'   distributed half Student t with degrees of freedom \code{global_df} and 
-#'   scale \code{global_scale}.
-#'   
-#'   The hierarhical shrinkpage plus (\code{hs_plus}) prior is a normal with a 
-#'   mean of zero and a standard deviation that is distributed as the product of
-#'   two independent half Student t parameters (both with \eqn{3} degrees of
-#'   freedom (\code{df1}, \code{df2}) by default) that are each scaled in a
-#'   similar way to the \code{hs} prior.
-#'   
-#'   The hierarchical shrinkage priors have very tall modes and very fat tails.
-#'   Consequently, they tend to produce posterior distributions that are very
-#'   concentrated near zero, unless the predictor has a strong influence on the
-#'   outcome, in which case the prior has little influence. Hierarchical 
-#'   shrinkage priors often require you to increase the 
-#'   adapt_delta tuning parameter in order to diminish the number 
-#'   of divergent transitions. For more details on tuning parameters and 
-#'   divergent transitions see the Troubleshooting section of the \emph{How to
-#'   Use the rstanarm Package} vignette.
 #' }
 #' \subsection{Laplace family}{
 #'   Family members:
@@ -197,7 +157,7 @@
 #' }
 #' @return A named list to be used internally by the \pkg{rstap} model
 #'   fitting functions.
-#' @seealso The various vignettes for the \pkg{rstanarm} package also discuss 
+#' @seealso The various vignettes for the \pkg{rstanarm} and \pkg{rstap} packages also discuss 
 #'   and demonstrate the use of some of the supported prior distributions.
 #' 
 #' #' 

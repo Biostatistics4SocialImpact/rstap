@@ -38,7 +38,7 @@ stapreg <- function(object){
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
     x <- .calculate_stap_X(object$dists_crs, object$times_crs,
                           object$u_s, object$u_t,
-                          stanmat[,grep("_scale",coef_names(stap_data),value = T),drop=F],
+                          stanmat[,grep("_scale",coef_names(stap_data),value = T), drop=F],
                           stap_data)
     X_tilde <- array(NA, dim(x))
     for(n_ix in 1:dim(x)[1]) X_tilde[n_ix,,] <- as.matrix(scale(x[n_ix,,]))

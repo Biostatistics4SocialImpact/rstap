@@ -159,3 +159,35 @@ test_that("extract_crs_data correctly extracts data",{
                                   max_distance = max(distance_data$dist),
                                   max_time = max(time_data$time)),a5)
 })
+p <- list(Coffee_Shop=list(spatial = normal(),
+                           temporal = normal()),
+          Fast_Food = list(spatial = normal()))
+s <- c(2,0)
+nms <- names(p)
+a <- list(theta_s_dist = c(1,1),
+          theta_s_scale = c(1,1),
+          theta_s_mean = c(0,0),
+          theta_s_df = c(0,0),
+          theta_t_dist = c(1),
+          theta_t_scale = c(1),
+          theta_t_mean = c(0),
+          theta_t_df = c(0))
+p2 <- list(Coffee_Shop = list(spatial = normal(location = 2,
+                                               scale = 3)))
+s2 <- c(0)
+nms2 <- names(p2)
+a2 <- list(theta_s_dist = c(1),
+           theta_s_scale = 3,
+           theta_s_mean = 2,
+           theta_s_df = 0)
+p3 <- list(Coffee_Shop = list(aggregated = normal()))
+
+
+test_that("handle_theta_stap_prior returns appropriate information",{
+    expect_equal(handle_theta_stap_prior(p,ok_dists = c("normal","lognormal"), 
+                                         default_scale = 1,
+                                         stap_code = s, nms),a)
+    expect_equal(handle_theta_stap_prior(p2,ok_dists = c("normal","lognormal"), 
+                                         default_scale = 1,
+                                         stap_code = s2, nms2),a2)
+})

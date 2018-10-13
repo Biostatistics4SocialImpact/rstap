@@ -44,7 +44,7 @@ as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
       pars <- exclude_lp_and_ppd(colnames(mat))
   if (user_pars)
     check_missing_pars(mat, pars)
-
+  
   mat <- mat[, pars, drop = FALSE]
   if (!is.mer(x))
     return(mat)

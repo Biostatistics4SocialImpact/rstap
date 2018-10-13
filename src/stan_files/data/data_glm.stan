@@ -14,5 +14,6 @@
   // prior family: 0 = none, 1 = normal, 2 = student_t, 3 = exponential
   int<lower=0,upper=3> prior_dist_for_aux;
   
-  // prior family: 0 = none, 1 = normal, 2 = student_t, ... needs to developed further
-  int<lower=0,upper=9> prior_dist_for_theta;
+  // prior family: 0 = none, 1 = normal, 8 = log_normal
+  int<lower=0,upper=9> prior_dist_for_theta_s[(Q_s + Q_st) >0 ? (Q_s + Q_st) : 0];
+  int<lower=0,upper=9> prior_dist_for_theta_t[(Q_t + Q_st) >0 ? (Q_t + Q_st) : 0];

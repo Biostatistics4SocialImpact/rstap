@@ -27,7 +27,7 @@
    * @param len_theta_L An integer indicating the length of returned vector, 
    *   which lme4 denotes as m
    * @param p An integer array with the number variables on the LHS of each |
-   * @param dispersion Scalar standard deviation of the errors, calles sigma by lme4
+   * @param dispersion Scalar standard deviation of the errors, called sigma by lme4
    * @param tau Vector of scale parameters whose squares are proportional to the 
    *   traces of the relative covariance matrices of the group-specific terms
    * @param scale Vector of prior scales that are multiplied by elements of tau

@@ -20,7 +20,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
                          prior = normal(),
                          prior_intercept = normal(),
                          prior_stap = normal(),
-                         group = list(), ## group terms not yet implemented
+                         group = list(), 
                          prior_theta = list(theta_one = normal()),
                          prior_aux = cauchy(location = 0L, scale = 5L),
                          adapt_delta = NULL){
@@ -32,8 +32,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         stop("'family' must be one of ", paste(supported_families, collapse = ', '))
     if(max_distance < max(dists_crs))
         stop("max_distance must be the maximum possible distance amongst all distances in dists_crs")
-    ## need to insert "check u" function here to make sure dimensions are correct for the crs data and corresponding index
-    ## conditional on stap condition
+    
     supported_links <- supported_glm_links(supported_families[fam])
     link <- which(supported_links == family$link)
     if(!length(link))
@@ -119,17 +118,25 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         assign(i, prior_aux_stuff[[i]])
 
     #prior_{dist, mean, scale, df, dist_name, autoscale}_for_theta
-    prior_theta_stuff <-
-        handle_glm_prior(
-            prior_theta,
-            nvars = nrow(dists_crs),
-            default_scale = 1,
-            link = NULL,
-            ok_dists = nlist("normal","lognormal","beta")
-        )
-    names(prior_theta_stuff) <- paste0(names(prior_theta_stuff),"_for_theta")
-    for(i in names(prior_theta_stuff))
-        assign(i, prior_theta_stuff[[i]])
+    if(is.null(prior_theta$dist))
+        prior_theta  <- handle_theta_stap_prior(prior_theta,
+                                                     ok_dists = nlist("normal","lognormal"),
+                                                     stap_code = stap_data$stap_code,
+                                                     coef_names = grep("_scale",coef_names(stap_data),value = T, invert = T)
+                                                     )
+    else{
+        prior_theta_stuff <-
+            handle_glm_prior(
+                prior_theta,
+                nvars = nrow(dists_crs),
+                default_scale = 1,
+                link = NULL,
+                ok_dists = nlist("normal","lognormal")
+            )
+        names(prior_theta_stuff) <- paste0(names(prior_theta_stuff),"_for_theta")
+        for(i in names(prior_theta_stuff))
+            assign(i, prior_theta_stuff[[i]])
+    }
 
 
     famname <- supported_families[fam]
@@ -179,13 +186,6 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     prior_scale_for_intercept <-
         min(.Machine$double.xmax, prior_scale_for_intercept)
 
-    #if(prior_theta >0L && prior_theta_autoscale){
-    #    prior_theta_s_scale <- pmax(prior_theta_scale, apply(dists_crs,1,mad))
-    #    prior_theta_s_location <- apply(dists_crs,1,median)
-    #    prior_theta_t_scale <- pmax(prior_theta_scale,apply(times_crs,1,mad))
-    #    prior_theta_t_location <- apply(dists,apply(times_crs,1,median))
-    #}
-
     if (length(weights) > 0 && all(weights == 1)) weights <- double()
     if (length(offset)  > 0 && all(offset  == 0)) offset  <- double()
     if(all(is.na(u_s))){
@@ -231,18 +231,88 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         prior_scale_for_intercept = c(prior_scale_for_intercept),
         prior_mean_for_intercept = c(prior_mean_for_intercept),
         prior_df_for_intercept = c(prior_df_for_intercept),
+        prior_dist_for_intercept,
         prior_dist_for_stap, prior_mean_for_stap,
         prior_scale_for_stap = array(prior_scale_for_stap),
         prior_df_for_stap,
-        prior_dist_for_theta,
-        prior_scale_for_theta = array(prior_scale_for_theta),
-        prior_mean_for_theta = array(prior_mean_for_theta),
-        prior_df_for_theta = array(prior_df_for_theta),
         prior_dist_for_aux = prior_dist_for_aux,
         num_normals = if(prior_dist == 7) as.integer(prior_df) else integer(0),
         num_normals_for_stap = if(prior_dist_for_stap == 7) as.integer(prior_df_for_stap) else integer(0)
         # mean,df,scale for aux added below depending on family
     )
+
+    # create entries in the data block of the .stan file for prior theta
+
+    if(is.null(prior_theta$dist)){
+        if(stap_data$Q_st>0){
+            standata$prior_dist_for_theta_s <- array(prior_theta$theta_s_dist)
+            standata$prior_scale_for_theta_s <- array(prior_theta$theta_s_scale)
+            standata$prior_df_for_theta_s <- array(prior_theta$theta_s_df)
+            standata$prior_mean_for_theta_s <- array(prior_theta$theta_s_mean)
+            standata$prior_dist_for_theta_t <- array(prior_theta$theta_t_dist)
+            standata$prior_scale_for_theta_t <- array(prior_theta$theta_t_scale)
+            standata$prior_mean_for_theta_t <- array(prior_theta$theta_t_mean)
+            standata$prior_df_for_theta_t <- array(prior_theta$theta_t_df)
+        } else if(stap_data$Q_s>0){
+            standata$prior_dist_for_theta_s <- array(prior_theta$theta_s_dist)
+            standata$prior_scale_for_theta_s <- array(prior_theta$theta_s_scale)
+            standata$prior_df_for_theta_s <- array(prior_theta$theta_s_df)
+            standata$prior_mean_for_theta_s <- array(prior_theta$theta_s_mean)
+            #null entries
+            standata$prior_dist_for_theta_t <- double()
+            standata$prior_scale_for_theta_t <- double()
+            standata$prior_df_for_theta_t <- double()
+            standata$prior_mean_for_theta_t <- double()
+        } else if(stap_data$Q_t>0){
+            standata$prior_dist_for_theta_t <- array(prior_theta$theta_t_dist)
+            standata$prior_scale_for_theta_t <- array(prior_theta$theta_t_scale)
+            standata$prior_mean_for_theta_t <- array(prior_theta$theta_t_mean)
+            standata$prior_df_for_theta_t <- array(prior_theta$theta_t_df)
+            #null entries
+            standata$prior_mean_for_theta_s <- double()
+            standata$prior_dist_for_theta_s <- double()
+            standata$prior_scale_for_theta_s <- double()
+            standata$prior_df_for_theta_s <- double()
+        }
+    } else{
+        if(stap_data$Q_st>0){
+            standata$prior_dist_for_theta_s <- array(prior_dist_for_theta)
+            standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
+            standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
+            standata$prior_mean_for_theta_s <-  array(prior_mean_for_theta)
+            standata$prior_dist_for_theta_t <- array(as.integer(prior_dist_for_theta))
+            standata$prior_scale_for_theta_t <- array(prior_scale_for_theta)
+            standata$prior_mean_for_theta_t <- array(prior_mean_for_theta)
+            standata$prior_df_for_theta_t <- array(prior_df_for_theta)
+        } else if(stap_data$Q_t>0){
+            standata$prior_dist_for_theta_t <- array(as.integer(prior_dist_for_theta))
+            standata$prior_scale_for_theta_t <- array(prior_scale_for_theta)
+            standata$prior_mean_for_theta_t <- array(prior_mean_for_theta)
+            standata$prior_df_for_theta_t <- array(prior_df_for_theta)
+            #null entries
+            standata$prior_mean_for_theta_s <- double()
+            standata$prior_dist_for_theta_s <- double()
+            standata$prior_scale_for_theta_s <- double()
+            standata$prior_df_for_theta_s <- double()
+        } else if(stap_data$Q_s>0){
+            standata$prior_dist_for_theta_s <- array(as.integer(prior_dist_for_theta))
+            standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
+            standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
+            standata$prior_mean_for_theta_s <-  array(prior_mean_for_theta)
+            #null entries
+            standata$prior_dist_for_theta_t <- double()
+            standata$prior_scale_for_theta_t <- double()
+            standata$prior_df_for_theta_t <- double()
+            standata$prior_mean_for_theta_t <- double()
+            }
+        }
+
+
+
+
+
+
+
     #make a copy of user specification before modifying 'group' (used for keeping
     # track of priors)
     user_covariance <- if (!length(group)) NULL else group[["decov"]]
@@ -283,8 +353,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             parts <- rstan::extract_sparse_parts(W)
             standata$num_non_zero <- length(parts$w)
             standata$w <- parts$w
-            standata$v <- parts$v - 1L
-            standata$u <- parts$u - 1L
+            standata$v <- parts$v
+            standata$u <- parts$u
         }
          standata$shape <- as.array(maybe_broadcast(decov$shape, t))
          standata$scale <- as.array(maybe_broadcast(decov$scale, t))
@@ -401,7 +471,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         user_prior = prior_stuff,
         user_prior_intercept = prior_intercept_stuff,
         user_prior_stap = prior_stap_stuff,
-        user_prior_theta = prior_theta_stuff,
+        user_prior_theta = if(!is.null(prior_theta$dist)) prior_theta_stuff else prior_theta,
         user_prior_aux = prior_aux_stuff,
         has_intercept = has_intercept,
         has_predictors = nvars > 0,
@@ -434,7 +504,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     check <- try(check_stanfit(stapfit))
     if (!isTRUE(check)) return(standata)
     if(standata$len_theta_L){
-        thetas_ref <- rstan::extract(stapfit, pars = "theta_L", inc_warmup = T,
+        thetas_ref <- rstan::extract(stapfit, pars = "theta_L", inc_warmup = F,
                               permuted = F)
         cnms <- group$cnms
         nc <- sapply(cnms, FUN = length)
@@ -469,11 +539,11 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
                    if((stap_data$Q_s + stap_data$Q_st)>0) paste0(rownames(dists_crs),'_spatial_scale'),
                    if((stap_data$Q_t + stap_data$Q_st)>0) paste0(rownames(times_crs),'_temporal_scale'),
                    if(length(group) && length(group$flist)) c (paste0("b[", b_nms, "]")),
+                   if(standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                    if (is_gaussian) "sigma",
                    if (is_gamma) "shape",
                    if (is_ig) "lambda",
                    if (is_nb) "reciprocal_dispersion",
-                   if(standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                    "mean_PPD",
                    "log-posterior")
     stapfit@sim$fnames_oi <- new_names
@@ -667,9 +737,9 @@ summarize_glm_prior <-
                                                         adjusted_prior_scale else NULL,
                                                     df = if(prior_dist_name_for_stap %in% c("student_t","hs","hs_plus","lasso","product_normal"))
                                                         prior_df else NULL )),
-            prior_theta = with(user_prior_theta, list(dist = prior_dist_name_for_theta,
+            prior_theta = if(!is.null(user_prior_theta$dist)) with(user_prior_theta, list(dist = prior_dist_name_for_theta,
                                                        location = prior_mean_for_theta,
-                                                       scale = prior_scale_for_theta)),
+                                                       scale = prior_scale_for_theta)) else NULL,
             prior_intercept =
                 if (!has_intercept) NULL else with(user_prior_intercept, list(
                     dist = prior_dist_name_for_intercept,

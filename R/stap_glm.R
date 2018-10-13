@@ -58,7 +58,7 @@ stap_glm <- function(formula,
                      subject_data = NULL,
                      distance_data = NULL,
                      time_data = NULL,
-                     id_key = NULL,
+                     subject_ID = NULL,
                      max_distance = NULL,
                      max_time = NULL,
                      subset,
@@ -75,12 +75,13 @@ stap_glm <- function(formula,
                      prior_theta = log_normal(location = 1L, scale = 1L),
                      prior_aux = exponential(), 
                      adapt_delta = NULL){
+
     stap_data <- extract_stap_data(formula)
     crs_data <- extract_crs_data(stap_data,
                                  subject_data,
                                  distance_data,
                                  time_data,
-                                 id_key,
+                                 id_key = subject_ID,
                                  max_distance,
                                  max_time)
     original_formula <- formula

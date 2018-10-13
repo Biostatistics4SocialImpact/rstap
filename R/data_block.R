@@ -79,14 +79,13 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
          paste(names(ok_dists), collapse = ", "))
   } else if (prior_dist_name %in% 
              c("normal", "t", "cauchy", "laplace", "lasso", 
-               "product_normal", 'lognormal','beta')) {
+               "product_normal", 'lognormal')) {
     if (prior_dist_name == "normal") prior_dist <- 1L
     else if (prior_dist_name == "t") prior_dist <- 2L
     else if (prior_dist_name == "laplace") prior_dist <- 5L
     else if (prior_dist_name == "lasso") prior_dist <- 6L
     else if (prior_dist_name == "product_normal") prior_dist <- 7L
     else if(prior_dist_name == 'lognormal') prior_dist <- 8L
-    else if(prior_dist_name =='beta') prior_dist <- 9L
     prior_scale <- set_prior_scale(prior_scale, default = default_scale, 
                                    link = link)
   } else if (prior_dist_name %in% c("hs", "hs_plus")) {
@@ -117,12 +116,122 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
         prior_autoscale = isTRUE(prior$autoscale))
 }
 
-#' extract stap data from formula and create stapcov object 
-#' 
-#' @param formula that designates model expression including stap covariates 
-#' @return stap_list - a list for each stap containing the covariate name, stap type
-#'        weight function and log indicator 
-#'
+
+# handles stap_theta priors
+#
+# @param prior A list
+# @param nvars An integer indicating the number of variables
+# @param link String naming the link function.
+# @param ok_dists A list of admissible distributions.
+handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_names){
+
+
+        if(!length(prior))
+            stop("We highly reccomend against using a flat prior",
+                 "on the spatial-temporal scales, as it will make
+                 sampling take a very long time")
+
+        if (!is.list(prior) ) 
+            stop(sQuote(deparse(substitute(prior))), " should be a list of lists")
+
+
+        check_theta_priors(prior,stap_code,coef_names)
+
+        theta_s_dist <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_dist <- rep(0,sum(stap_code==1) + sum(stap_code==2))
+        theta_s_scale <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_scale <- rep(0,sum(stap_code==1) + sum(stap_code==2))
+        theta_s_mean <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_mean <- rep(0,sum(stap_code==1) + sum(stap_code==2))
+        theta_s_df <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_df <- rep(0,sum(stap_code==1) + sum(stap_code==2))
+        prior_theta <- list()
+
+
+        for(i in 1:length(prior)){
+            if(stap_code[i] %in% c(0,2)){
+                prior_dist_name <- prior[[i]]$spatial$dist
+                if(!prior_dist_name %in% unlist(ok_dists)){
+                    stop("The prior distribution should be one of",
+                         paste(names(ok_dists), collapse = ", "))
+                    
+              } else if (prior_dist_name %in% 
+                         c("normal", "t", "cauchy", "laplace", "lasso", 
+                           "product_normal", 'lognormal')) {
+                if (prior_dist_name == "normal") prior_dist <- 1L
+                else if (prior_dist_name == "t") prior_dist <- 2L
+                else if (prior_dist_name == "laplace") prior_dist <- 5L
+                else if (prior_dist_name == "lasso") prior_dist <- 6L
+                else if (prior_dist_name == "product_normal") prior_dist <- 7L
+                else if(prior_dist_name == 'lognormal') prior_dist <- 8L
+                theta_s_dist[i] <- prior_dist
+              }
+                theta_s_scale[i] <- if(is.null(prior[[i]]$spatial$scale)) default_scale else prior[[i]]$spatial$scale
+                theta_s_mean[i] <- if(is.na(prior[[i]]$spatial$location)) 0 else prior[[i]]$spatial$location
+                theta_s_df[i] <- if(is.na(prior[[i]]$spatial$df)) 0 else prior[[i]]$spatial$df
+               } 
+            if(stap_code[i] %in% c(1,2)){
+                prior_dist_name <- prior[[i]]$temporal$dist
+                if(!prior_dist_name %in% unlist(ok_dists)){
+                    stop("The prior distribution should be one of",
+                         paste(names(ok_dists), collapse = ", "))
+                    
+                } else if (prior_dist_name %in% 
+                           c("normal", "t", "cauchy", "laplace", "lasso", 
+                             "product_normal", 'lognormal')) {
+                    if (prior_dist_name == "normal") prior_dist <- 1L
+                    else if (prior_dist_name == "t") prior_dist <- 2L
+                    else if (prior_dist_name == "laplace") prior_dist <- 5L
+                    else if (prior_dist_name == "lasso") prior_dist <- 6L
+                    else if (prior_dist_name == "product_normal") prior_dist <- 7L
+                    else if(prior_dist_name == 'lognormal') prior_dist <- 8L
+                    theta_t_dist[i] <- prior_dist
+                }
+                theta_t_scale[i] <- if(is.null(prior[[i]]$temporal$scale)) default_scale else prior[[i]]$temporal$scale
+                theta_t_mean[i] <- if(is.na(prior[[i]]$temporal$location)) 0 else prior[[i]]$temporal$location
+                theta_t_df[i] <- if(is.na(prior[[i]]$temporal$df)) 0 else prior[[i]]$temporal$df
+                }
+            }
+        if(any(stap_code %in% c(0,2))){
+            prior_theta$theta_s_dist <- theta_s_dist
+            prior_theta$theta_s_scale <- theta_s_scale
+            prior_theta$theta_s_mean <- theta_s_mean
+            prior_theta$theta_s_df <- theta_s_df
+         }
+        if(any(stap_code %in% c(1,2))){
+            prior_theta$theta_t_dist <- theta_t_dist
+            prior_theta$theta_t_scale <- theta_t_scale
+            prior_theta$theta_t_mean <- theta_t_mean
+            prior_theta$theta_t_df <- theta_t_df
+        }
+        return(prior_theta)
+}
+
+# checks theta prior if long list
+# 
+# @param prior_list list of stap priors
+# @param stap_code 
+# @param coef_names
+check_theta_priors <- function(prior_list,stap_code,coef_names){
+
+    if(any( !(names(prior_list) %in% coef_names))  | length(stap_code) != length(prior_list)  )
+        stop("if assigning any individual priors for spatial-temporal scales - ALL scales must be assigned an
+             appropriately named prior")
+
+    chck <- sapply(1:length(stap_code), function(x) switch(stap_code[x]+1, names(prior_list[[x]]) == "spatial",
+                                                  names(prior_list[[x]]) == "temporal",
+                                                  all(names(prior_list[[x]])==c("spatial","temporal"))))
+    if(!all(chck==T))
+        stop("if assigning any individual priors for spatial-temporal scales -
+             ALL scales must be assigned a prior and named appropriately")
+
+
+}
+
+# extract stap data from formula and create stapcov object 
+# 
+# @param formula that designates model expression including stap covariates 
+#
 extract_stap_data <- function(formula){
 
 
@@ -325,12 +434,12 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         subj_id <- id_key[1]
         m_id <- id_key[2]
         merged_data <- lapply(list_data, function(y) merge(subject_data[,c(subj_id,m_id), drop = F],
-                                                           y, by = c(eval(subj_id),eval(m_id))))
+                                                           y, by = c(eval(subj_id),eval(m_id)),all.x = T))
         merged_data <- lapply(merged_data, function(y) y[order(y[,m_id],y[,subj_id]),])
         return(merged_data)
     }else
         lapply(list_data, function(y) merge(subject_data[,id_key, drop = F],
-                                                                   y, by = eval(id_key)))
+                                                                   y, by = eval(id_key), all.x =T ))
 }
 
 
@@ -350,6 +459,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key[1]) + get(id_key[2]) + get(stap_col),
                                                               data = list_data[[x]], addNA = TRUE)[,,stap_covs[x]])
         freq <- lapply(freq,function(x) data.frame(x)[which(data.frame(x)[,"Freq"]!=0), "Freq"])
+        
         u <- lapply(freq, function(x) cbind(
                                             replace(dplyr::lag(cumsum(x)),
                                             is.na(dplyr::lag(cumsum(x))),0) +1,
