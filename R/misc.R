@@ -273,6 +273,8 @@ get_stapless_formula <- function(f){
     formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
     bar_components <- sapply(lme4::findbars(with_bars),paste_bars)
     formula_components <- c(formula_components,bar_components)
+    if(!attr(terms(f),"intercept"))
+        formula_components <- c(formula_components,"0")
     if(grepl("cbind",all.names(f))[2]){
         new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
         ix <- 3

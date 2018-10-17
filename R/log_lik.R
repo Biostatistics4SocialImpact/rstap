@@ -26,23 +26,50 @@
 #' @templateVar stapregArg object
 #' @template args-stapreg-object
 #' @template args-dots-ignored
-#' @param newdata An optional data frame of new data (e.g. holdout data) to use
-#'   when evaluating the log-likelihood. See the description of \code{newdata}
-#'   for \code{\link{posterior_predict}}.
+#' @param newsubjdata Optionally, a data frame of the subject-specific data
+#'   in which to look for variables with which to predict.
+#'   If omitted, the original datasets are used. If \code{newsubjdata}
+#'   is provided and any variables were transformed (e.g. rescaled) in the data
+#'   used to fit the model, then these variables must also be transformed in
+#'   \code{newsubjdata}.  Also see the Note
+#'   section below for a note about using the \code{newsubjdata} argument with with
+#'   binomial models.
+#' @param newdistdata If newsubjdata is provided a data frame of the subject-distance
+#'       must also be given for models with a spatial component - can be the same as original distance_dataframe
+#' @param newtimedata If newsubjdata is provided, a data frame of the subject-time data
+#'       must also be given for models with a temporal component
 #' @param offset A vector of offsets. Only required if \code{newdata} is
 #'   specified and an \code{offset} was specified when fitting the model.
 #'
 #' @return A \eqn{S} by \eqn{N} matrix, where \eqn{S} is the size of the posterior  
 #'   sample and \eqn{N} is the number of data points. 
 #'   
-log_lik.stapreg <- function(object, newdata = NULL, offset = NULL, ...) {
+log_lik.stapreg <- function(object, 
+                            newsubjdata = NULL,
+                            newdistdata = NULL,
+                            newtimedata = NULL,
+                            offset = NULL, ...) {
 
-  newdata <- validate_newdata(newdata)
+  prediction_data <- validate_predictiondataa(newsubjdata, newdistdata, newtimedata)
+  if(!is.null(prediction_data$newsubjdata)){
+      newsubjdata <- prediction_data$newsubjdata
+      if(!is.null(prediction_data$newdistdata))
+          newdistdata <- prediction_data$newdistdata
+      if(!is.null(prediction_data$newtimedata))
+          newtimedata <- prediction_data$newtimedata
+   } else{
+       newsubjdata <- NULL
+       newdistdata <- NULL
+       newtimedata <- NULL
+  }
   calling_fun <- as.character(sys.call(-1))[1]
   dots <- list(...)
   
-  args <- ll_args.stapreg(object, newdata = newdata, offset = offset, 
-                          reloo_or_kfold = calling_fun %in% c("kfold", "reloo"), 
+  args <- ll_args.stapreg(object,
+                          newsubjdata = newsubjdata,
+                          newdistdata = newdistdata,
+                          newtimedata = newtimedata,
+                          offset = offset, 
                           ...)
   fun <- ll_fun(object)
   out <- vapply(
@@ -88,22 +115,26 @@ ll_fun <- function(x) {
 # @return a named list with elements data, draws, S (posterior sample size) and
 #   N = number of observations
 ll_args <- function(object, ...) UseMethod("ll_args")
-ll_args.stapreg <- function(object, newdata = NULL, offset = NULL, 
-                            reloo_or_kfold = FALSE, ...) {
+ll_args.stapreg <- function(object,
+                            newsubjdata = NULL,
+                            newdistdata = NULL,
+                            newtimedata = NULL,
+                            offset = NULL, 
+                            ...) {
+
   validate_stapreg_object(object)
   f <- family(object)
   draws <- nlist(f)
-  has_newdata <- !is.null(newdata)
+  has_newdata <- !is.null(newsubjdata)
   
   dots <- list(...)
   
-  if (has_newdata && reloo_or_kfold && !is.mer(object)) {
-    x <- dots$newx
-    stanmat <- dots$stanmat
-    form <- as.formula(formula(object)) # in case formula is string
-    y <- eval(form[[2L]], newdata)
-  } else if (has_newdata) {
-    ppdat <- pp_data(object, as.data.frame(newdata), offset = offset)
+  if (has_newdata) {
+    ppdat <- pp_data(object,
+                     newsubjdata = newsubjdata,
+                     newdistdata = newdistdata,
+                     newtimedata = newtimedata,
+                      offset = offset)
     pp_eta_dat <- pp_eta(object, ppdat)
     eta <- pp_eta_dat$eta
     stanmat <- pp_eta_dat$stanmat
@@ -207,25 +238,25 @@ ll_args.stapreg <- function(object, newdata = NULL, offset = NULL,
 }
 
 # log-likelihood functions ------------------------------------------------
-.ll_gaussian_i <- function(data_i, draws) {
-  val <- dnorm(data_i$y, mean = .mu(data_i, draws), sd = draws$sigma, log = TRUE)
+.ll_gaussian_i <- function(data_i, draws,log_switch = T) {
+  val <- dnorm(data_i$y, mean = .mu(data_i, draws), sd = draws$sigma, log = log_switch)
   .weighted(val, data_i$weights)
 }
-.ll_binomial_i <- function(data_i, draws) {
-  val <- dbinom(data_i$y, size = data_i$trials, prob = .mu(data_i, draws) , log = TRUE)
+.ll_binomial_i <- function(data_i, draws, log_switch = T) {
+  val <- dbinom(data_i$y, size = data_i$trials, prob = .mu(data_i, draws) , log = log_switch)
   .weighted(val, data_i$weights)
 }
-.ll_poisson_i <- function(data_i, draws) {
-  val <- dpois(data_i$y, lambda = .mu(data_i, draws) , log = TRUE)
+.ll_poisson_i <- function(data_i, draws, log_switch = T) {
+  val <- dpois(data_i$y, lambda = .mu(data_i, draws) , log = log_switch)
   .weighted(val, data_i$weights)
 }
-.ll_neg_binomial_2_i <- function(data_i, draws) {
-  val <- dnbinom(data_i$y, size = draws$size, mu = .mu(data_i, draws), log = TRUE)
+.ll_neg_binomial_2_i <- function(data_i, draws, log_switch = T) {
+  val <- dnbinom(data_i$y, size = draws$size, mu = .mu(data_i, draws), log = log_switch)
   .weighted(val, data_i$weights)
 }
-.ll_Gamma_i <- function(data_i, draws) {
+.ll_Gamma_i <- function(data_i, draws, log_switch = T) {
   val <- dgamma(data_i$y, shape = draws$shape, 
-                rate = draws$shape / ( .mu(data_i,draws)), log = TRUE)
+                rate = draws$shape / ( .mu(data_i,draws)), log = log_switch)
   .weighted(val, data_i$weights)
 }
 .ll_inverse.gaussian_i <- function(data_i, draws) {

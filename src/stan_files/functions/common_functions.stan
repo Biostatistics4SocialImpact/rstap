@@ -20,6 +20,17 @@
         return( (M' * ones/ rows(M) ));
     }
 
+    /** Retrieve Column Sds for a Matrix
+     * @param M a matrix
+     * @return a vector whose values are the standard deviatiosn for each column of M
+    */
+    vector colsds(matrix M){
+    vector[cols(M)] out;
+    for (col_ix in 1:cols(M))
+        out[col_ix] = sd(M[,col_ix]);
+    return(out);
+    }
+
    // Lmer functions below adapted from rstanarm
   /** 
    * Create group-specific block-diagonal Cholesky factor, see section 2 of

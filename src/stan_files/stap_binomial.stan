@@ -73,9 +73,10 @@ model {
 }
 generated quantities {
   real alpha[has_intercept];
+  vector[Q] adj_beta;
   real mean_PPD = 0;
   if (has_intercept == 1) {
-    alpha[1] = gamma[1] - dot_product(zbar, delta);
+    alpha[1] = gamma[1] - dot_product(zbar, delta) - dot_product(colmeans(X),beta ./ colsds(X));
   }
   {
     vector[N] pi;
@@ -98,5 +99,6 @@ generated quantities {
     pi = linkinv_binom(eta, link);
     for (n in 1:N) mean_PPD = mean_PPD + binomial_rng(trials[n], pi[n]);
     mean_PPD = mean_PPD / N;
+    adj_beta = beta ./colsds(X);
   }
 }

@@ -411,7 +411,8 @@ terms.stapreg <- function(x, ..., fixed.only = TRUE, random.only = FALSE) {
   
   return(Terms)
 }
-
+waic <- function(x)
+    UseMethod("waic")
 
 
 # internal ----------------------------------------------------------------

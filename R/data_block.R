@@ -331,9 +331,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
     if(stap_data$t_only){
         stap_covs <- stap_data$covariates
         t_col_ics <- unlist(apply(time_data, 1, function(x) which( x %in% stap_covs)))
-        if(!all(t_col_ics)) stop("Stap covariates must all be in (only) one column
-                                 of the distance dataframe as a character or factor variable.
-                                 See '?stap_glm'")
+        .check_bef_data(t_col_ics,F)
         stap_col <- colnames(time_data)[t_col_ics[1]]
         tcol <- colnames(time_data)[tcol_ix]
         tdata <- lapply(stap_covs, function(x) time_data[which(time_data[,stap_col] == x), ])
@@ -352,6 +350,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         if(!all(d_col_ics)) stop("Stap - of any kind - covariates must all be in (only) one column
                                  of the distance dataframe as a character or factor variable.
                                  See '?stap_glm'")
+         .check_bef_data(d_col_ics)
         stap_col <- colnames(distance_data)[d_col_ics[1]]
         dcol <- colnames(distance_data)[dcol_ix]
         ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
@@ -377,7 +376,10 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
                                   function(x) which(x %in% tap_stap)))
         if(!all(d_col_ics) && !all(t_col_ics) && !all(d_col_ics) && !all(t_col_ics))
             stop("Stap covariates - of any kind - must all be in (only) one column
-                 of the distance dataframe as a character or factor variable. See '?stap_glm'")
+                 of the distance dataframe as a character or factor variable. See '?stap_glm'",.call=F)
+        
+        .check_bef_data(d_col_ics)
+        .check_bef_data(t_col_ics,F)
         stap_dcol <- colnames(distance_data)[d_col_ics[1]]
         stap_tcol <- colnames(time_data)[t_col_ics[1]]
         dcol <- colnames(distance_data)[dcol_ix]
@@ -395,7 +397,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         if(M != max(sapply(ddata,nrow)))
             stop("Something wrong please report bug")
 
-        mtdata <- .merge_data(tdata, subject_data, id_key) 
+        mtdata <- suppressWarnings(.merge_data(tdata, subject_data, id_key))
         t_mat <-  .get_crs_mat(mtdata, tcol, M, stap_data$Q_t + stap_data$Q_st, tap_stap)
         u_t <- .get_crs_u(mtdata, id_key, stap_tcol, tap_stap)
 
@@ -410,6 +412,14 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
 }
 
 
+.check_bef_data <- function(col_ics,distance=T){
+    if(length(col_ics)==0)
+        stop("No rows in ", if(distance) "distance" else "time", " data found with designated stap covariate", .call =F)
+    else if(!all(col_ics)) 
+        stop("Stap covariates must all be in (only) one column of the time/distance dataframe as a character or factor variable.
+                                  See '?stap_glm'")
+}
+        
 # handle missing stap
 .handle_missing_stap <- function(data,stap_covs,type_of_data = "time"){
     if(!any(lapply(data,nrow)==0))
@@ -439,7 +449,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         return(merged_data)
     }else
         lapply(list_data, function(y) merge(subject_data[,id_key, drop = F],
-                                                                   y, by = eval(id_key), all.x =T ))
+                                                                   y, by = eval(id_key), all.x = T ))
 }
 
 
@@ -458,7 +468,15 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
     if(length(id_key)==2){
         freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key[1]) + get(id_key[2]) + get(stap_col),
                                                               data = list_data[[x]], addNA = TRUE)[,,stap_covs[x]])
-        freq <- lapply(freq,function(x) data.frame(x)[which(data.frame(x)[,"Freq"]!=0), "Freq"])
+        id_data <- unique(list_data[[1]][,id_key])
+        .merge_u_data <- function(id_data,freq_data,id_key){
+            freq_data <- data.frame(freq_data)
+            nms <- colnames(freq_data)[1:2]
+            out <- merge(id_data,freq_data,by.x=id_key,by.y=nms,all.x=T)
+            out <- out[order(out[,2],out[,1]),"Freq"]
+            return(out)
+        }
+        freq <- lapply(freq,function(x) .merge_u_data(id_data,x,id_key))
         
         u <- lapply(freq, function(x) cbind(
                                             replace(dplyr::lag(cumsum(x)),

@@ -38,7 +38,7 @@
 #' Note that the subject_data argument must be provided in addition to either distance_data and/or time_data.
 #' @param family Same as for \code{\link[lme4]{glmer}} except limited to gaussian, binomial and poisson 
 #' @param subset,weights,offset Same as \code{\link[stats]{glm}}.
-#' @param na.action,contrasts Same as \code{\link[stats]{glm}}, but rarely 
+#' @param contrasts Same as \code{\link[stats]{glm}}, but rarely 
 #'   specified.
 #' @param ... For \code{stap_glmer}, further arguments passed to 
 #'   \code{\link[rstan]{sampling}} (e.g. \code{iter}, \code{chains}, 
@@ -72,9 +72,7 @@ stap_glmer <-
            measure_ID = NULL,
            max_distance = NULL,
            max_time = NULL,
-           subset,
            weights,
-           na.action = getOption("na.action", "na.omit"),
            offset,
            contrasts = NULL,
            ...,
@@ -170,7 +168,6 @@ stap_glmer <-
                y = y, data,
                call, terms = NULL,
                model = NULL,
-               na.action = attr(glmod$fr, "na.action"), 
                contrasts, glmod, 
                stan_function = "stap_glmer")
   out <- stapreg(fit)

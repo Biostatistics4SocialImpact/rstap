@@ -69,13 +69,11 @@ print.stapreg <- function(x, digits = 1, ...) {
   cat("\n family:      ", family_plus_link(x))
   cat("\n formula:     ", formula_string(formula(x)))
   cat("\n observations:", nobs(x))
-  if (isTRUE(x$stan_function %in% 
-             c("stap_glm", "stap_lm"))) {
-    cat("\n Intercept: ", rownames(x$stap_summary)[1] == "(Intercept)")
-    cat("\n fixed predictors:  ", (nfix(x) - 1*(rownames(x$stap_summary)[1] == "(Intercept)")))
-    cat("\n spatial predictors: ", nsap(x))
-    cat("\n temporal predictors: ",ntap(x)) 
-  }
+  cat("\n Intercept: ", rownames(x$stap_summary)[1] == "(Intercept)")
+  cat("\n fixed predictors:  ", (nfix(x) - 1*(rownames(x$stap_summary)[1] == "(Intercept)")))
+  cat("\n spatial predictors: ", nsap(x))
+  cat("\n temporal predictors: ",ntap(x)) 
+  cat("\n spatial-temporal predictors: ", nstap(x))
   
   cat("\n------\n")
 
@@ -187,7 +185,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #' 
 #' @importMethodsFrom rstan summary
 summary.stapreg <- function(object, pars = NULL, regex_pars = NULL, 
-                            probs = NULL, ..., digits = 1) {
+                            probs = NULL, waic = F, ... , digits = 1) {
   
   pars <- collect_pars(object, pars, regex_pars)
   
@@ -210,6 +208,7 @@ summary.stapreg <- function(object, pars = NULL, regex_pars = NULL,
       colnames(out)[stats %in% "se_mean"] <- "mcse"
     npred <- (nfix(object) - 1*(rownames(object$stap_summary)[1] == "(Intercept)"))
     
+    
   structure(
     out,
     call = object$call,
@@ -222,6 +221,7 @@ summary.stapreg <- function(object, pars = NULL, regex_pars = NULL,
     nspreds = if(nsap(object) > 0) nsap(object) else NULL,
     ntpreds = if(ntap(object) > 0) ntap(object) else NULL,
     nstpreds = if(nstap(object) > 0 ) nstap(object) else NULL,
+    waic_num = if(waic) waic(object) else NULL,
     print.digits = digits,
     priors = object$prior.info,
     class = "summary.stapreg"
@@ -255,6 +255,8 @@ print.summary.stapreg <- function(x, digits = max(1, attr(x, "print.digits")),
     cat("\n groups:      ", paste0(names(atts$ngrps), " (", 
                                    unname(atts$ngrps), ")", 
                                    collapse = ", "))
+  if(!is.null(atts$waic_num))
+      cat("\n WAIC:", round(atts$waic_num,digits) )
   
   cat("\n\nEstimates:\n")
   sel <- which(colnames(x) %in% c("mcse", "n_eff", "Rhat"))

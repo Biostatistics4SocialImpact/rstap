@@ -125,9 +125,10 @@ model {
 }
 generated quantities {
   real alpha[has_intercept];
+  vector[Q] adj_beta;
   real mean_PPD = 0;
   if (has_intercept == 1) {
-    alpha[1] = gamma[1] - dot_product(zbar, delta);
+    alpha[1] = gamma[1] - dot_product(zbar, delta) - dot_product(colmeans(X), beta ./ colsds(X));
   }
   {
     vector[N] nu;
@@ -166,5 +167,6 @@ generated quantities {
         else mean_PPD = mean_PPD + normal_rng(gamma_temp, sqrt(gamma_temp));
     }
     mean_PPD = mean_PPD / N;
+    adj_beta = beta ./ colsds(X);
   }
 }

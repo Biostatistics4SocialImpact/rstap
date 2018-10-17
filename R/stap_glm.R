@@ -38,10 +38,10 @@
 #' @template reference-muth
 #'
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
-#' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the id_key on which to join the distance and time_data
+#' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data
 #' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)
 #' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
-#' @param id_key name of column(s) to join on between subject_data and bef_data
+#' @param subject_ID  name of column(s) to join on between subject_data and bef_data
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
 #' @param weights
 #' @param y In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.
@@ -61,9 +61,7 @@ stap_glm <- function(formula,
                      subject_ID = NULL,
                      max_distance = NULL,
                      max_time = NULL,
-                     subset,
                      weights,
-                     na.action = NULL,
                      offset = NULL,
                      model = TRUE,
                      y = TRUE,
@@ -92,7 +90,7 @@ stap_glm <- function(formula,
     call <- match.call(expand.dots = TRUE)
     mf <-  match.call(expand.dots = FALSE)
     mf$formula <- stapless_formula
-    m <- match(c("formula","subset", "weights", "na.action", "offset"),
+    m <- match(c("formula", "weights", "offset"),
                table = names(mf), nomatch=0L)
     mf <- mf[c(1L,m)]
     mf$data <- subject_data

@@ -158,11 +158,11 @@ assign_weight <- function(u, crs_data, scales, log_code, weight_code,n,q){
     if(u[n,(q*2)-1]>u[n,(q *2)])
         return(0)
     else
-        out <- sapply(scales, function(z) w(crs_data[u[n,(q*2)-1]:u[n,(q*2)]],z)) 
+        out <- sapply(scales, function(z) sum(w(crs_data[u[n,(q*2)-1]:u[n,(q*2)]],z)))
     if(log_code)
-        return(log(sum(out)))
+        return(log(out))
     else
-        return(sum(out))
+        return(out)
 }
 
 
@@ -173,13 +173,13 @@ assign_st_weight <- function(u_s, u_t, crs_dist, crs_time, scales_s, scales_t, l
     if(u_s[n,(q*2)-1]>u_s[n,(q*2)])
         return(0)
     else{
-        out <- sapply(scales_s, function(z) w_s(crs_dist[u_s[n,(q*2)-1] : u_s[n,(q*2)]],z))
-        out <- out * sapply(scales_t, function(z) w_t(crs_time[u_t[n,(q*2)-1] : u_t[n,(q*2)]],z))
+        out <- mapply(function(z,w) sum(w_s(crs_dist[u_s[n,(q*2)-1]:u_s[n,(q*2)] ],z)*
+                                                               w_t(crs_time[u_t[n,(q*2)-1]:u_t[n,(q*2)]],w)), scales_s,scales_t)
     }
     if(log_code)
-        return(log(colSums(out)))
+        return(log(out))
     else
-        return(colSums(out))
+        return(out)
 }
 
 

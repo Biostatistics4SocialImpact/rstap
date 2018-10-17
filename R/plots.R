@@ -77,6 +77,7 @@ plot.stapreg <- function(x, plotfun = "intervals", pars = NULL,
 
 
 
+
 # internal for plot.stapreg ----------------------------------------------
 
 # Prepare argument list to pass to plotting function

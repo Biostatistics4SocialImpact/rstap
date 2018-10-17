@@ -158,8 +158,10 @@ posterior_predict.stapreg <- function(object,
   if(!is.null(fun))
     ytilde <- do.call(fun, list(ytilde))
   
-  if (is.null(newsubjdata)) colnames(ytilde) <- rownames(model.frame(object))
-  else colnames(ytilde) <- rownames(newsubjdata)  
+  if (is.null(newsubjdata)) 
+      colnames(ytilde) <- rownames(model.frame(object))
+  else 
+      colnames(ytilde) <- rownames(newsubjdata)  
   
   
   structure(ytilde, class = c("ppd", class(ytilde)))
