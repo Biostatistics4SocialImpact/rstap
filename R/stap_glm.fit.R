@@ -1,10 +1,24 @@
 #' Fitting Generalized Linear STKAP models
 #'
+#'@template args-adapt_delta
 #'@param y n length vector or n x 2 matrix of outcomes
-#'@param Z n x p design matrix of subject specific covariates
-#'@param dists_crs q x M matrix of distances between outcome observations and
-#' environmental features where q is the number of spatial covariates,
-#'  and M is the maximum number of environmental features amongst all q features
+#'@param z n x p design matrix of subject specific covariates
+#'@param dists_crs (q_s+q_st) x M matrix of distances between outcome 
+#'observations and built environment features with a hypothesized spatial scale
+#'@param u_s n x (q *2) matrix of compressed row storage array indices for dists_crs
+#'@param times_crs (q_t+q_st) x M matrix of times where the outcome observations
+#' were exposed to the built environment features with a hypothesized temporal scale
+#'@param u_t n x (q*2) matrix of compressed row storage array  indices for times_crs
+#'@param weight_functions a Q x 2 matrix with integers coding the appropriate weight function for each STAP
+#'@param object of class "stap_data" that contains information on all the spatial-temporal predictors in the model
+#'@param max_distance the upper bound on any and all distances included in the model 
+#'@param max_time the upper bound on any and all times included in the model
+#'@param weights weights to be added to the likelihood observation for a given subject
+#'@param offset offset term to be added to the outcome for a given subject
+#'@param family distributional family - only binomial gaussian or poisson currently allowed
+#'@param prior, prior_intercept, prior_stap, prior_theta,prior_aux see \code{stap_glm} for more information
+#'@param group list of of group terms from \code{lme4::glmod}
+
 #'@param max_distance the upper bound of distance for which all
 #'@export stap_glm
 stap_glm.fit <- function(y, z, dists_crs, u_s,
@@ -671,6 +685,7 @@ summarize_glm_prior <-
              user_prior_aux,
              user_prior_stap,
              user_prior_theta,
+             user_prior_cov,
              has_intercept,
              has_predictors,
              adjusted_prior_scale,

@@ -5,6 +5,8 @@
 #'
 waic.stapreg <- function(x, ...) {
 
+    if(is.mer(x))
+        stop("Waic not implemented for correlated data yet", .call =F)
     args <- ll_args(x)
     out <- .waic(ll_fun(x), data = args$data, draws = args$draws)
     return(out)

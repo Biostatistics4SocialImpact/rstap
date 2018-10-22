@@ -7,29 +7,40 @@
 \usage{
 stap_glmer(formula, family = gaussian, subject_data = NULL,
   distance_data = NULL, time_data = NULL, subject_ID = NULL,
-  measure_ID = NULL, max_distance = NULL, max_time = NULL, subset,
-  weights, na.action = getOption("na.action", "na.omit"), offset,
-  contrasts = NULL, ..., prior = normal(), prior_intercept = normal(),
-  prior_stap = normal(), prior_theta_s = log_normal(location = 1L, scale =
-  1L), prior_theta_t = log_normal(location = 1L, scale = 1L),
+  measure_ID = NULL, max_distance = NULL, max_time = NULL, weights,
+  offset, contrasts = NULL, ..., prior = normal(),
+  prior_intercept = normal(), prior_stap = normal(),
+  prior_theta = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), prior_covariance = decov(),
   adapt_delta = NULL)
 
 stap_lmer(formula, subject_data = NULL, distance_data = NULL,
-  time_data = NULL, subset, weights, na.action = getOption("na.action",
-  "na.omit"), offset, contrasts = NULL, ..., prior = normal(),
-  prior_intercept = normal(), prior_aux = exponential(),
-  prior_covariance = decov(), adapt_delta = NULL)
+  time_data = NULL, weights, offset, contrasts = NULL, ...,
+  prior = normal(), prior_intercept = normal(),
+  prior_aux = exponential(), prior_covariance = decov(),
+  adapt_delta = NULL)
 }
 \arguments{
-\item{formula, data}{Same as for \code{\link[lme4]{glmer}}. 
-Note that the subject_data argument must be provided in addition to either distance_data and/or time_data.}
+\item{formula}{Same as for \code{\link[lme4]{glmer}}. Note that in-formula
+transformations will not be passed to the final design matrix.Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}
 
 \item{family}{Same as for \code{\link[lme4]{glmer}} except limited to gaussian, binomial and poisson}
 
-\item{subset, weights, offset}{Same as \code{\link[stats]{glm}}.}
+\item{subject_data}{a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data}
 
-\item{na.action, contrasts}{Same as \code{\link[stats]{glm}}, but rarely 
+\item{distance_data}{a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.}
+
+\item{time_data}{same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance}
+
+\item{subject_ID}{name of column to join on between subject_data and bef_data}
+
+\item{measure_ID}{name of column to join on between \code{subject_data} and bef_data that uniquely identifies the groups}
+
+\item{max_distance}{the upper bound on any and all distances included in the model}
+
+\item{max_time}{the upper bound on any and all times included in the model}
+
+\item{contrasts}{Same as \code{\link[stats]{glm}}, but rarely 
 specified.}
 
 \item{...}{For \code{stap_glmer}, further arguments passed to 
@@ -86,6 +97,8 @@ rather than \code{prior_intercept}. Regardless of how
 intercept always correspond to a parameterization without centered
 predictors (i.e., same as in \code{glm}).}
 
+\item{prior_theta, prior_stap}{priors for the spatial scale and spatial effect parameters, respectively}
+
 \item{prior_aux}{The prior distribution for the "auxiliary" parameter (if
 applicable). The "auxiliary" parameter refers to a different parameter 
 depending on the \code{family}. For Gaussian models \code{prior_aux} 
@@ -112,6 +125,8 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
 more information about the default arguments.}
 
 \item{adapt_delta}{See the \link{adapt_delta} help page for details.}
+
+\item{subset, weights, offset}{Same as \code{\link[stats]{glm}}.}
 }
 \value{
 A \link[=stapreg-objects]{stapreg} object is returned 
@@ -126,7 +141,7 @@ The \code{stap_glmer} function is similar in syntax to
   \code{\link[lme4]{glmer}} but rather than performing (restricted) maximum 
   likelihood estimation of generalized linear models, Bayesian estimation is 
   performed via MCMC. The Bayesian model adds priors on the 
-  regression coefficients (in the same way as \code{\link{stan_glm}}) and
+  regression coefficients (in the same way as \code{\link{stap_glm}}) and
   priors on the terms of a decomposition of the covariance matrices of the
   group-specific parameters. See \code{\link{priors}} for more information
   about the priors.
@@ -148,5 +163,5 @@ User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinyst
 \code{\link{stapreg-methods}} and 
 \code{\link[lme4]{glmer}}.
 
-The vignette for \code{stap_glmer} ... still to be written
+The \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{vignette} for \code{stap_glmer}
 }

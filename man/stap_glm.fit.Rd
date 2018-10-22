@@ -4,24 +4,50 @@
 \alias{stap_glm.fit}
 \title{Fitting Generalized Linear STKAP models}
 \usage{
-stap_glm.fit(y, z, dists_crs, u_s, times_crs, u_t, weight_functions, stap_data,
-  max_distance = max(dists_crs), max_time = max(times_crs),
+stap_glm.fit(y, z, dists_crs, u_s, times_crs, u_t, weight_functions,
+  stap_data, max_distance = max(dists_crs), max_time = max(times_crs),
   weights = rep(1, NROW(y)), offset = rep(0, NROW(y)),
   family = stats::gaussian(), ..., prior = normal(),
   prior_intercept = normal(), prior_stap = normal(), group = list(),
-  prior_theta = list(theta_one = normal()), prior_aux = cauchy(location =
-  0L, scale = 5L), adapt_delta = NULL)
+  prior_theta = list(theta_one = normal()), prior_aux = cauchy(location
+  = 0L, scale = 5L), adapt_delta = NULL)
 }
 \arguments{
 \item{y}{n length vector or n x 2 matrix of outcomes}
 
-\item{dists_crs}{q x M matrix of distances between outcome observations and
-environmental features where q is the number of spatial covariates,
- and M is the maximum number of environmental features amongst all q features}
+\item{z}{n x p design matrix of subject specific covariates}
+
+\item{dists_crs}{(q_s+q_st) x M matrix of distances between outcome 
+observations and built environment features with a hypothesized spatial scale}
+
+\item{u_s}{n x (q *2) matrix of compressed row storage array indices for dists_crs}
+
+\item{times_crs}{(q_t+q_st) x M matrix of times where the outcome observations
+were exposed to the built environment features with a hypothesized temporal scale}
+
+\item{u_t}{n x (q*2) matrix of compressed row storage array  indices for times_crs}
+
+\item{weight_functions}{a Q x 2 matrix with integers coding the appropriate weight function for each STAP}
+
+\item{max_distance}{the upper bound on any and all distances included in the model}
+
+\item{max_time}{the upper bound on any and all times included in the model}
+
+\item{weights}{weights to be added to the likelihood observation for a given subject}
+
+\item{offset}{offset term to be added to the outcome for a given subject}
+
+\item{family}{distributional family - only binomial gaussian or poisson currently allowed}
+
+\item{prior, }{prior_intercept, prior_stap, prior_theta,prior_aux see \code{stap_glm} for more information}
+
+\item{group}{list of of group terms from \code{lme4::glmod}}
+
+\item{adapt_delta}{See the \link{adapt_delta} help page for details.}
+
+\item{object}{of class "stap_data" that contains information on all the spatial-temporal predictors in the model}
 
 \item{max_distance}{the upper bound of distance for which all}
-
-\item{Z}{n x p design matrix of subject specific covariates}
 }
 \description{
 Fitting Generalized Linear STKAP models

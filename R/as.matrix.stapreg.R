@@ -25,6 +25,7 @@
 #' @export
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
+#' @template stapreg-objects
 #' @template args-pars
 #' @template args-regex-pars
 #' @param ... Ignored.

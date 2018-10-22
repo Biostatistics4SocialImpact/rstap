@@ -29,6 +29,7 @@
 #' @export
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
+#' @template stapreg-objects
 #' @template args-pars
 #' @template args-regex-pars
 #' @param plotfun A character string naming the \pkg{bayesplot} 
@@ -57,8 +58,6 @@
 #'   \item \code{\link[bayesplot]{color_scheme_set}} (\pkg{bayesplot}) to change
 #'   the color scheme used for plotting.
 #'   \item \code{\link{pp_check}} for graphical posterior predictive checks.
-#'   \item \code{\link{plot_nonlinear}} for models with nonlinear smooth 
-#'   functions fit using \code{\link{stan_gamm4}}.
 #' }  
 #'
 #' @template reference-bayesvis
@@ -216,6 +215,7 @@ set_plotting_fun <- function(plotfun = NULL) {
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
 #' @template args-regex-pars
+#' @template stapreg-objects
 #' @param pars An optional character vetor of parameter names. All parameters 
 #'   are included by default, but for models with more than just a few 
 #'   parameters it may be far too many to visualize on a small computer screen 

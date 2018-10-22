@@ -31,10 +31,21 @@
 #'   posterior predictive distribution returned by 
 #'   \code{\link{posterior_predict}}.
 #' @template args-dots-ignored
-#' @inheritParams posterior_interval.stanreg
-#' @param newdata,draws,fun,offset,re.form,seed Passed to 
+#' @param draws,fun,offset,re.form,seed Passed to 
 #'   \code{\link[=posterior_predict]{posterior_predict}}.
-#' 
+#' @param newsubjdata Optionally, a data frame of the subject-specific data
+#'   in which to look for variables with which to predict.
+#'   If omitted, the original datasets are used. If \code{newsubjdata}
+#'   is provided and any variables were transformed (e.g. rescaled) in the data
+#'   used to fit the model, then these variables must also be transformed in
+#'   \code{newdata}. This only applies if variables were transformed before
+#'   passing the data to one of the modeling functions and \emph{not} if
+#'   transformations were specified inside the model formula. Also see the Note
+#'   section below for a note about using the \code{newdata} argument with with
+#'   binomial models.
+#' @param newdistdata If newsubjdata is provided a data frame of the subject-distance
+#'       must also be given for models with a spatial component
+#' @param newtimedata If newsubjdata is provided, a data frame of the subject-time data
 #' @return A matrix with two columns and as many rows as are in \code{newdata}. 
 #'   If \code{newdata} is not provided then the matrix will have as many rows as
 #'   the data used to fit the model. For a given value of \code{prob}, \eqn{p},

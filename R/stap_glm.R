@@ -12,9 +12,8 @@
 
 #' Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan
 #'
-#' \if{html}{\figure{stanlogo.png}{options: width="25px" alt="http://mc-stan.org/about/logo/"}}
-#' Generalized linear modeling with optional prior distributions for the
-#' coefficients, intercept, and auxiliary parameters.
+#' Generalized linear modeling with spatial temporal aggregated predictors using
+#' prior distributions for the coefficients, intercept, spatial-temporal scales, and auxiliary parameters.
 #'
 #' @export
 #' @templateVar pkg stats
@@ -37,13 +36,14 @@
 #' @template reference-gelman-hill
 #' @template reference-muth
 #'
+#' @param formula Same as for \code{link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson
 #' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data
-#' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)
+#' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.
 #' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
 #' @param subject_ID  name of column(s) to join on between subject_data and bef_data
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
-#' @param weights
+#' @param weights same as in \code{glm}
 #' @param y In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.
 #' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
@@ -156,3 +156,37 @@ stap_glm <- function(formula,
     return(out)
 }
 
+#' @rdname stap_glm
+#' @export
+stap_lm <- 
+  function(formula,
+           subject_data = NULL,
+           distance_data = NULL,
+           time_data = NULL,
+           subset,
+           weights,
+           na.action = getOption("na.action", "na.omit"),
+           offset,
+           contrasts = NULL,
+           ...,
+           prior = normal(),
+           prior_intercept = normal(),
+           prior_aux = exponential(),
+           adapt_delta = NULL
+           ) {
+  if ("family" %in% names(list(...))) {
+    stop(
+      "'family' should not be specified. ", 
+      "To specify a family use stap_glmer instead of stap_lmer."
+    )
+  }
+  mc <- call <- match.call(expand.dots = TRUE)
+  if (!"formula" %in% names(call))
+    names(call)[2L] <- "formula"
+  mc[[1L]] <- quote(stap_glm)
+  mc$family <- "gaussian"
+  out <- eval(mc, parent.frame())
+  out$call <- call
+  out$stan_function <- "stap_lm"
+  return(out)
+}

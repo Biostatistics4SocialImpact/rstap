@@ -2,33 +2,39 @@
 % Please edit documentation in R/stap_glm.R
 \name{stap_glm}
 \alias{stap_glm}
+\alias{stap_lm}
 \title{Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan}
 \usage{
 stap_glm(formula, family = gaussian(), subject_data = NULL,
-  distance_data = NULL, time_data = NULL, id_key = NULL,
-  max_distance = NULL, max_time = NULL, subset, weights, na.action = NULL,
-  offset = NULL, model = TRUE, y = TRUE, contrasts = NULL, ...,
-  prior = normal(), prior_intercept = normal(), prior_stap = normal(),
+  distance_data = NULL, time_data = NULL, subject_ID = NULL,
+  max_distance = NULL, max_time = NULL, weights, offset = NULL,
+  model = TRUE, y = TRUE, contrasts = NULL, ..., prior = normal(),
+  prior_intercept = normal(), prior_stap = normal(),
   prior_theta = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), adapt_delta = NULL)
+
+stap_lm(formula, subject_data = NULL, distance_data = NULL,
+  time_data = NULL, subset, weights, na.action = getOption("na.action",
+  "na.omit"), offset, contrasts = NULL, ..., prior = normal(),
+  prior_intercept = normal(), prior_aux = exponential(),
+  adapt_delta = NULL)
 }
 \arguments{
 \item{formula, subset}{Same as \code{\link[stats]{glm}},}
 
 \item{family}{Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson}
 
-\item{subject_data}{a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the id_key on which to join the distance and time_data}
+\item{subject_data}{a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data}
 
-\item{distance_data}{a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)}
+\item{distance_data}{a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.}
 
 \item{time_data}{same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance}
 
-\item{id_key}{name of column(s) to join on between subject_data and bef_data}
+\item{subject_ID}{name of column(s) to join on between subject_data and bef_data}
 
 \item{max_distance}{the inclusion distance; upper bound for all elements of dists_crs}
 
-\item{na.action, contrasts}{Same as \code{\link[stats]{glm}}, but
-rarely specified.}
+\item{weights}{same as in \code{glm}}
 
 \item{offset, weights}{Same as \code{\link[stats]{glm}}.}
 
@@ -108,6 +114,11 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
 \code{prior_aux} to \code{NULL}.}
 
 \item{adapt_delta}{See the \link{adapt_delta} help page for details.}
+
+\item{na.action, contrasts}{Same as \code{\link[stats]{glm}}, but
+rarely specified.}
+
+\item{formula}{Same as for \code{link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}
 }
 \value{
 A \link[=stapreg-objects]{stapreg} object is returned 
@@ -117,9 +128,8 @@ A \link[=stapfit-class]{stapfit} object (or a slightly modified
   stapfit object) is returned if \code{stan_glm.fit} is called directly.
 }
 \description{
-\if{html}{\figure{stanlogo.png}{options: width="25px" alt="http://mc-stan.org/about/logo/"}}
-Generalized linear modeling with optional prior distributions for the
-coefficients, intercept, and auxiliary parameters.
+Generalized linear modeling with spatial temporal aggregated predictors using
+prior distributions for the coefficients, intercept, spatial-temporal scales, and auxiliary parameters.
 }
 \details{
 The \code{stap_glm} function is similar in syntax to

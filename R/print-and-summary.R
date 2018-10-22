@@ -25,6 +25,7 @@
 #' @method print stapreg
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
+#' @template stapreg-objects
 #' @param digits Number of digits to use for formatting numbers.
 #' @param ... Ignored.
 #' @return Returns \code{x}, invisibly.
@@ -168,6 +169,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #' @param digits Number of digits to use for formatting numbers when printing. 
 #'   When calling \code{summary}, the value of digits is stored as the 
 #'   \code{"print.digits"} attribute of the returned object.
+#' @param waic logical to determine whether waic should be calculated and printed with the summary object
 #'   
 #' @return The \code{summary} method returns an object of class 
 #'   \code{"summary.stapreg"}, inheriting 

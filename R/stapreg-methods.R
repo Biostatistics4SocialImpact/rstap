@@ -60,8 +60,6 @@
 #'  \item The \code{\link[=print.stapreg]{print}},
 #'    \code{\link[=summary.stapreg]{summary}}, and \code{\link{prior_summary}} 
 #'    methods for stapreg objects for information on the fitted model.
-#'  \item \code{\link{launch_shinystan}} to use the ShinyStan GUI to explore a
-#'    fitted \pkg{rstap} model.
 #'  \item The \code{\link[=plot.stapreg]{plot}} method to plot estimates and
 #'    diagnostics.
 #'  \item The \code{\link{pp_check}} method for graphical posterior predictive
@@ -70,9 +68,8 @@
 #'    methods for predictions and predictive errors.
 #'  \item The \code{\link{posterior_interval}} and \code{\link{predictive_interval}}
 #'    methods for uncertainty intervals for model parameters and predictions.
-#'  \item The \code{\link[=loo.stapreg]{loo}}, \code{\link{kfold}}, and
-#'  \code{\link{log_lik}} methods for leave-one-out or K-fold cross-validation, 
-#'    model comparison, and computing the log-likelihood of (possibly new) data.
+#'  \item \code{\link{log_lik}} method for  computing the log-likelihood 
+#'   of (possibly new) data.
 #'  \item The \code{\link[=as.matrix.stapreg]{as.matrix}}, \code{as.data.frame}, 
 #'    and \code{as.array} methods to access posterior draws.
 #' }
@@ -293,7 +290,7 @@ VarCorr.stapreg <- function(x, sigma = 1, ...) {
   cnms <- .cnms(x)
   useSc <- "sigma" %in% colnames(mat)
   if (useSc) sc <- mat[,"sigma"] else sc <- 1
-  Sigma <- apply(mat[,grepl("^Sigma\\[", colnames(mat)), drop = FALSE],2,mean)
+  Sigma <- apply(mat[,grepl("^Sigma\\[", colnames(mat)), drop = FALSE],2,median)
   nc <- vapply(cnms, FUN = length, FUN.VALUE = 1L)
   nms <- names(cnms)
   ncseq <- seq_along(nc)

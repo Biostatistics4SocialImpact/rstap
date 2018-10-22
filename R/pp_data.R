@@ -99,7 +99,7 @@ pp_data <-
       
   offset <- model.offset(model.frame(object))
   if (!missing(newsubjdata) && (!is.null(offset) || !is.null(object$call$offset))) {
-    offset <- try(eval(object$call$offset, newdata), silent = TRUE)
+    offset <- try(eval(object$call$offset, newsubjdata), silent = TRUE)
     if (!is.numeric(offset)) offset <- NULL
   }
   return(nlist(z, x, offset = offset, Wt = w$Wt, w_names = w$w_names))
@@ -160,7 +160,7 @@ pp_data <-
   if (!inherits(re.form, "formula"))
     stop("'re.form' must be NULL, NA, or a formula.")
   if (length(fit.na.action <- attr(mfnew,"na.action")) > 0) {
-    newdata <- newdata[-fit.na.action,]
+    subjnewdata <- subjnewdata[-fit.na.action,]
   }
   ReTrms <- lme4::mkReTrms(lme4::findbars(re.form[[2]]), rfd)
   if (!allow.new.levels && any(vapply(ReTrms$flist, anyNA, NA)))
@@ -183,16 +183,20 @@ null_or_zero <- function(x) {
   isTRUE(is.null(x) || all(x == 0))
 }
 
-.pp_data_offset <- function(object, newdata = NULL, offset = NULL) {
-  if (is.null(newdata)) {
+.pp_data_offset <- function(object, 
+                            newsubjdata = NULL,
+                            newdistdata = NULL,
+                            newtimedata = NULL,
+                            offset = NULL) {
+  if (is.null(newsubjdata)) {
     # get offset from model object (should be null if no offset)
     if (is.null(offset)) 
       offset <- object$offset %ORifNULL% model.offset(model.frame(object))
   } else {
     if (!is.null(offset))
-      stopifnot(length(offset) == nrow(newdata))
+      stopifnot(length(offset) == nrow(newsubjdata))
     else {
-      # if newdata specified but not offset then confirm that model wasn't fit
+      # if newsubjdata specified but not offset then confirm that model wasn't fit
       # with an offset (warning, not error)
       if (!is.null(object$call$offset) || 
           !null_or_zero(object$offset) || 
@@ -203,7 +207,7 @@ null_or_zero <- function(x) {
           call. = FALSE
         )
       }
-      offset <- rep(0, nrow(newdata))
+      offset <- rep(0, nrow(newsubjdata))
     }
   }
   return(offset)

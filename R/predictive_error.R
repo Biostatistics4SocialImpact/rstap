@@ -1,6 +1,5 @@
 # Part of the rstap package for estimating model parameters
-# 
-# This program is free software; you can redistribute it and/or
+# # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
@@ -32,10 +31,11 @@
 #'   object}) or, for the \code{"ppd"} method, a matrix of draws from the 
 #'   posterior predictive distribution returned by 
 #'   \code{\link{posterior_predict}}.
-#' @param newdata,draws,seed,offset,re.form Optional arguments passed to 
+#' @param newsubjdata,newdistdata,newtimedata,draws,seed,offset,re.form Optional arguments passed to 
 #'   \code{\link{posterior_predict}}. For binomial models, please see the
-#'   \strong{Note} section below if \code{newdata} will be specified.
+#'   \strong{Note} section below if \code{newsubjdata} will be specified.
 #' @template args-dots-ignored
+#' @template stapreg-objects
 #' 
 #' @return A \code{draws} by \code{nrow(newdata)} matrix. If \code{newdata} is 
 #'   not specified then it will be \code{draws} by \code{nobs(object)}.
@@ -58,7 +58,7 @@
 predictive_error.stapreg <-
   function(object,
            newsubjdata = NULL,
-           newdistancedata = NULL,
+           newdistdata = NULL,
            newtimedata = NULL,
            draws = NULL,
            re.form = NULL,
@@ -68,8 +68,8 @@ predictive_error.stapreg <-
     if ("y" %in% names(list(...)))
       stop("Argument 'y' should not be specified if 'object' is a stapreg object.")
     
-    y <- if (is.null(newdata))
-      get_y(object) else eval(formula(object)[[2L]], newdata)
+    y <- if (is.null(newsubjdata))
+      get_y(object) else eval(formula(object)[[2L]],newdata) 
     
     fam <- family(object)$family
     if (is.binomial(fam) && NCOL(y) == 2)

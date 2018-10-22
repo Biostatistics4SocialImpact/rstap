@@ -297,27 +297,28 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
     return(w)
 }
 
-#' Get stap coding from formula
-#'
-#' @param  all_names character vector from calling all.names(formula)
-#' @return vector of length equal to number of staps + saps + taps
-#' with the appropriate coding for each appropriate predictor
+# Get stap coding from formula
+#
+# @param  all_names character vector from calling all.names(formula)
+# @param names of the stap covariates
+# @return vector of length equal to number of staps + saps + taps
+# with the appropriate coding for each appropriate predictor
 get_stap_code <- function(all_names,stap_covs){
     staps <- list("sap"=0,"tap"=1,"stap"=2,
                   "sap_log" = 0, "tap_log" = 1, "stap_log" = 2)
     sapply(stap_covs,function(x) as.vector(staps[[all_names[which(all_names == x)-1]]]))
 }
 
-#' extract crs data
-#'
-#' @param stap_data the stap data object extracted from \code{extract_stap_data}
-#' @param subject_data the subject_data data.frame
-#' @param distance_data the distance data.frame (optional)
-#' @param time_data the time data.frame (optional)
-#' @param id_key string of the id column(s) name to join on across subject, distance and time data. 
-#' @param max_distance  the maximum distance in distance_data
-#' @param max_time  the maximum distance in time_data 
-#' @return a list of the crs data for the spatial and/or temporal data as appropriate 
+# extract crs data
+#
+# @param stap_data the stap data object extracted from \code{extract_stap_data}
+# @param subject_data the subject_data data.frame
+# @param distance_data the distance data.frame (optional)
+# @param time_data the time data.frame (optional)
+# @param id_key string of the id column(s) name to join on across subject, distance and time data. 
+# @param max_distance  the maximum distance in distance_data
+# @param max_time  the maximum distance in time_data 
+# @return a list of the crs data for the spatial and/or temporal data as appropriate 
 extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, id_key, max_distance, max_time){
 
     
@@ -336,8 +337,8 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         tcol <- colnames(time_data)[tcol_ix]
         tdata <- lapply(stap_covs, function(x) time_data[which(time_data[,stap_col] == x), ])
         tdata <- .handle_missing_stap(tdata,stap_covs)
-        M <- max(sapply(tdata,nrow))
         mtdata <- .merge_data(tdata, subject_data,id_key)
+        M <- max(sapply(mtdata,nrow))
         t_mat <- .get_crs_mat(mtdata,tcol,M,stap_data$Q, stap_covs) 
         u_t <- .get_crs_u(mtdata,id_key,stap_col,stap_covs)
 
@@ -356,8 +357,8 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
                                                                        distance_data[,dcol]<= max_distance)),])
         ddata <- .handle_missing_stap(ddata,stap_covs,"distance")
-        M <- max(sapply(ddata, nrow))
         mddata <- .merge_data(ddata,subject_data,id_key)
+        M <- max(sapply(mddata, nrow))
         d_mat <- .get_crs_mat(mddata, dcol, M,stap_data$Q, stap_covs)
         u_s <- .get_crs_u(mddata, id_key, stap_col, stap_covs)
         return(list(d_mat = d_mat, t_mat = NA,  u_s = u_s, u_t = NA,
@@ -393,16 +394,20 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         tdata <- lapply(tap_stap, function(x) time_data[which(time_data[,stap_tcol] == x),])
         tdata <- .handle_missing_stap(tdata, tap_stap)
 
-        M <-  max(sapply(tdata,nrow))
-        if(M != max(sapply(ddata,nrow)))
-            stop("Something wrong please report bug")
+        
 
-        mtdata <- suppressWarnings(.merge_data(tdata, subject_data, id_key))
+        mtdata <- .merge_data(tdata, subject_data, id_key)
+        mddata <- .merge_data(ddata, subject_data,id_key) 
+        
+        M <-  max(sapply(mtdata,nrow))
+        if(M != max(sapply(mddata,nrow)))
+            stop("Something wrong please report bug")
+        
         t_mat <-  .get_crs_mat(mtdata, tcol, M, stap_data$Q_t + stap_data$Q_st, tap_stap)
         u_t <- .get_crs_u(mtdata, id_key, stap_tcol, tap_stap)
 
         
-        mddata <- .merge_data(ddata, subject_data,id_key) 
+        
         d_mat <- .get_crs_mat(mddata, dcol, M, stap_data$Q_s + stap_data$Q_st, sap_stap)
         u_s  <- .get_crs_u(mddata,id_key,stap_dcol,sap_stap)
 
@@ -443,13 +448,16 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
     if(length(id_key)==2){
         subj_id <- id_key[1]
         m_id <- id_key[2]
-        merged_data <- lapply(list_data, function(y) merge(subject_data[,c(subj_id,m_id), drop = F],
-                                                           y, by = c(eval(subj_id),eval(m_id)),all.x = T))
-        merged_data <- lapply(merged_data, function(y) y[order(y[,m_id],y[,subj_id]),])
+        merged_data <- lapply(list_data, function(y) 
+            as.data.frame(dplyr::left_join(subject_data[,c(subj_id,m_id), drop = F],
+                             y, by = c(eval(subj_id),eval(m_id)))))
+        merged_data <- lapply(merged_data, function(y)
+            y[order((y[,m_id]),
+                    (y[,subj_id])),])
         return(merged_data)
     }else
-        lapply(list_data, function(y) merge(subject_data[,id_key, drop = F],
-                                                                   y, by = eval(id_key), all.x = T ))
+        lapply(list_data, function(y) as.data.frame(dplyr::left_join(subject_data[,id_key, drop = F],
+                                                                   y, by = eval(id_key))))
 }
 
 

@@ -5,8 +5,7 @@
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
+# # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -34,11 +33,19 @@
 #' @template reference-gelman-hill
 #' @template reference-muth
 #' 
-#' @param formula,data Same as for \code{\link[lme4]{glmer}}. 
-#' Note that the subject_data argument must be provided in addition to either distance_data and/or time_data.
-#' @param family Same as for \code{\link[lme4]{glmer}} except limited to gaussian, binomial and poisson 
-#' @param subset,weights,offset Same as \code{\link[stats]{glm}}.
-#' @param contrasts Same as \code{\link[stats]{glm}}, but rarely 
+#' @param formula Same as for \code{\link[lme4]{glmer}}. Note that in-formula
+#'  transformations will not be passed to the final design matrix.Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.
+#' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data
+#' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.
+#' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
+#' @param subject_ID  name of column to join on between subject_data and bef_data
+#' @param measure_ID name of column to join on between \code{subject_data} and bef_data that uniquely identifies the groups 
+#'@param max_distance the upper bound on any and all distances included in the model 
+#'@param max_time the upper bound on any and all times included in the model
+#'@param family Same as for \code{\link[lme4]{glmer}} except limited to gaussian, binomial and poisson 
+#'@param prior_theta,prior_stap priors for the spatial scale and spatial effect parameters, respectively
+#'@param subset,weights,offset Same as \code{\link[stats]{glm}}.
+#'@param contrasts Same as \code{\link[stats]{glm}}, but rarely 
 #'   specified.
 #' @param ... For \code{stap_glmer}, further arguments passed to 
 #'   \code{\link[rstan]{sampling}} (e.g. \code{iter}, \code{chains}, 
@@ -50,7 +57,7 @@
 #'   \code{\link[lme4]{glmer}} but rather than performing (restricted) maximum 
 #'   likelihood estimation of generalized linear models, Bayesian estimation is 
 #'   performed via MCMC. The Bayesian model adds priors on the 
-#'   regression coefficients (in the same way as \code{\link{stan_glm}}) and
+#'   regression coefficients (in the same way as \code{\link{stap_glm}}) and
 #'   priors on the terms of a decomposition of the covariance matrices of the
 #'   group-specific parameters. See \code{\link{priors}} for more information
 #'   about the priors.
@@ -58,7 +65,7 @@
 #'   The \code{stap_lmer} function is equivalent to \code{stap_glmer} with 
 #'   \code{family = gaussian(link = "identity")}. 
 #'   
-#' @seealso The vignette for \code{stap_glmer} ... still to be written
+#' @seealso The \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{vignette} for \code{stap_glmer} 
 #'    
 #' @importFrom lme4 glFormula
 #' @importFrom Matrix Matrix t
@@ -85,14 +92,6 @@ stap_glmer <-
            adapt_delta = NULL) {
   original_formula <- formula
   stapless_formula <- get_stapless_formula(formula)
-  stap_data <- extract_stap_data(formula)
-  crs_data <- extract_crs_data(stap_data,
-                               subject_data,
-                               distance_data,
-                               time_data,
-                               id_key = c(subject_ID,measure_ID),
-                               max_distance,
-                               max_time)
   call <- match.call(expand.dots = TRUE)
   mc <- match.call(expand.dots = FALSE)
   mc$formula <- stapless_formula
@@ -129,6 +128,14 @@ stap_glmer <-
     stop("'prior_covariance' can't be NULL.", call. = FALSE)
   group <- glmod$reTrms
   group$decov <- prior_covariance
+  stap_data <- extract_stap_data(formula)
+  crs_data <- extract_crs_data(stap_data,
+                               subject_data,
+                               distance_data,
+                               time_data,
+                               id_key = c(subject_ID,measure_ID),
+                               max_distance,
+                               max_time)
   stapfit <- stap_glm.fit(y = y,z = Z, 
                           dists_crs = crs_data$d_mat,
                           u_s = crs_data$u_s,
@@ -184,9 +191,7 @@ stap_lmer <-
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,
-           subset,
            weights,
-           na.action = getOption("na.action", "na.omit"),
            offset,
            contrasts = NULL,
            ...,

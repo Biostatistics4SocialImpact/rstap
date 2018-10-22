@@ -4,11 +4,7 @@
 #' used for the parameters in a given model. In some cases the user-specified
 #' prior does not correspond exactly to the prior used internally by
 #' \pkg{rstap} (see the sections below). Especially in these cases, but also
-#' in general, it can be much more useful to visualize the priors. Visualizing
-#' the priors can be done using the \code{\link{posterior_vs_prior}} function,
-#' or alternatively by fitting the model with the \code{prior_PD} argument set
-#' to \code{TRUE} (to draw from the prior predictive distribution instead of
-#' conditioning on the outcome) and then plotting the parameters.
+#' in general, it can be much more useful to visualize the priors. 
 #' @aliases prior_summary
 #' @export
 #'

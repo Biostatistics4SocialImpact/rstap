@@ -45,10 +45,11 @@
 #'       must also be given for models with a spatial component
 #' @param newtimedata If newsubjdata is provided, a data frame of the subject-time data
 #'       must also be given for models with a temporal component
-#'
+#' @param subject_ID  name of column to join on between subject_data and bef_data
+#' @param measure_ID name of column to join on between \code{subject_data} and bef_data that uniquely identifies the correlated groups (e.g. visits,schools). Currently only one group (e.g. a measurement ID) can be accounted for in a spatial temporal setting. 
 #' @param draws An integer indicating the number of draws to return. The default
 #'   and maximum number of draws is the size of the posterior sample.
-#' @param re.form If \code{object} contains \code{\link[=stan_glmer]{group-level}}
+#' @param re.form If \code{object} contains \code{\link[=stap_glmer]{group-level}}
 #'   parameters, a formula indicating which group-level parameters to
 #'   condition on when making predictions. \code{re.form} is specified in the
 #'   same form as for \code{\link[lme4]{predict.merMod}}. The default,
@@ -62,7 +63,7 @@
 #'   by a call to \code{\link{match.fun}} and so can be specified as a function
 #'   object, a string naming a function, etc.
 #' @param seed An optional \code{\link[=set.seed]{seed}} to use.
-#' @param offset A vector of offsets. Only required if \code{newdata} is
+#' @param offset A vector of offsets. Only required if \code{newsubjdata} is
 #'   specified and an \code{offset} argument was specified when fitting the
 #'   model.
 #'   
@@ -82,16 +83,10 @@
 #'   \code{successes} and \code{failures} in \code{newdata} do not matter so
 #'   long as their sum is the desired number of trials. If the left-hand side of
 #'   the model formula were \code{cbind(successes, trials - successes)} then
-#'   both \code{trials} and \code{successes} would need to be in \code{newdata},
+#'   both \code{trials} and \code{successes} would need to be in \code{newsubjdata},
 #'   probably with \code{successes} set to \code{0} and \code{trials} specifying
 #'   the number of trials. See the Examples section below and the
 #'   \emph{How to Use the rstaparm Package} for examples.
-#' @note For models estimated with \code{\link{stan_clogit}}, the number of 
-#'   successes per stratum is ostensibly fixed by the research design. Thus, when
-#'   doing posterior prediction with new data, the \code{data.frame} passed to
-#'   the \code{newdata} argument must contain an outcome variable and a stratifying
-#'   factor, both with the same name as in the original \code{data.frame}. Then, the 
-#'   posterior predictions will condition on this outcome in the new data.
 #'   
 #' @seealso \code{\link{pp_check}} for graphical posterior predictive checks.
 #'   Examples of posterior predictive checking can also be found in the
@@ -340,17 +335,17 @@ pp_b_ord <- function(b, Z_names) {
 }
 
 # Number of trials for binomial models
-pp_binomial_trials <- function(object, newdata = NULL, m = NULL) {
+pp_binomial_trials <- function(object, newsubjdata = NULL) {
   
-  y <- get_y(object, m) 
+  y <- get_y(object) 
   is_bernoulli <- NCOL(y) == 1L
   
   if (is_bernoulli) {
-    trials <- if (is.null(newdata)) 
-      rep(1, NROW(y)) else rep(1, NROW(newdata))
+    trials <- if (is.null(newsubjdata)) 
+      rep(1, NROW(y)) else rep(1, NROW(newsubjdata))
   } else {
-    trials <- if (is.null(newdata)) 
-      rowSums(y) else rowSums(eval(formula(object)[[2L]], newdata))
+    trials <- if (is.null(newsubjdata)) 
+      rowSums(y) else rowSums(eval(formula(object)[[2L]], newsubjdata))
   }
   return(trials)
 }

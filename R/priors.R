@@ -23,7 +23,7 @@
 #' intended to be \emph{weakly informative} in that they provide moderate
 #' regularlization and help stabilize computation. For many applications the
 #' defaults will perform well, but prudent use of more informative priors is
-#' encouraged. Many of these are informed by the priors in \pkg{rstanarm}.
+#' encouraged. All of the priors here are informed by the priors in \pkg{rstanarm}, though it should be noted that the heirarchical shape priors are not included.
 #' 
 #' @name priors
 #' @param location Prior location. In most cases, this is the prior mean, but
@@ -32,23 +32,15 @@
 #'   median. The default value is \eqn{0}. 
 #' @param scale Prior scale. The default depends on the family (see
 #'   \strong{Details}).
-#' @param df,df1,df2 Prior degrees of freedom. The default is \eqn{1} for 
+#' @param df Prior degrees of freedom. The default is \eqn{1} for 
 #'   \code{student_t}, in which case it is equivalent to \code{cauchy}.
 #'   For the \code{product_normal}   prior, the degrees of freedom 
 #'   parameter must be an integer (vector) that is  at least \eqn{2} (the default).
-#' @param global_df,global_scale Optional arguments for the hierarchical
-#'   shrinkage priors. See the \emph{Hierarchical shrinkage family} section
-#'   below.
 #' @param what  A character string among \code{'mode'} (the default),
 #'   \code{'mean'}, \code{'median'}, or \code{'log'} indicating how the
 #'   \code{location} parameter is interpreted in the \code{LKJ} case. If
 #'   \code{'log'}, then \code{location} is interpreted as the expected
-#'   logarithm of the \eqn{R^2} under a Beta distribution. Otherwise,
-#'   \code{location} is interpreted as the \code{what} of the \eqn{R^2}
-#'   under a Beta distribution. If the number of predictors is less than
-#'   or equal to two, the mode of this Beta distribution does not exist
-#'   and an error will prompt the user to specify another choice for
-#'   \code{what}.
+#'   logarithm of the \eqn{R^2} under a Beta distribution. 
 #' @param autoscale A logical scalar, defaulting to \code{TRUE}. If \code{TRUE} 
 #'   then the scales of the priors on the intercept and regression coefficients 
 #'   may be additionally modified internally by \pkg{rstanarm} in the following 
@@ -193,27 +185,6 @@ student_t <- function(df = 1, location = 0, scale = NULL, autoscale = TRUE) {
 #' @export
 cauchy <- function(location = 0, scale = NULL, autoscale = TRUE) { 
     student_t(df = 1, location = location, scale = scale, autoscale)
-}
-
-
-#' @rdname priors
-#' @export
-hs <- function(df = 3, global_df = 1, global_scale = 1) {
-  validate_parameter_value(df)
-  validate_parameter_value(global_df)
-  validate_parameter_value(global_scale)
-  nlist(dist = "hs", df, location = 0, scale = 1, global_df, global_scale)
-}
-
-#' @rdname priors
-#' @export
-hs_plus <- function(df1 = 3, df2 = 3, global_df = 1, global_scale = 1) {
-  validate_parameter_value(df1)
-  validate_parameter_value(df2)
-  validate_parameter_value(global_df)
-  validate_parameter_value(global_scale)
-  # scale gets used as a second df hyperparameter
-  nlist(dist = "hs_plus", df = df1, location = 0, scale = df2, global_df, global_scale)
 }
 
 #' @rdname priors

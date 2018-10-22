@@ -65,8 +65,8 @@ set_sampling_args <- function(object, prior, user_dots = list(),
 
 
 
-#' create a named list using specified names or, if names are omitted using the
-#' names of the objects in the list
+# create a named list using specified names or, if names are omitted using the
+# names of the objects in the list
 #
 # @param ... Objects to include in the list.
 # @return A named list.
@@ -164,18 +164,18 @@ validate_newdata <- function(x) {
   x <- as.data.frame(x)
   drop_redundant_dims(x)
 }
-#' Validate prediction data for posterior_predict, log_lik, etc.
-#' 
-#' Doesn't check if the correct variables are included
-#' just that the new subject, distance and/or time data are 
-#' data frames if they are included and returns a NULL value 
-#' In the return list if they are not. Ensures that if a new
-#' subject data is submitted, that a new distance or
-#' time dataset are also included.
-#' @param newsdata newsubject data
-#' @param newddata
-#' @param newtdata
-#' @return a list with a dataframe or NULL for each of the possible new datasets
+# Validate prediction data for posterior_predict, log_lik, etc.
+# 
+# Doesn't check if the correct variables are included
+# just that the new subject, distance and/or time data are 
+# data frames if they are included and returns a NULL value 
+# In the return list if they are not. Ensures that if a new
+# subject data is submitted, that a new distance or
+# time dataset are also included.
+# @param newsdata newsubject data
+# @param newddata
+# @param newtdata
+# @return a list with a dataframe or NULL for each of the possible new datasets
 validate_predictiondata <- function(newsdata, newddata, newtdata) {
 
     if(is.null(newsdata) & is.null(newddata) & is.null(newtdata))
@@ -568,6 +568,7 @@ validate_stapreg_object <- function(x, call. = FALSE) {
 #' @export
 #' @templateVar stapregArg object
 #' @template args-stapreg-object
+#' @template stapreg-objects
 #' @param ... Other arguments passed to methods. For a \code{stanmvreg} object
 #'   this can be an integer \code{m} specifying the submodel.
 #' @return For \code{get_x} and \code{get_z}, a matrix. For \code{get_y}, either

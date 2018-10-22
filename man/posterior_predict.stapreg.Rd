@@ -6,17 +6,39 @@
 \title{Draw from posterior predictive distribution}
 \usage{
 \method{posterior_predict}{stapreg}(object, newsubjdata = NULL,
-  newdistancedata = NULL, newtimedata = NULL, draws = NULL,
-  re.form = NULL, fun = NULL, seed = NULL, offset = NULL, ...)
+  newdistdata = NULL, newtimedata = NULL, draws = NULL,
+  subject_ID = NULL, measure_ID = NULL, re.form = NULL, fun = NULL,
+  seed = NULL, offset = NULL, ...)
 }
 \arguments{
 \item{object}{A fitted model object returned by one of the 
 \pkg{rstap} modeling functions. See \code{\link{stapreg-objects}}.}
 
+\item{newsubjdata}{Optionally, a data frame of the subject-specific data
+in which to look for variables with which to predict.
+If omitted, the original datasets are used. If \code{newsubjdata}
+is provided and any variables were transformed (e.g. rescaled) in the data
+used to fit the model, then these variables must also be transformed in
+\code{newdata}. This only applies if variables were transformed before
+passing the data to one of the modeling functions and \emph{not} if
+transformations were specified inside the model formula. Also see the Note
+section below for a note about using the \code{newdata} argument with with
+binomial models.}
+
+\item{newdistdata}{If newsubjdata is provided a data frame of the subject-distance
+must also be given for models with a spatial component}
+
+\item{newtimedata}{If newsubjdata is provided, a data frame of the subject-time data
+must also be given for models with a temporal component}
+
 \item{draws}{An integer indicating the number of draws to return. The default
 and maximum number of draws is the size of the posterior sample.}
 
-\item{re.form}{If \code{object} contains \code{\link[=stan_glmer]{group-level}}
+\item{subject_ID}{name of column to join on between subject_data and bef_data}
+
+\item{measure_ID}{name of column to join on between \code{subject_data} and bef_data that uniquely identifies the correlated groups (e.g. visits,schools). Currently only one group (e.g. a measurement ID) can be accounted for in a spatial temporal setting.}
+
+\item{re.form}{If \code{object} contains \code{\link[=stap_glmer]{group-level}}
 parameters, a formula indicating which group-level parameters to
 condition on when making predictions. \code{re.form} is specified in the
 same form as for \code{\link[lme4]{predict.merMod}}. The default,
@@ -33,19 +55,9 @@ object, a string naming a function, etc.}
 
 \item{seed}{An optional \code{\link[=set.seed]{seed}} to use.}
 
-\item{offset}{A vector of offsets. Only required if \code{newdata} is
+\item{offset}{A vector of offsets. Only required if \code{newsubjdata} is
 specified and an \code{offset} argument was specified when fitting the
 model.}
-
-\item{newdata}{Optionally, a data frame in which to look for variables with
-which to predict. If omitted, the model matrix is used. If \code{newdata}
-is provided and any variables were transformed (e.g. rescaled) in the data
-used to fit the model, then these variables must also be transformed in
-\code{newdata}. This only applies if variables were transformed before
-passing the data to one of the modeling functions and \emph{not} if
-transformations were specified inside the model formula. Also see the Note
-section below for a note about using the \code{newdata} argument with with
-binomial models.}
 }
 \value{
 A \code{draws} by \code{nrow(newdata)} matrix of simulations from the
@@ -68,7 +80,7 @@ distribution to generate predicted outcomes.
 }
 \note{
 For binomial models with a number of trials greater than one (i.e., not
-  Bernoulli models), if \code{newdata} is specified then it must include all
+  Bernoulli models), if \code{newsubjdata} is specified then it must include all
   variables needed for computing the number of binomial trials to use for the
   predictions. For example if the left-hand side of the model formula is
   \code{cbind(successes, failures)} then both \code{successes} and
@@ -76,17 +88,10 @@ For binomial models with a number of trials greater than one (i.e., not
   \code{successes} and \code{failures} in \code{newdata} do not matter so
   long as their sum is the desired number of trials. If the left-hand side of
   the model formula were \code{cbind(successes, trials - successes)} then
-  both \code{trials} and \code{successes} would need to be in \code{newdata},
+  both \code{trials} and \code{successes} would need to be in \code{newsubjdata},
   probably with \code{successes} set to \code{0} and \code{trials} specifying
   the number of trials. See the Examples section below and the
   \emph{How to Use the rstaparm Package} for examples.
-
-For models estimated with \code{\link{stan_clogit}}, the number of 
-  successes per stratum is ostensibly fixed by the research design. Thus, when
-  doing posterior prediction with new data, the \code{data.frame} passed to
-  the \code{newdata} argument must contain an outcome variable and a stratifying
-  factor, both with the same name as in the original \code{data.frame}. Then, the 
-  posterior predictions will condition on this outcome in the new data.
 }
 \seealso{
 \code{\link{pp_check}} for graphical posterior predictive checks.

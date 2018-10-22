@@ -25,6 +25,7 @@
 #'
 #' @templateVar stapregArg object
 #' @template args-stapreg-object
+#' @template stapreg-objects
 #' @template args-dots-ignored
 #' @param newsubjdata Optionally, a data frame of the subject-specific data
 #'   in which to look for variables with which to predict.
@@ -38,7 +39,7 @@
 #'       must also be given for models with a spatial component - can be the same as original distance_dataframe
 #' @param newtimedata If newsubjdata is provided, a data frame of the subject-time data
 #'       must also be given for models with a temporal component
-#' @param offset A vector of offsets. Only required if \code{newdata} is
+#' @param offset A vector of offsets. Only required if \code{newsubjdata} is
 #'   specified and an \code{offset} was specified when fitting the model.
 #'
 #' @return A \eqn{S} by \eqn{N} matrix, where \eqn{S} is the size of the posterior  
@@ -50,7 +51,7 @@ log_lik.stapreg <- function(object,
                             newtimedata = NULL,
                             offset = NULL, ...) {
 
-  prediction_data <- validate_predictiondataa(newsubjdata, newdistdata, newtimedata)
+  prediction_data <- validate_predictiondata(newsubjdata, newdistdata, newtimedata)
   if(!is.null(prediction_data$newsubjdata)){
       newsubjdata <- prediction_data$newsubjdata
       if(!is.null(prediction_data$newdistdata))
@@ -81,8 +82,8 @@ log_lik.stapreg <- function(object,
       },
       FUN.VALUE = numeric(length = args$S)
     )
-  if (is.null(newdata)) colnames(out) <- rownames(model.frame(object))
-  else colnames(out) <- rownames(newdata)
+  if (is.null(newsubjdata)) colnames(out) <- rownames(model.frame(object))
+  else colnames(out) <- rownames(newsubjdata)
   return(out)
 }
 
@@ -103,15 +104,12 @@ ll_fun <- function(x) {
 
 # get arguments needed for ll_fun
 # @param object stapreg object
-# @param newdata same as posterior predict
+# @param newsubjdata same as posterior predict
+# @param newdistdata same as posterior predict
+# @param newtimdata same as posterior predict
 # @param offset vector of offsets (only required if model has offset term and
 #   newdata is specified)
 # @param reloo_or_kfold logical. TRUE if ll_args is for reloo or kfold
-# @param ... For models without group-specific terms (i.e., not stan_[g]lmer), 
-#   if reloo_or_kfold is TRUE and 'newdata' is specified then ... is used to 
-#   pass 'newx' and 'stanmat' from reloo or kfold (bypassing pp_data). This is a
-#   workaround in case there are issues with newdata containing factors with
-#   only a single level. 
 # @return a named list with elements data, draws, S (posterior sample size) and
 #   N = number of observations
 ll_args <- function(object, ...) UseMethod("ll_args")
@@ -140,7 +138,7 @@ ll_args.stapreg <- function(object,
     stanmat <- pp_eta_dat$stanmat
     x <- ppdat$x
     form <- as.formula(formula(object))
-    y <- eval(form[[2L]], newdata)
+    y <- eval(form[[2L]], newsubjdata)
   } else {
     stanmat <- as.matrix.stapreg(object)
     z <- get_z(object)
