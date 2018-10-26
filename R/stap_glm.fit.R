@@ -1,4 +1,4 @@
-#' Fitting Generalized Linear STKAP models
+#' Fitting Generalized Linear STAP models
 #'
 #'@template args-adapt_delta
 #'@param y n length vector or n x 2 matrix of outcomes
@@ -359,10 +359,10 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$num_non_zero <- c(length(parts0$w), length(parts1$w))
              standata$w0 <- parts0$w
              standata$w1 <- parts1$w
-             standata$v0 <- parts0$v - 1L
-             standata$v1 <- parts1$v - 1L
-             standata$u0 <- parts0$u - 1L
-             standata$u1 <- parts1$u - 1L
+             standata$v0 <- parts0$v 
+             standata$v1 <- parts1$v  
+             standata$u0 <- parts0$u  
+             standata$u1 <- parts1$u 
         } else {
             parts <- rstan::extract_sparse_parts(W)
             standata$num_non_zero <- length(parts$w)
@@ -370,16 +370,16 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$v <- parts$v
             standata$u <- parts$u
         }
-         standata$shape <- as.array(maybe_broadcast(decov$shape, t))
-         standata$scale <- as.array(maybe_broadcast(decov$scale, t))
-         standata$len_concentration <- sum(p[p > 1])
-         standata$concentration <-
-             as.array(maybe_broadcast(decov$concentration, sum(p[p > 1])))
-         standata$len_regularization <- sum(p > 1)
-         standata$regularization <-
-             as.array(maybe_broadcast(decov$regularization, sum(p > 1)))
-         standata$special_case <- all(sapply(group$cnms, FUN = function(x) {
-             length(x) == 1 && x == "(Intercept)" }))
+       standata$shape <- as.array(maybe_broadcast(decov$shape, t))
+       standata$scale <- as.array(maybe_broadcast(decov$scale, t))
+       standata$len_concentration <- sum(p[p > 1])
+       standata$concentration <-
+         as.array(maybe_broadcast(decov$concentration, sum(p[p > 1])))
+       standata$len_regularization <- sum(p > 1)
+       standata$regularization <-
+         as.array(maybe_broadcast(decov$regularization, sum(p > 1)))
+       standata$special_case <- all(sapply(group$cnms, FUN = function(x) {
+         length(x) == 1 && x == "(Intercept)" }))
     } else { # not multilevel
         standata$t <- 0L
         standata$p <- integer(0)
@@ -428,17 +428,18 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         if (is_bernoulli) {
             y0 <- y == 0
             y1 <- y == 1
+            standata$y_0 <- which(y0)
+            standata$y_1 <- which(y1)
             standata$N <- c(sum(y0), sum(y1))
-            standata$X0 <- array(ztemp[y0, , drop = FALSE], dim = c(1, sum(y0), ncol(ztemp)))
-            standata$X1 <- array(ztemp[y1, , drop = FALSE], dim = c(1, sum(y1), ncol(ztemp)))
-            standata$nnz_X0 = 0L
-            standata$w_X0 = double(0)
-            standata$v_X0 = integer(0)
-            standata$u_X0 = integer(0)
-            standata$nnz_X1 = 0L
-            standata$w_X1 = double(0)
-            standata$v_X1 = integer(0)
-            standata$u_X1 = integer(0)
+            standata$NN <- nrow(ztemp)
+            standata$Z0 <- ztemp[y0, , drop = FALSE]
+            standata$Z1 <- ztemp[y1, , drop = FALSE]
+            standata$w_W0 = double(0)
+            standata$v_W0 = integer(0)
+            standata$u_W0 = integer(0)
+            standata$w_W1 = double(0)
+            standata$v_W1 = integer(0)
+            standata$u_W1 = integer(0)
             if (length(weights)) {
                 # nocov start
                 # this code is unused because weights are interpreted as number of
@@ -459,7 +460,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
                 standata$offset0 <- double(0)
                 standata$offset1 <- double(0)
             }
-            stanfit <- stanmodels$bernoulli
+            stanfit <- stanmodels$stap_bernoulli
         } else {
             standata$trials <- trials
             stanfit <- stanmodels$stap_binomial
