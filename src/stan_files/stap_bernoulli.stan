@@ -1,4 +1,4 @@
-// STAP GLM for a Bernoulli outcome
+// General Linear STAP  for a Bernoulli outcome
 functions {
 #include /functions/common_functions.stan
 #include /functions/bernoulli_likelihoods.stan

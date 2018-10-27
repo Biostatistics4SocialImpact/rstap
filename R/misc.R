@@ -220,10 +220,10 @@ validate_distancedata <- function(distance_data, max_distance ) {
     if(!is.data.frame(distance_data) || any(is.na(distance_data)))
         stop("if distance_data is supplied it must be supplied as a dataframe with no NA values")
     num_dbl <- sum(sapply(1:ncol(distance_data),
-                      function(x) all(is.double(as.matrix(distance_data[,x])))))
+                      function(x) all(is.double(as.matrix(distance_data[,x,drop=T])))))
     if(num_dbl!=1)
         stop("distance_data should be a data frame with only one numeric column - see `?stap_glm`")
-    dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x])))*x))
+    dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x,drop=T])))*x))
     if(sum(distance_data[,dcol_ix]<=max_distance)==0) 
         stop("exclusion distance results in no BEFs included in the model")
     return(dcol_ix)

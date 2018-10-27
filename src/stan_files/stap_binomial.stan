@@ -70,6 +70,8 @@ model {
   else if (has_weights == 1) 
     target += dot_product(weights, pw_binom(y, trials, eta, link));
 #include /model/priors_glm.stan
+if (t > 0) decov_lp(z_b, z_T, rho, zeta, tau, 
+                      regularization, del, shape, t, p);
 }
 generated quantities {
   real alpha[has_intercept];

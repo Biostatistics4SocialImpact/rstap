@@ -84,7 +84,7 @@ stap_glm <- function(formula,
     original_formula <- formula
     stapless_formula <- get_stapless_formula(formula)
     family <- validate_family(family)
-    validate_glm_formula(formula)
+    validate_glm_formula(stapless_formula)
     subject_data <- validate_data(subject_data, if_missing = environment(stapless_formula))
     call <- match.call(expand.dots = TRUE)
     mf <-  match.call(expand.dots = FALSE)
