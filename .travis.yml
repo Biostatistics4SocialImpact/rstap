@@ -4,20 +4,25 @@ r: devel
 cache: packages
 
 latex: true
+r_build_args: "--no-build-vignettes"
+r_check_args: "--ignore-vignettes"
 
-
-env:
-  matrix: 
-    - CXX_OLEVEL=2 CXX=clang++
+matrix: 
+  include:
+    - os: linux 
+        addons:
+           apt:
+             sources:
+                 - ubuntu-toolchain-r-test
+             packages:
+                 - g++-7
+    - env:
+        - MATRIX_EVAL = "CC=gcc-7 && CXX=g++-7"
 
 before_install:
   - mkdir -p ~/.R/
-  - echo "CXX14 = g++-6 -fPIC -flto" >> ~/.R/Makevars
+  - echo "CXX14 = g++-7 -fPIC -flto" >> ~/.R/Makevars
   - echo "CXX14FLAGS = -mtune=native -march=native -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-attributes -O3" >> ~/.R/Makevars 
-  - export CLANG_EXTRA_ARG=""
-  - if [[ $CXX = "clang++" ]] ;  then export CLANG_EXTRA_ARG=" -Qunused-arguments -fcolor-diagnostics " ; fi
-  - sed -i.bak "s/ g++/ ${CXX}${CLANG_EXTRA_ARG}/" ~/.R/Makevars
-  - sed -i.bak "s/O[0-3]/O$CXX_OLEVEL/" ~/.R/Makevars
 
 script: 
   - |
