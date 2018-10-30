@@ -25,7 +25,6 @@
 #' @method print stapreg
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
-#' @template stapreg-objects
 #' @param digits Number of digits to use for formatting numbers.
 #' @param ... Ignored.
 #' @return Returns \code{x}, invisibly.

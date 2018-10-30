@@ -8,6 +8,8 @@ validate_distancedata(distance_data, max_distance)
 }
 \arguments{
 \item{distance_data}{User's distance_data argument}
+
+\item{max_distance}{upper bound on all possible distances}
 }
 \value{
 If no error is thrown, the column index

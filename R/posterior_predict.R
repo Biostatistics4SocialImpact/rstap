@@ -36,7 +36,7 @@
 #'   If omitted, the original datasets are used. If \code{newsubjdata}
 #'   is provided and any variables were transformed (e.g. rescaled) in the data
 #'   used to fit the model, then these variables must also be transformed in
-#'   \code{newdata}. This only applies if variables were transformed before
+#'   \code{newsubjdata}. This only applies if variables were transformed before
 #'   passing the data to one of the modeling functions and \emph{not} if
 #'   transformations were specified inside the model formula. Also see the Note
 #'   section below for a note about using the \code{newdata} argument with with
@@ -46,7 +46,7 @@
 #' @param newtimedata If newsubjdata is provided, a data frame of the subject-time data
 #'       must also be given for models with a temporal component
 #' @param subject_ID  name of column to join on between subject_data and bef_data
-#' @param measure_ID name of column to join on between \code{subject_data} and bef_data that uniquely identifies the correlated groups (e.g. visits,schools). Currently only one group (e.g. a measurement ID) can be accounted for in a spatial temporal setting. 
+#' @param group_ID name of column to join on between \code{subject_data} and bef_data that uniquely identifies the correlated groups (e.g. visits,schools). Currently only one group (e.g. a measurement ID) can be accounted for in a spatial temporal setting. 
 #' @param draws An integer indicating the number of draws to return. The default
 #'   and maximum number of draws is the size of the posterior sample.
 #' @param re.form If \code{object} contains \code{\link[=stap_glmer]{group-level}}
@@ -66,6 +66,7 @@
 #' @param offset A vector of offsets. Only required if \code{newsubjdata} is
 #'   specified and an \code{offset} argument was specified when fitting the
 #'   model.
+#' @param ... optional arguments to pass to pp_args
 #'   
 #' @return A \code{draws} by \code{nrow(newdata)} matrix of simulations from the
 #'   posterior predictive distribution. Each row of the matrix is a vector of 
@@ -85,8 +86,7 @@
 #'   the model formula were \code{cbind(successes, trials - successes)} then
 #'   both \code{trials} and \code{successes} would need to be in \code{newsubjdata},
 #'   probably with \code{successes} set to \code{0} and \code{trials} specifying
-#'   the number of trials. See the Examples section below and the
-#'   \emph{How to Use the rstaparm Package} for examples.
+#'   the number of trials. 
 #'   
 #' @seealso \code{\link{pp_check}} for graphical posterior predictive checks.
 #'   Examples of posterior predictive checking can also be found in the
@@ -100,7 +100,7 @@ posterior_predict.stapreg <- function(object,
                                       newtimedata = NULL,
                                       draws = NULL,
                                       subject_ID = NULL,
-                                      measure_ID = NULL,
+                                      group_ID = NULL,
                                       re.form = NULL, 
                                       fun = NULL,
                                       seed = NULL,
@@ -126,7 +126,7 @@ posterior_predict.stapreg <- function(object,
        newtimedata <- NULL
   }
 
-  id_key <- if(is.null(measure_ID)) subject_ID else c(subject_ID,measure_ID)
+  id_key <- if(is.null(group_ID)) subject_ID else c(subject_ID,group_ID)
 
   pp_data_args <- c(list(object,
                          newsubjdata = newsubjdata,

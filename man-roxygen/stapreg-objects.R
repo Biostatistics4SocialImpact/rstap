@@ -50,9 +50,9 @@
 #'   posterior distribution, the variational approximation, or the asymptotic 
 #'   sampling distribution, depending on the estimation algorithm.
 #'   }
-#'   \item{\code{model,x,y}}{
+#'   \item{\code{model,x,y,z}}{
 #'   If requested, the the model frame, model matrix and response variable used, 
-#'   respectively.
+#'   respectively. Note that z corresponds to the fixed covariates, z to the spatial aggregated covariates, and y the response.
 #'   }
 #'   \item{\code{family}}{
 #'   The \code{\link[stats]{family}} object used.
@@ -70,7 +70,7 @@
 #'   A list with information about the prior distributions used.
 #'   }
 #'   \item{\code{stapfit,stan_summary}}{
-#'   The object of \code{\link[rstan]{stapfit-class}} returned by RStan and a
+#'   The object of \code{\link[rstan]{stanfit-class}} returned by RStan and a
 #'   matrix of various summary statistics from the stapfit object.
 #'   }
 #'   \item{\code{rstan_version}}{

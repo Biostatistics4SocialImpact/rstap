@@ -1,4 +1,5 @@
 # Part of the rstap package for estimating model parameters
+#' 
 # # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
@@ -22,7 +23,8 @@
 #' objects with class \code{"ppd"} accepts the matrix returned by 
 #' \code{posterior_predict} as input and can be used to avoid multiple calls to 
 #' \code{posterior_predict}.
-#' 
+#'
+#' @name predictive_error  
 #' @aliases predictive_error
 #' @export
 #' 
@@ -37,15 +39,15 @@
 #' @template args-dots-ignored
 #' @template stapreg-objects
 #' 
-#' @return A \code{draws} by \code{nrow(newdata)} matrix. If \code{newdata} is 
+#' @return A \code{draws} by \code{nrow(newsubjdata)} matrix. If \code{newsubjdata} is 
 #'   not specified then it will be \code{draws} by \code{nobs(object)}.
 #'   
 #' @note The \strong{Note} section in \code{\link{posterior_predict}} about 
-#'   \code{newdata} for binomial models also applies for
+#'   \code{nnewsubjdata} for binomial models also applies for
 #'   \code{predictive_error}, with one important difference. For
 #'   \code{posterior_predict} if the left-hand side of the model formula is 
 #'   \code{cbind(successes, failures)} then the particular values of 
-#'   \code{successes} and \code{failures} in \code{newdata} don't matter, only 
+#'   \code{successes} and \code{failures} in \code{newsubjdata} don't matter, only 
 #'   that they add to the desired number of trials. \strong{This is not the case
 #'   for} \code{predictive_error}. For \code{predictive_error} the particular
 #'   value of \code{successes} matters because it is used as \eqn{y} when
@@ -69,7 +71,7 @@ predictive_error.stapreg <-
       stop("Argument 'y' should not be specified if 'object' is a stapreg object.")
     
     y <- if (is.null(newsubjdata))
-      get_y(object) else eval(formula(object)[[2L]],newdata) 
+      get_y(object) else eval(formula(object)[[2L]],newsubjdata) 
     
     fam <- family(object)$family
     if (is.binomial(fam) && NCOL(y) == 2)

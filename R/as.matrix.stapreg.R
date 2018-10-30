@@ -14,18 +14,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#' Extract the posterior sample
+#' Extract the posterior sample via matrix 
 #' 
-#' For models fit using MCMC  the posterior sample ---the post-warmup 
+#' The posterior sample ---the post-warmup 
 #' draws from the posterior distribution--- can be extracted 
 #' from a fitted model object as a matrix, data frame, or array. The 
 #' \code{as.matrix} and \code{as.data.frame} methods merge all chains together, 
 #' whereas the \code{as.array} method keeps the chains separate.  
+#' @name as.matrix.stapreg
 #' @method as.matrix stapreg
 #' @export
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
-#' @template stapreg-objects
 #' @template args-pars
 #' @template args-regex-pars
 #' @param ... Ignored.

@@ -6,11 +6,6 @@
 \usage{
 se(object, ...)
 }
-\arguments{
-\item{object}{A fitted model object.}
-
-\item{...}{Arguments to methods.}
-}
 \value{
 Standard errors of model parameters.
 }

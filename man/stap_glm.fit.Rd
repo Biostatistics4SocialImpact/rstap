@@ -2,7 +2,7 @@
 % Please edit documentation in R/stap_glm.fit.R
 \name{stap_glm.fit}
 \alias{stap_glm.fit}
-\title{Fitting Generalized Linear STKAP models}
+\title{Fitting Generalized Linear STAP models}
 \usage{
 stap_glm.fit(y, z, dists_crs, u_s, times_crs, u_t, weight_functions,
   stap_data, max_distance = max(dists_crs), max_time = max(times_crs),
@@ -29,6 +29,8 @@ were exposed to the built environment features with a hypothesized temporal scal
 
 \item{weight_functions}{a Q x 2 matrix with integers coding the appropriate weight function for each STAP}
 
+\item{stap_data}{object of class "stap_data" that contains information on all the spatial-temporal predictors in the model}
+
 \item{max_distance}{the upper bound on any and all distances included in the model}
 
 \item{max_time}{the upper bound on any and all times included in the model}
@@ -39,16 +41,14 @@ were exposed to the built environment features with a hypothesized temporal scal
 
 \item{family}{distributional family - only binomial gaussian or poisson currently allowed}
 
-\item{prior, }{prior_intercept, prior_stap, prior_theta,prior_aux see \code{stap_glm} for more information}
+\item{...}{optional arguments passed to the sampler - e.g. iter,warmup, etc.}
+
+\item{prior, prior_intercept, prior_stap, prior_theta, prior_aux}{see \code{stap_glm} for more information}
 
 \item{group}{list of of group terms from \code{lme4::glmod}}
 
 \item{adapt_delta}{See the \link{adapt_delta} help page for details.}
-
-\item{object}{of class "stap_data" that contains information on all the spatial-temporal predictors in the model}
-
-\item{max_distance}{the upper bound of distance for which all}
 }
 \description{
-Fitting Generalized Linear STKAP models
+Fitting Generalized Linear STAP models
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc.R
 \name{validate_newdata}
 \alias{validate_newdata}
-\title{Validate newdata argument for posterior_predict, log_lik, etc.}
+\title{Validate newsubjdata argument for posterior_predict, log_lik, etc.}
 \usage{
 validate_newdata(x)
 }

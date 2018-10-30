@@ -6,11 +6,6 @@
 \usage{
 nstap(object)
 }
-\arguments{
-\item{object}{A fitted model object}
-
-\item{...}{Arguments to methods.}
-}
 \value{
 number of spatial temporal aggregated predictors
 }

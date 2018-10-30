@@ -13,6 +13,7 @@
 \alias{ntap.stapreg}
 \alias{nsap.stapreg}
 \alias{nfix.stapreg}
+\alias{nfix}
 \alias{residuals.stapreg}
 \alias{se.stapreg}
 \alias{vcov.stapreg}
@@ -25,7 +26,7 @@
 \usage{
 \method{coef}{stapreg}(object, ...)
 
-\method{confint}{stapreg}(object, parm, level = 0.95, ...)
+\method{confint}{stapreg}(object, ...)
 
 \method{fitted}{stapreg}(object, ...)
 
@@ -59,14 +60,7 @@
 \item{object, x}{A fitted model object returned by one of the 
 \pkg{rstap} modeling functions. See \code{\link{stapreg-objects}}.}
 
-\item{...}{Ignored, except by the \code{update} method. See
-\code{\link{update}}.}
-
-\item{parm}{For \code{confint}, an optional character vector of parameter
-names.}
-
-\item{level}{For \code{confint}, a scalar between \eqn{0} and \eqn{1}
-indicating the confidence level to use.}
+\item{...}{Ignored}
 
 \item{correlation}{For \code{vcov}, if \code{FALSE} (the default) the
 covariance matrix is returned. If \code{TRUE}, the correlation matrix is
@@ -100,9 +94,6 @@ The \code{se} function returns standard errors based on
 \code{\link{print.stapreg}} for more details.
 }
 \item{\code{confint}}{
-For models fit using optimization, confidence intervals are returned via a 
-call to \code{\link[stats]{confint.default}}. If \code{algorithm} is 
-\code{"sampling"}, \code{"meanfield"}, or \code{"fullrank"}, the
 \code{confint} will throw an error because the
 \code{\link{posterior_interval}} function should be used to compute Bayesian 
 uncertainty intervals.
@@ -116,10 +107,8 @@ uncertainty intervals.
    methods for stapreg objects for information on the fitted model.
  \item The \code{\link[=plot.stapreg]{plot}} method to plot estimates and
    diagnostics.
- \item The \code{\link{pp_check}} method for graphical posterior predictive
-   checking.
  \item The \code{\link{posterior_predict}} and \code{\link{predictive_error}}
-   methods for predictions and predictive errors.
+   methods for predictions and predictive errors - can be used for posterior predictive checks.
  \item The \code{\link{posterior_interval}} and \code{\link{predictive_interval}}
    methods for uncertainty intervals for model parameters and predictions.
  \item \code{\link{log_lik}} method for  computing the log-likelihood 

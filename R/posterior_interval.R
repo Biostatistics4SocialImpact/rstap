@@ -27,7 +27,6 @@
 #'
 #' @templateVar stapregArg object
 #' @template args-stapreg-object
-#' @template stapreg-objects
 #' @template args-dots-ignored
 #' @template args-pars
 #' @template args-regex-pars

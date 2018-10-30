@@ -10,16 +10,15 @@
 #' were exposed to the built environment features with a hypothesized temporal scale
 #'@param u_t n x (q*2) matrix of compressed row storage array  indices for times_crs
 #'@param weight_functions a Q x 2 matrix with integers coding the appropriate weight function for each STAP
-#'@param object of class "stap_data" that contains information on all the spatial-temporal predictors in the model
+#'@param stap_data object of class "stap_data" that contains information on all the spatial-temporal predictors in the model
 #'@param max_distance the upper bound on any and all distances included in the model 
 #'@param max_time the upper bound on any and all times included in the model
 #'@param weights weights to be added to the likelihood observation for a given subject
 #'@param offset offset term to be added to the outcome for a given subject
 #'@param family distributional family - only binomial gaussian or poisson currently allowed
-#'@param prior, prior_intercept, prior_stap, prior_theta,prior_aux see \code{stap_glm} for more information
+#'@param prior,prior_intercept,prior_stap,prior_theta,prior_aux see \code{stap_glm} for more information
 #'@param group list of of group terms from \code{lme4::glmod}
-
-#'@param max_distance the upper bound of distance for which all
+#'@param ... optional arguments passed to the sampler - e.g. iter,warmup, etc.
 #'@export stap_glm
 stap_glm.fit <- function(y, z, dists_crs, u_s,
                          times_crs, u_t,

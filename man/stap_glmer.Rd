@@ -7,7 +7,7 @@
 \usage{
 stap_glmer(formula, family = gaussian, subject_data = NULL,
   distance_data = NULL, time_data = NULL, subject_ID = NULL,
-  measure_ID = NULL, max_distance = NULL, max_time = NULL, weights,
+  group_ID = NULL, max_distance = NULL, max_time = NULL, weights,
   offset, contrasts = NULL, ..., prior = normal(),
   prior_intercept = normal(), prior_stap = normal(),
   prior_theta = log_normal(location = 1L, scale = 1L),
@@ -34,11 +34,13 @@ transformations will not be passed to the final design matrix.Covariates that ha
 
 \item{subject_ID}{name of column to join on between subject_data and bef_data}
 
-\item{measure_ID}{name of column to join on between \code{subject_data} and bef_data that uniquely identifies the groups}
+\item{group_ID}{name of column to join on between \code{subject_data} and bef_data that uniquely identifies the groups}
 
 \item{max_distance}{the upper bound on any and all distances included in the model}
 
 \item{max_time}{the upper bound on any and all times included in the model}
+
+\item{weights, offset}{Same as \code{\link[stats]{glm}}.}
 
 \item{contrasts}{Same as \code{\link[stats]{glm}}, but rarely 
 specified.}
@@ -125,8 +127,6 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
 more information about the default arguments.}
 
 \item{adapt_delta}{See the \link{adapt_delta} help page for details.}
-
-\item{subset, weights, offset}{Same as \code{\link[stats]{glm}}.}
 }
 \value{
 A \link[=stapreg-objects]{stapreg} object is returned 

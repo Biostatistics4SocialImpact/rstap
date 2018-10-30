@@ -33,21 +33,27 @@
 #' @template args-dots-ignored
 #' @param draws,fun,offset,re.form,seed Passed to 
 #'   \code{\link[=posterior_predict]{posterior_predict}}.
+#' @param prob A number \eqn{p \in (0,1)}{p (0 < p < 1)} indicating the desired
+#'   probability mass to include in the intervals. The default is to report
+#'   \eqn{90}\% intervals (\code{prob=0.9}) rather than the traditionally used
+#'   \eqn{95}\% .
 #' @param newsubjdata Optionally, a data frame of the subject-specific data
 #'   in which to look for variables with which to predict.
 #'   If omitted, the original datasets are used. If \code{newsubjdata}
 #'   is provided and any variables were transformed (e.g. rescaled) in the data
 #'   used to fit the model, then these variables must also be transformed in
-#'   \code{newdata}. This only applies if variables were transformed before
+#'   \code{newsubjdata}. This only applies if variables were transformed before
 #'   passing the data to one of the modeling functions and \emph{not} if
 #'   transformations were specified inside the model formula. Also see the Note
-#'   section below for a note about using the \code{newdata} argument with with
+#'   section below for a note about using the \code{newsubjdata} argument with with
 #'   binomial models.
+#' @param subject_ID same as \code{\link{stap_glm}}
+#' @param group_ID same as \code{\link{stap_glmer}}
 #' @param newdistdata If newsubjdata is provided a data frame of the subject-distance
 #'       must also be given for models with a spatial component
 #' @param newtimedata If newsubjdata is provided, a data frame of the subject-time data
-#' @return A matrix with two columns and as many rows as are in \code{newdata}. 
-#'   If \code{newdata} is not provided then the matrix will have as many rows as
+#' @return A matrix with two columns and as many rows as are in \code{newsubjdata}. 
+#'   If \code{newsubjdata} is not provided then the matrix will have as many rows as
 #'   the data used to fit the model. For a given value of \code{prob}, \eqn{p},
 #'   the columns correspond to the lower and upper \eqn{100p}\% central interval
 #'   limits and have the names \eqn{100\alpha/2}\% and \eqn{100(1 -
@@ -66,7 +72,7 @@ predictive_interval.stapreg <-
            newtimedata = NULL,
            draws = NULL,
            subject_ID = NULL,
-           measure_ID = NULL,
+           group_ID = NULL,
            re.form = NULL,
            fun = NULL,
            seed = NULL,
@@ -79,7 +85,7 @@ predictive_interval.stapreg <-
       newdistdata = newdistdata,
       newtimedata = newtimedata,
       subject_ID = subject_ID,
-      measure_ID = measure_ID,
+      group_ID = group_ID,
       draws = draws,
       seed = seed,
       re.form = re.form,

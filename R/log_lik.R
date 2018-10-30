@@ -25,7 +25,6 @@
 #'
 #' @templateVar stapregArg object
 #' @template args-stapreg-object
-#' @template stapreg-objects
 #' @template args-dots-ignored
 #' @param newsubjdata Optionally, a data frame of the subject-specific data
 #'   in which to look for variables with which to predict.
@@ -108,7 +107,7 @@ ll_fun <- function(x) {
 # @param newdistdata same as posterior predict
 # @param newtimdata same as posterior predict
 # @param offset vector of offsets (only required if model has offset term and
-#   newdata is specified)
+#   newsubjdata is specified)
 # @param reloo_or_kfold logical. TRUE if ll_args is for reloo or kfold
 # @return a named list with elements data, draws, S (posterior sample size) and
 #   N = number of observations

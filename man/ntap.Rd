@@ -6,9 +6,6 @@
 \usage{
 ntap(object)
 }
-\arguments{
-\item{object}{A fitted model object}
-}
 \value{
 number of temporal aggregated predictors
 }

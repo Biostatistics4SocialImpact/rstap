@@ -4,10 +4,12 @@
 \alias{model.matrix.stapreg}
 \title{model.matrix method for stapreg objects}
 \usage{
-\method{model.matrix}{stapreg}(object, subject_data)
+\method{model.matrix}{stapreg}(object, ..., subject_data)
 }
 \arguments{
 \item{object, ...}{See \code{\link[stats]{model.matrix}}.}
+
+\item{subject_data}{same as \code{\link{stap_glm}}}
 }
 \description{
 model.matrix method for stapreg objects

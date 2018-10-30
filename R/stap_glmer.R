@@ -39,12 +39,12 @@
 #' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.
 #' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
 #' @param subject_ID  name of column to join on between subject_data and bef_data
-#' @param measure_ID name of column to join on between \code{subject_data} and bef_data that uniquely identifies the groups 
+#' @param group_ID  name of column to join on between \code{subject_data} and bef_data that uniquely identifies the groups 
 #'@param max_distance the upper bound on any and all distances included in the model 
 #'@param max_time the upper bound on any and all times included in the model
 #'@param family Same as for \code{\link[lme4]{glmer}} except limited to gaussian, binomial and poisson 
 #'@param prior_theta,prior_stap priors for the spatial scale and spatial effect parameters, respectively
-#'@param subset,weights,offset Same as \code{\link[stats]{glm}}.
+#'@param weights,offset Same as \code{\link[stats]{glm}}.
 #'@param contrasts Same as \code{\link[stats]{glm}}, but rarely 
 #'   specified.
 #' @param ... For \code{stap_glmer}, further arguments passed to 
@@ -76,7 +76,7 @@ stap_glmer <-
            distance_data = NULL,
            time_data = NULL,
            subject_ID = NULL,
-           measure_ID = NULL,
+           group_ID = NULL,
            max_distance = NULL,
            max_time = NULL,
            weights,
@@ -103,7 +103,7 @@ stap_glmer <-
   mc$prior <- mc$prior_intercept <- mc$prior_covariance <- mc$prior_aux <-
     mc$prior_PD <- mc$algorithm <- mc$scale <- mc$concentration <- mc$shape <-
     mc$adapt_delta <- mc$... <- mc$subject_data <- mc$distance_data <- mc$time_data <- 
-      mc$subject_ID <- mc$measure_ID <- mc$max_distance <- 
+      mc$subject_ID <- mc$group_ID <- mc$max_distance <- 
       mc$max_time <- mc$prior_stap <- mc$prior_theta <- NULL
   glmod <- eval(mc, parent.frame())
   Z <- glmod$X
@@ -133,7 +133,7 @@ stap_glmer <-
                                subject_data,
                                distance_data,
                                time_data,
-                               id_key = c(subject_ID,measure_ID),
+                               id_key = c(subject_ID,group_ID),
                                max_distance,
                                max_time)
   stapfit <- stap_glm.fit(y = y,z = Z, 

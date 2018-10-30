@@ -140,7 +140,7 @@ validate_data <- function(data, if_missing = NULL) {
 }
 
 
-#' Validate newdata argument for posterior_predict, log_lik, etc.
+#' Validate newsubjdata argument for posterior_predict, log_lik, etc.
 #'
 #' Doesn't check if the correct variables are included (that's done in pp_data),
 #' just that newdata is either NULL or a data frame with no missing values. Also
@@ -212,6 +212,7 @@ check_data_frame <- function(x,indicator){
 #' Make sure that data is a data frame.
 #'
 #' @param distance_data User's distance_data argument
+#' @param max_distance upper bound on all possible distances
 #' @return If no error is thrown, the column index
 #' for the distance data is returned. If no distance_data is supplied NULL type returned.
 validate_distancedata <- function(distance_data, max_distance ) {
@@ -564,6 +565,7 @@ validate_stapreg_object <- function(x, call. = FALSE) {
 
 #' Extract X, Y or Z from a stapreg object
 #' 
+#' @name get_y
 #' @keywords internal
 #' @export
 #' @templateVar stapregArg object
@@ -573,6 +575,7 @@ validate_stapreg_object <- function(x, call. = FALSE) {
 #'   this can be an integer \code{m} specifying the submodel.
 #' @return For \code{get_x} and \code{get_z}, a matrix. For \code{get_y}, either
 #'   a vector or a matrix, depending on how the response variable was specified.
+#'
 get_y <- function(object, ...) UseMethod("get_y")
 
 #' @rdname get_y
@@ -580,27 +583,35 @@ get_y <- function(object, ...) UseMethod("get_y")
 get_z <- function(object, ...) UseMethod("get_z")
 
 #' @rdname get_y
+#' @aliases get_y
 #' @export
 get_x <- function(object, ...) UseMethod("get_x")
 
 #' @rdname get_y
+#' @aliases get_y
 #' @export
 get_w <- function(object, ...) UseMethod("get_w")
 
 #' @rdname get_y
-#' @export
+#' @aliases get_y
+#' @export 
+get_z <- function(object, ...) UseMethod("get_z")
+
+#' @rdname get_y
 get_z.default <- function(object, ...){
     object[["z"]] %ORifNULL% model.matrix(object)
 }
-#' @export
+
 get_y.default <- function(object, ...) {
   object[["y"]] %ORifNULL% model.response(model.frame(object))
 }
+
+#' @rdname get_y
+#' @export 
 get_x.default <- function(object, ...)
     object[["x"]]
 
-
-#' @export
+#' @export 
 get_x.lmerMod <- function(object, ...) {
   object[["x"]]
 }
@@ -615,6 +626,7 @@ get_w.lmerMod <- function(object, ...) {
   Zt <- object$glmod$reTrms$Zt %ORifNULL% stop("Z not found")
   t(Zt)
 }
+
 
 # Get inverse link function
 #

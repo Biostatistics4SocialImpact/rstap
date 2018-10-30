@@ -25,8 +25,7 @@
 #' 
 #' @templateVar stapregArg object,x
 #' @template args-stapreg-object
-#' @param ... Ignored, except by the \code{update} method. See
-#'   \code{\link{update}}.
+#' @param ... Ignored
 #' 
 #' @details The methods documented on this page are similar to the methods 
 #'   defined for objects of class 'lm', 'glm', 'glmer', etc. However there are a
@@ -46,9 +45,6 @@
 #' \code{\link{print.stapreg}} for more details.
 #' }
 #' \item{\code{confint}}{
-#' For models fit using optimization, confidence intervals are returned via a 
-#' call to \code{\link[stats]{confint.default}}. If \code{algorithm} is 
-#' \code{"sampling"}, \code{"meanfield"}, or \code{"fullrank"}, the
 #' \code{confint} will throw an error because the
 #' \code{\link{posterior_interval}} function should be used to compute Bayesian 
 #' uncertainty intervals.
@@ -62,10 +58,8 @@
 #'    methods for stapreg objects for information on the fitted model.
 #'  \item The \code{\link[=plot.stapreg]{plot}} method to plot estimates and
 #'    diagnostics.
-#'  \item The \code{\link{pp_check}} method for graphical posterior predictive
-#'    checking.
 #'  \item The \code{\link{posterior_predict}} and \code{\link{predictive_error}}
-#'    methods for predictions and predictive errors.
+#'    methods for predictions and predictive errors - can be used for posterior predictive checks.
 #'  \item The \code{\link{posterior_interval}} and \code{\link{predictive_interval}}
 #'    methods for uncertainty intervals for model parameters and predictions.
 #'  \item \code{\link{log_lik}} method for  computing the log-likelihood 
@@ -86,12 +80,8 @@ coef.stapreg <- function(object, ...) {
 
 #' @rdname stapreg-methods
 #' @export
-#' @param parm For \code{confint}, an optional character vector of parameter
-#'   names.
-#' @param level For \code{confint}, a scalar between \eqn{0} and \eqn{1}
-#'   indicating the confidence level to use.
 #'
-confint.stapreg <- function(object, parm, level = 0.95, ...) {
+confint.stapreg <- function(object, ...) {
     stop("Please use posterior_interval() to obtain", 
          "Bayesian interval estimates.", 
          call. = FALSE)
@@ -111,8 +101,6 @@ nobs.stapreg <- function(object, ...) {
 #' Retrieves number of Spatial-temporal aggregated predictors 
 #' @export
 #' @keywords internal
-#' @param object A fitted model object
-#' @param ... Arguments to methods.
 #' @return number of spatial temporal aggregated predictors
 #' @export
 #' @seealso \code{\link{nstap.stapreg}} 
@@ -122,7 +110,6 @@ nstap <- function(object)
 #' Retrieves number of temporal aggregated predictors 
 #' @export
 #' @keywords internal
-#' @param object A fitted model object
 #' @return number of spatial aggregated predictors
 #' @export
 #' @seealso \code{\link{nstap.stapreg}} 
@@ -132,7 +119,6 @@ nsap <- function(object)
 #' Retrieves number of temporal aggregated predictors 
 #' @export
 #' @keywords internal
-#' @param object A fitted model object
 #' @return number of temporal aggregated predictors
 #' @export
 #' @seealso \code{\link{nstap.stapreg}} 
@@ -154,18 +140,15 @@ ntap.stapreg <- function(object)
 nsap.stapreg <- function(object)
     return(object$stap_data$Q_s)
 
-#' @export 
-#' @keywords internal
 #' @name nfix
-#' @param object a A fitted model object
-#' @param ... Arguments to methods.
+#' @export 
 #' @return number of fixed effects -  neither staps nor random effects
-#' @export
 #' @seealso \code{\link{nfix.stapreg}}
 nfix <- function(object, ...)
     UseMethod("nfix")
 
 #' @rdname stapreg-methods
+#' @aliases nfix
 #' @export
 nfix.stapreg <- function(object,...)
     return(ncol(get_z(object)))
@@ -182,8 +165,6 @@ residuals.stapreg <- function(object, ...) {
 #' 
 #' @export
 #' @keywords internal
-#' @param object A fitted model object.
-#' @param ... Arguments to methods.
 #' @return Standard errors of model parameters.
 #' @seealso \code{\link{se.stapreg}}
 #' 
@@ -222,7 +203,6 @@ fixef.stapreg <- function(object, ...) {
 
 #' @rdname stapreg-methods
 #' @export
-#' @export ngrps
 #' @importFrom lme4 ngrps
 #' 
 ngrps.stapreg <- function(object, ...) {
@@ -231,7 +211,6 @@ ngrps.stapreg <- function(object, ...) {
 
 #' @rdname stapreg-methods
 #' @export
-#' @export ranef
 #' @importFrom lme4 ranef
 #' 
 ranef.stapreg <- function(object, ...) {
@@ -356,9 +335,9 @@ model.frame.stapreg <- function(formula, fixed.only = FALSE, ...) {
 #' @keywords internal
 #' @export
 #' @param object,... See \code{\link[stats]{model.matrix}}.
+#' @param subject_data same as \code{\link{stap_glm}}
 #' 
-model.matrix.stapreg <- function(object, subject_data) {
-  if (inherits(object, "gamm4")) return(object$jam$X)
+model.matrix.stapreg <- function(object,..., subject_data) {
   if (is.mer(object)) return(object$glmod$X)
   return(model.matrix(terms(object), data = subject_data))
 }

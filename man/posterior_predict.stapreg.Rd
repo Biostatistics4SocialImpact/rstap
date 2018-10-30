@@ -7,7 +7,7 @@
 \usage{
 \method{posterior_predict}{stapreg}(object, newsubjdata = NULL,
   newdistdata = NULL, newtimedata = NULL, draws = NULL,
-  subject_ID = NULL, measure_ID = NULL, re.form = NULL, fun = NULL,
+  subject_ID = NULL, group_ID = NULL, re.form = NULL, fun = NULL,
   seed = NULL, offset = NULL, ...)
 }
 \arguments{
@@ -19,7 +19,7 @@ in which to look for variables with which to predict.
 If omitted, the original datasets are used. If \code{newsubjdata}
 is provided and any variables were transformed (e.g. rescaled) in the data
 used to fit the model, then these variables must also be transformed in
-\code{newdata}. This only applies if variables were transformed before
+\code{newsubjdata}. This only applies if variables were transformed before
 passing the data to one of the modeling functions and \emph{not} if
 transformations were specified inside the model formula. Also see the Note
 section below for a note about using the \code{newdata} argument with with
@@ -36,7 +36,7 @@ and maximum number of draws is the size of the posterior sample.}
 
 \item{subject_ID}{name of column to join on between subject_data and bef_data}
 
-\item{measure_ID}{name of column to join on between \code{subject_data} and bef_data that uniquely identifies the correlated groups (e.g. visits,schools). Currently only one group (e.g. a measurement ID) can be accounted for in a spatial temporal setting.}
+\item{group_ID}{name of column to join on between \code{subject_data} and bef_data that uniquely identifies the correlated groups (e.g. visits,schools). Currently only one group (e.g. a measurement ID) can be accounted for in a spatial temporal setting.}
 
 \item{re.form}{If \code{object} contains \code{\link[=stap_glmer]{group-level}}
 parameters, a formula indicating which group-level parameters to
@@ -58,6 +58,8 @@ object, a string naming a function, etc.}
 \item{offset}{A vector of offsets. Only required if \code{newsubjdata} is
 specified and an \code{offset} argument was specified when fitting the
 model.}
+
+\item{...}{optional arguments to pass to pp_args}
 }
 \value{
 A \code{draws} by \code{nrow(newdata)} matrix of simulations from the
@@ -90,8 +92,7 @@ For binomial models with a number of trials greater than one (i.e., not
   the model formula were \code{cbind(successes, trials - successes)} then
   both \code{trials} and \code{successes} would need to be in \code{newsubjdata},
   probably with \code{successes} set to \code{0} and \code{trials} specifying
-  the number of trials. See the Examples section below and the
-  \emph{How to Use the rstaparm Package} for examples.
+  the number of trials.
 }
 \seealso{
 \code{\link{pp_check}} for graphical posterior predictive checks.

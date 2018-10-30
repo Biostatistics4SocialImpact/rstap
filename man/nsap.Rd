@@ -6,9 +6,6 @@
 \usage{
 nsap(object)
 }
-\arguments{
-\item{object}{A fitted model object}
-}
 \value{
 number of spatial aggregated predictors
 }

@@ -14,15 +14,15 @@ stap_glm(formula, family = gaussian(), subject_data = NULL,
   prior_aux = exponential(), adapt_delta = NULL)
 
 stap_lm(formula, subject_data = NULL, distance_data = NULL,
-  time_data = NULL, subset, weights, na.action = getOption("na.action",
+  time_data = NULL, weights, na.action = getOption("na.action",
   "na.omit"), offset, contrasts = NULL, ..., prior = normal(),
   prior_intercept = normal(), prior_aux = exponential(),
   adapt_delta = NULL)
 }
 \arguments{
-\item{formula, subset}{Same as \code{\link[stats]{glm}},}
+\item{formula}{Same as for \code{link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}
 
-\item{family}{Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson}
+\item{family}{Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson families.}
 
 \item{subject_data}{a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data}
 
@@ -34,9 +34,11 @@ stap_lm(formula, subject_data = NULL, distance_data = NULL,
 
 \item{max_distance}{the inclusion distance; upper bound for all elements of dists_crs}
 
-\item{weights}{same as in \code{glm}}
+\item{max_time}{inclusion time; upper bound for all elements of times_crs}
 
 \item{offset, weights}{Same as \code{\link[stats]{glm}}.}
+
+\item{model}{logical denoting whether or not to return the fixed covariates model frame object in the fitted object}
 
 \item{y}{In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.}
 
@@ -91,6 +93,10 @@ rather than \code{prior_intercept}. Regardless of how
 intercept always correspond to a parameterization without centered
 predictors (i.e., same as in \code{glm}).}
 
+\item{prior_stap}{prior for spatial-temporal aggregated predictors. Note that prior is set on the standardized latent covariates.}
+
+\item{prior_theta}{prior for the spatial-temporal aggregated predictors' scale. Can either be a single prior or a prior nested within a list of lists.}
+
 \item{prior_aux}{The prior distribution for the "auxiliary" parameter (if
 applicable). The "auxiliary" parameter refers to a different parameter 
 depending on the \code{family}. For Gaussian models \code{prior_aux} 
@@ -117,14 +123,12 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
 
 \item{na.action, contrasts}{Same as \code{\link[stats]{glm}}, but
 rarely specified.}
-
-\item{formula}{Same as for \code{link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}
 }
 \value{
 A \link[=stapreg-objects]{stapreg} object is returned 
 for \code{stap_glm}.
 
-A \link[=stapfit-class]{stapfit} object (or a slightly modified 
+A \link[=stanfit-class]{stapfit} object (or a slightly modified 
   stapfit object) is returned if \code{stan_glm.fit} is called directly.
 }
 \description{
@@ -135,7 +139,6 @@ prior distributions for the coefficients, intercept, spatial-temporal scales, an
 The \code{stap_glm} function is similar in syntax to
 \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
-as detailed in in --need to add citation --
 }
 \references{
 Gelman, A. and Hill, J. (2007). \emph{Data Analysis Using

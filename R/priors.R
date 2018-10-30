@@ -36,11 +36,6 @@
 #'   \code{student_t}, in which case it is equivalent to \code{cauchy}.
 #'   For the \code{product_normal}   prior, the degrees of freedom 
 #'   parameter must be an integer (vector) that is  at least \eqn{2} (the default).
-#' @param what  A character string among \code{'mode'} (the default),
-#'   \code{'mean'}, \code{'median'}, or \code{'log'} indicating how the
-#'   \code{location} parameter is interpreted in the \code{LKJ} case. If
-#'   \code{'log'}, then \code{location} is interpreted as the expected
-#'   logarithm of the \eqn{R^2} under a Beta distribution. 
 #' @param autoscale A logical scalar, defaulting to \code{TRUE}. If \code{TRUE} 
 #'   then the scales of the priors on the intercept and regression coefficients 
 #'   may be additionally modified internally by \pkg{rstanarm} in the following 

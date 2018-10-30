@@ -20,19 +20,19 @@ capture_output(
     )
 
 capture_output(
-               SW(stap_glmer1 <- stap_glmer(y ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
-                          family = gaussian(link='identity'),
+               SW(stap_glmer1 <- stap_glmer(y_bern ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
+                          family = binomial(link='logit'),
                           subject_data = homog_longitudinal_subject_data,
                           distance_data = homog_longitudinal_distance_data,
                           time_data = homog_longitudinal_time_data,
-                          subject_ID = 'subj_ID',measure_ID = 'measure_ID',
+                          subject_ID = 'subj_ID',group_ID = 'measure_ID',
                           prior_intercept = normal(location = 25, scale = 4, autoscale = F),
                           prior = normal(location = 0, scale = 4, autoscale=F),
                           prior_stap = normal(location = 0, scale = 4),
                           prior_theta = list(Coffee_Shop = list(spatial = log_normal(location = 1,
-                                                                                     scale = 2),
+                                                                                     scale = 1),
                                                                 temporal = log_normal(location = 1, 
-                                                                                      scale = 2))),
+                                                                                      scale = 1))),
                           max_distance = 3, max_time = 50,
                           chains = CHAINS, refresh = -1, verbose = F, 
                           iter = ITER, cores = 1))
@@ -43,7 +43,7 @@ capture_output(
                             subject_data = homog_longitudinal_subject_data,
                             distance_data = homog_longitudinal_distance_data,
                             time_data = homog_longitudinal_time_data,
-                            subject_ID = 'subj_ID', measure_ID = "measure_ID",
+                            subject_ID = 'subj_ID', group_ID = "measure_ID",
                             prior_intercept = normal(location = 25, scale = 4, autoscale = F),
                             prior = normal(location = 0, scale = 4, autoscale = F),
                             prior_stap = normal(location = 0, scale = 4),
@@ -267,7 +267,7 @@ test_that("terms works properly", {
 # context("formula methods")
 test_that("formula works properly", {
     expect_equal(formula(stap_glm1), as.formula(y~sex + sap(Fast_Food)))
-    expect_equal(formula(stap_glmer1),as.formula(y~centered_income + sex + centered_age +  (1|subj_ID)))
+    expect_equal(formula(stap_glmer1),as.formula(y_bern ~centered_income + sex + centered_age +  (1|subj_ID)))
 })
 
 ## no update method yet

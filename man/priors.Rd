@@ -76,12 +76,6 @@ distribution. The default is \eqn{1}, implying a joint uniform prior.}
 \code{decov} prior. If \code{shape} and \code{scale} are both \eqn{1} (the
 default) then the gamma prior simplifies to the unit-exponential
 distribution.}
-
-\item{what}{A character string among \code{'mode'} (the default),
-\code{'mean'}, \code{'median'}, or \code{'log'} indicating how the
-\code{location} parameter is interpreted in the \code{LKJ} case. If
-\code{'log'}, then \code{location} is interpreted as the expected
-logarithm of the \eqn{R^2} under a Beta distribution.}
 }
 \value{
 A named list to be used internally by the \pkg{rstap} model

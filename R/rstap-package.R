@@ -18,7 +18,7 @@
 #' @import stats
 #' @import bayesplot
 #' @import rstantools
-#' @export log_lik posterior_linpred posterior_predict posterior_interval
+#' @export log_lik posterior_predict posterior_interval
 #' @export predictive_interval predictive_error prior_summary
 #' 
 #' @references 

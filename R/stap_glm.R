@@ -25,7 +25,6 @@
 #' @template return-stapreg-object
 #' @template return-stapfit-object
 #' @template see-also
-#' @template args-formula-data-subset
 #' @template args-same-as
 #' @template args-same-as-rarely
 #' @template args-dots
@@ -43,8 +42,11 @@
 #' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
 #' @param subject_ID  name of column(s) to join on between subject_data and bef_data
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
-#' @param weights same as in \code{glm}
+#' @param max_time inclusion time; upper bound for all elements of times_crs
+#' @param model  logical denoting whether or not to return the fixed covariates model frame object in the fitted object
 #' @param y In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.
+#' @param prior_stap prior for spatial-temporal aggregated predictors. Note that prior is set on the standardized latent covariates.
+#' @param prior_theta prior for the spatial-temporal aggregated predictors' scale. Can either be a single prior or a prior nested within a list of lists.
 #' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 #' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
@@ -162,7 +164,6 @@ stap_lm <-
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,
-           subset,
            weights,
            na.action = getOption("na.action", "na.omit"),
            offset,
