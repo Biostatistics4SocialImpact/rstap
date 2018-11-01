@@ -136,16 +136,18 @@ ll_args.stapreg <- function(object,
     eta <- pp_eta_dat$eta
     stanmat <- pp_eta_dat$stanmat
     x <- ppdat$x
-    form <- as.formula(formula(object))
-    y <- eval(form[[2L]], newsubjdata)
+    z <- ppdat$z
+    y <- f$linkinv(eta)
   } else {
     stanmat <- as.matrix.stapreg(object)
     z <- get_z(object)
     x <- get_x(object)
     y <- get_y(object)
     scales_ix <- grep("_scale",names(coef(object)))
-    beta <- setdiff(coef_names(object$stap_data), names(coef(object))[scales_ix] )
-    stap_exp <- t(apply(apply(x,c(2,3), function(y) y *  stanmat[,beta,drop=F]),c(1,2), sum))
+    beta <- beta_names(object$stap_data)
+    stap_exp <- matrix(NA,ncol(x),nrow(x))
+    for(subj_ix in 1:nrow(x))
+        stap_exp[subj_ix,] <- x[,subj_ix,,drop=T] * stanmat[,beta,drop = F]
     colnames(stap_exp) <- paste0("stap_exp_",1:ncol(stap_exp))
   }
   
@@ -164,7 +166,7 @@ ll_args.stapreg <- function(object,
       }
       data <- data.frame(y, trials, z, stap_exp)
     }
-    delta <- setdiff(names(coef(object)), coef_names(object$stap_data))
+    delta <- colnames(z) 
     draws$delta <- stanmat[, delta, drop = FALSE]
     if (is.gaussian(fname)) 
       draws$sigma <- stanmat[,  "sigma"]
@@ -194,8 +196,8 @@ ll_args.stapreg <- function(object,
     } else {
       w <- get_w(object)
     }
-    data <- cbind(data, as.matrix(w)[1:NROW(x),, drop = FALSE])
-    draws$beta <- cbind(draws$beta, b)
+    data <- cbind(data, as.matrix(w)[1:NROW(z),, drop = FALSE])
+    draws$delta <- cbind(draws$delta, b)
   }
   
     out <- nlist(data, draws, S = NROW(draws$delta), N = nrow(data)) 

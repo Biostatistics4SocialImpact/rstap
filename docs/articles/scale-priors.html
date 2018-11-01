@@ -64,6 +64,9 @@
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -87,7 +90,7 @@
       <h1>Scale Priors</h1>
                         <h4 class="author">Adam Peterson</h4>
             
-            <h4 class="date">2018-09-11</h4>
+            <h4 class="date">2018-10-31</h4>
       
       
       <div class="hidden name"><code>scale-priors.Rmd</code></div>
@@ -100,17 +103,7 @@
 <h1 class="hasAnchor">
 <a href="#spatial-temporal-priors-in-the-stap-model" class="anchor"></a>Spatial-Temporal Priors in the STAP model</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rstap)
-<span class="co">#&gt; Loading required package: Rcpp</span>
 <span class="kw">library</span>(dplyr)
-<span class="co">#&gt; Warning: package 'dplyr' was built under R version 3.5.1</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'dplyr'</span>
-<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     filter, lag</span>
-<span class="co">#&gt; The following objects are masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
 <span class="kw">library</span>(tidyr)
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(purrr)
@@ -122,42 +115,14 @@ E[Y] = \alpha + Z_1\delta_{sex} + X(\theta)_{FF}\beta_{FF}
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">"homog_subject_data"</span>)
 <span class="kw">data</span>(<span class="st">"homog_distance_data"</span>)
 homog_subject_data
-<span class="co">#&gt; # A tibble: 550 x 3</span>
-<span class="co">#&gt;    subj_id     y sex  </span>
-<span class="co">#&gt;      &lt;int&gt; &lt;dbl&gt; &lt;fct&gt;</span>
-<span class="co">#&gt;  1       1  20.3 M    </span>
-<span class="co">#&gt;  2       2  24.1 M    </span>
-<span class="co">#&gt;  3       3  17.2 M    </span>
-<span class="co">#&gt;  4       4  19.3 F    </span>
-<span class="co">#&gt;  5       5  21.1 F    </span>
-<span class="co">#&gt;  6       6  25.6 M    </span>
-<span class="co">#&gt;  7       7  23.3 M    </span>
-<span class="co">#&gt;  8       8  18.4 M    </span>
-<span class="co">#&gt;  9       9  17.7 F    </span>
-<span class="co">#&gt; 10      10  24.8 M    </span>
-<span class="co">#&gt; # ... with 540 more rows</span>
 homog_distance_data
-<span class="co">#&gt; # A tibble: 30,250 x 3</span>
-<span class="co">#&gt;    subj_id BEF       Distance</span>
-<span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;</span>
-<span class="co">#&gt;  1       1 Fast_Food     1.37</span>
-<span class="co">#&gt;  2       2 Fast_Food     1.82</span>
-<span class="co">#&gt;  3       3 Fast_Food     1.52</span>
-<span class="co">#&gt;  4       4 Fast_Food     1.67</span>
-<span class="co">#&gt;  5       5 Fast_Food     1.07</span>
-<span class="co">#&gt;  6       6 Fast_Food     1.22</span>
-<span class="co">#&gt;  7       7 Fast_Food     1.53</span>
-<span class="co">#&gt;  8       8 Fast_Food     1.19</span>
-<span class="co">#&gt;  9       9 Fast_Food     1.54</span>
-<span class="co">#&gt; 10      10 Fast_Food     1.15</span>
-<span class="co">#&gt; # ... with 30,240 more rows</span>
 alpha &lt;-<span class="st"> </span><span class="dv">22</span>
 delta &lt;-<span class="st"> </span><span class="op">-</span>.<span class="dv">8</span>
 sigma &lt;-<span class="st"> </span><span class="fl">2.3</span>
-thetas =<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="fl">0.01</span>, <span class="dt">to =</span> <span class="dv">10</span>, <span class="dt">by =</span><span class="fl">0.01</span>)
-betas =<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="fl">0.01</span>, <span class="dt">to =</span> <span class="dv">10</span>, <span class="dt">by =</span> <span class="fl">0.01</span>)</code></pre></div>
+thetas =<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="fl">0.01</span>, <span class="dt">to =</span> <span class="dv">10</span>, <span class="dt">by =</span><span class="fl">0.1</span>)
+betas =<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="fl">0.01</span>, <span class="dt">to =</span> <span class="dv">10</span>, <span class="dt">by =</span> <span class="fl">0.1</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Z &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(y <span class="op">~</span><span class="st"> </span>sex, <span class="dt">data =</span> homog_subject_data)
-Xs &lt;-<span class="st"> </span>homog_distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/expand">crossing</a></span>(thetas)  <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_id,thetas) <span class="op">%&gt;%</span><span class="st"> </span>
+Xs &lt;-<span class="st"> </span>homog_distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/expand.html">crossing</a></span>(thetas)  <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(subj_id,thetas) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span>(<span class="dt">exposure =</span> <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(Distance<span class="op">/</span>thetas))) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(thetas) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">split</span>(.<span class="op">$</span>thetas)
 Xs &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/purrr/topics/map">map</a></span>(Xs,<span class="cf">function</span>(x) x <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">X_tilde =</span> (exposure <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(x<span class="op">$</span>exposure))<span class="op">/</span><span class="kw">sd</span>(x<span class="op">$</span>exposure)))
@@ -168,27 +133,25 @@ llmat &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class="
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
 <span class="kw"><a href="http://www.rdocumentation.org/packages/plot3D/topics/persp3D">persp3D</a></span>(<span class="dt">x =</span> betas, <span class="dt">y =</span> thetas, <span class="dt">z =</span> llmat,<span class="dt">phi =</span> .<span class="dv">6</span>,<span class="dt">theta =</span> <span class="fl">0.5</span>,<span class="dt">xlab=</span><span class="st">"beta"</span>,<span class="dt">ylab=</span><span class="st">"theta"</span>,<span class="dt">zlab=</span><span class="st">"log-lik"</span>,<span class="dt">ticktype =</span><span class="st">'detailed'</span>)
 <span class="kw"><a href="http://www.rdocumentation.org/packages/plot3D/topics/persp3D">persp3D</a></span>(<span class="dt">x =</span> betas, <span class="dt">y =</span> thetas, <span class="dt">z =</span> llmat, <span class="dt">phi =</span> <span class="dv">3</span>, <span class="dt">theta =</span> <span class="dv">90</span>, <span class="dt">xlab=</span><span class="st">"beta"</span>,<span class="dt">ylab=</span><span class="st">"theta"</span>,<span class="dt">zlab=</span><span class="st">"log-lik"</span>,<span class="dt">ticktype =</span> <span class="st">"detailed"</span>)</code></pre></div>
-<p><img src="scale-priors_files/figure-html/view_1-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">1</span>],
            <span class="dt">thetas =</span> thetas,
            <span class="dt">ll =</span> llmat[<span class="dv">1</span>,]) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">rbind</span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">15</span>],
+                     <span class="dt">thetas =</span> thetas,
+                     <span class="dt">ll =</span> llmat[<span class="dv">15</span>,])) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">rbind</span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">50</span>],
                      <span class="dt">thetas =</span> thetas,
                      <span class="dt">ll =</span> llmat[<span class="dv">50</span>,])) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">rbind</span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">75</span>],
+                     <span class="dt">thetas =</span> thetas,
+                     <span class="dt">ll =</span> llmat[<span class="dv">75</span>,])) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">rbind</span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">100</span>],
                      <span class="dt">thetas =</span> thetas,
                      <span class="dt">ll =</span> llmat[<span class="dv">100</span>,])) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">rbind</span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">120</span>],
-                     <span class="dt">thetas =</span> thetas,
-                     <span class="dt">ll =</span> llmat[<span class="dv">120</span>,])) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">rbind</span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">150</span>],
-                     <span class="dt">thetas =</span> thetas,
-                     <span class="dt">ll =</span> llmat[<span class="dv">150</span>,])) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">beta =</span> <span class="kw">factor</span>(beta)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>thetas, <span class="dt">y=</span> ll, <span class="dt">color =</span> beta )) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_path">geom_line</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_abline">geom_vline</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">xintercept =</span> .<span class="dv">5</span>),<span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color=</span> <span class="st">'black'</span>) <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Log - likelihood for possible values of theta, beta"</span>)</code></pre></div>
-<p><img src="scale-priors_files/figure-html/cross_section1-1.png" width="700"></p>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x=</span>thetas, <span class="dt">y=</span> ll, <span class="dt">color =</span> beta )) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">xintercept =</span> .<span class="dv">5</span>),<span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color=</span> <span class="st">'black'</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Log - likelihood for possible values of theta, beta"</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas,
            <span class="dt">theta =</span> thetas[<span class="dv">1</span>],
            <span class="dt">ll =</span> llmat[,<span class="dv">1</span>]) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -202,10 +165,9 @@ llmat &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class="
                      <span class="dt">theta =</span> thetas[<span class="dv">100</span>],
                      <span class="dt">ll =</span> llmat[,<span class="dv">100</span>])) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">theta =</span> <span class="kw">factor</span>(theta)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>beta, <span class="dt">y=</span> ll, <span class="dt">color =</span> theta )) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_path">geom_line</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_abline">geom_vline</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">xintercept =</span> <span class="fl">1.2</span>),<span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color=</span> <span class="st">'black'</span>) <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Log - likelihood for possible values of beta, theta"</span>)</code></pre></div>
-<p><img src="scale-priors_files/figure-html/cross_section2-1.png" width="700"></p>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x=</span>beta, <span class="dt">y=</span> ll, <span class="dt">color =</span> theta )) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">xintercept =</span> <span class="fl">1.2</span>),<span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color=</span> <span class="st">'black'</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Log - likelihood for possible values of beta, theta"</span>)</code></pre></div>
 <p><span class="math display">\[
 p(\theta,\beta|Y,\alpha,\delta,\sigma) \propto p(y|...)p(\beta)p(\theta)\\
 \beta \sim N(0,3)\\
@@ -219,7 +181,6 @@ postmat &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
 <span class="kw"><a href="http://www.rdocumentation.org/packages/plot3D/topics/persp3D">persp3D</a></span>(<span class="dt">x =</span> betas, <span class="dt">y =</span> thetas, <span class="dt">z =</span> postmat, <span class="dt">phi =</span> .<span class="dv">6</span>,<span class="dt">theta =</span> <span class="fl">0.5</span>,<span class="dt">xlab=</span><span class="st">"beta"</span>,<span class="dt">ylab=</span><span class="st">"theta"</span>, <span class="dt">zlab=</span><span class="st">"density"</span>, <span class="dt">ticktype =</span> <span class="st">"detailed"</span>, <span class="dt">main=</span> <span class="st">"Posterior-unnormalized"</span>)
 <span class="kw"><a href="http://www.rdocumentation.org/packages/plot3D/topics/persp3D">persp3D</a></span>(<span class="dt">x =</span> betas, <span class="dt">y =</span> thetas, <span class="dt">z =</span> postmat, <span class="dt">phi =</span> <span class="dv">3</span>, <span class="dt">theta =</span> <span class="dv">90</span>, <span class="dt">xlab=</span><span class="st">"beta"</span>,<span class="dt">ylab=</span><span class="st">"theta"</span>, <span class="dt">zlab=</span><span class="st">"density"</span>, <span class="dt">ticktype =</span> <span class="st">"detailed"</span>)</code></pre></div>
-<p><img src="scale-priors_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
 <p>Looking at the <span class="math inline">\(\theta\)</span> cross section, specifically</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">beta =</span> betas[<span class="dv">1</span>],
            <span class="dt">thetas =</span> thetas,
@@ -237,10 +198,9 @@ postmat &lt;-<span class="st"> </span><span class="kw">Reduce</span>(<span class
                      <span class="dt">thetas =</span> thetas,
                      <span class="dt">post_dens =</span> postmat[<span class="dv">150</span>,])) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">beta =</span> <span class="kw">factor</span>(beta)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>thetas, <span class="dt">y=</span> post_dens, <span class="dt">color =</span> beta )) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_path">geom_line</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_abline">geom_vline</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">xintercept =</span> .<span class="dv">5</span>),<span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color=</span> <span class="st">'black'</span>) <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Posterior Density (unnormalized) for possible values of theta, beta"</span>)</code></pre></div>
-<p><img src="scale-priors_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x=</span>thetas, <span class="dt">y=</span> post_dens, <span class="dt">color =</span> beta )) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">xintercept =</span> .<span class="dv">5</span>),<span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color=</span> <span class="st">'black'</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Posterior Density (unnormalized) for possible values of theta, beta"</span>)</code></pre></div>
 </div>
   </div>
 

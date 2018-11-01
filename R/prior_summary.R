@@ -32,7 +32,14 @@
 #'   argument). To disable internal prior scale adjustments set the 
 #'   \code{autoscale} argument to \code{FALSE} when setting a prior using one of
 #'   the distributions that accepts an \code{autoscale} argument. For example,
-#'   \code{normal(0, 5, autoscale=FALSE)} instead of just \code{normal(0, 5)}.
+#'   \code{normal(0, 5, autoscale=FALSE)} instead of just \code{normal(0, 5)}. 
+#'   Note that for prior_stap all priors are set on the scaled covariates this is
+#'   done so that multiple priors placed on differing staps can be roughly comparable. 
+#' 
+#' @section Spatial - Temporal Scales: If only one prior was specified this will be returned
+#' in a section entitled "STAP scales". Otherwise no priors will be printed out.
+#' A more structured system for STAP prior printing is planned for the next release.
+#' 
 #'   
 #' @return A list of class "prior_summary.stapreg", which has its own print
 #'   method.
@@ -89,7 +96,7 @@ print.prior_summary.stapreg <- function(x, digits, ...) {
   if(!is.null(x[["prior_theta"]]))
       .print_vector_prior(
        x[["prior_theta"]],
-       txt = "Stap Scales",
+       txt = "STAP Scales",
        formatters = formatters
        )
 

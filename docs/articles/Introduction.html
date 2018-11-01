@@ -103,13 +103,12 @@
 <a href="#motivation" class="anchor"></a>Motivation</h1>
 <p>The purpose of this document is to show how to use the <code>rstap</code> package including the modeling assumptions and the kind of data it uses. We’ll begin by loading in the appropriate libraries which include <code>dplyr</code> and <code>tidyr</code> for data manipulation, <code>ggplot2</code> for plotting and <code>rstap</code> for model fitting.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-<span class="co">#&gt; Warning: package 'dplyr' was built under R version 3.5.1</span>
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(tidyr)
 <span class="kw">library</span>(rstap)</code></pre></div>
 <p>A typical data structure will involve subjects and features at different locations and/or times. For purposes of this example, we simulate 550 subjects and 55 features uniformly in a 1x2 and 3x3 grid, respectively.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1214</span>)
-num_subj &lt;-<span class="st"> </span><span class="fl">5.5E2</span>
+num_subj &lt;-<span class="st"> </span><span class="fl">9.5E2</span>
 num_bef &lt;-<span class="st"> </span><span class="dv">55</span>
 sub_df &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_subj, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="fl">2.0</span>),
                      <span class="dt">y =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_subj, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="fl">2.0</span>),
@@ -117,9 +116,8 @@ sub_df &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidy
 bef_df &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_bef, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="fl">3.0</span>),
                      <span class="dt">y =</span> <span class="kw">runif</span>(<span class="dt">n =</span> num_bef, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="fl">3.0</span>),
                      <span class="dt">class =</span> <span class="st">"BEF"</span>)
-<span class="kw">rbind</span>(sub_df,bef_df) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">color =</span> class )) <span class="op">+</span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_point">geom_point</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Independence Configuration"</span>)</code></pre></div>
-<p><img src="Introduction_files/figure-html/initialize_data-1.png" width="700"></p>
+<span class="kw">rbind</span>(sub_df,bef_df) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">color =</span> class )) <span class="op">+</span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Independence Configuration"</span>)</code></pre></div>
 <p><code>rstap</code> models data assuming the relationship between the mean and the covariates is the following:</p>
 <p><span class="math display">\[
 E[Y_i] = \alpha + Z_i \delta + X_i(\theta)\beta\\
@@ -137,208 +135,65 @@ sigma &lt;-<span class="st"> </span><span class="fl">2.3</span></code></pre></di
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]),
                        <span class="kw">as.matrix</span>(bef_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]))
 X &lt;-<span class="st"> </span><span class="kw">apply</span>(dists,<span class="dv">1</span>,<span class="cf">function</span>(x) <span class="kw">sum</span>(pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(x<span class="op">/</span>theta)))
-## center and scale the exposure effect for ease of exposition/numerical stability
-X_tilde &lt;-<span class="st"> </span>(X<span class="op">-</span><span class="kw">mean</span>(X))<span class="op">/</span><span class="kw">sd</span>(X) 
-y &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X_tilde<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)
-<span class="kw">hist</span>(y)</code></pre></div>
-<p><img src="Introduction_files/figure-html/dists_df_1-1.png" width="700"></p>
+y &lt;-<span class="st"> </span>alpha <span class="op">+</span><span class="st"> </span>Z<span class="op">*</span>delta <span class="op">+</span><span class="st"> </span>X<span class="op">*</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dt">n =</span> num_subj, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)
+<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">BMI =</span> y) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x=</span>BMI)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_density.html">geom_density</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Marginal Distribution of Outcome"</span>)</code></pre></div>
 <p>The exposure decay function and histogram of the <strong>standardized</strong> exposure is as follows</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">0</span>, <span class="dt">to =</span> <span class="kw">max</span>(dists), <span class="dt">by =</span> <span class="fl">0.01</span>)
 X_theta_one &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span>theta)
 <span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
 <span class="kw">plot</span>(d,X_theta_one,<span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exposure Decay Function"</span>, <span class="dt">xlab =</span> <span class="st">"Distance"</span>,
      <span class="dt">ylab =</span> <span class="st">"Exposure"</span>)
-<span class="kw">hist</span>(X_tilde, <span class="dt">main =</span> <span class="st">"Standardized Exposure Dist."</span>)</code></pre></div>
-<p><img src="Introduction_files/figure-html/exposure_1-1.png" width="700"></p>
+<span class="kw">hist</span>(X, <span class="dt">main =</span> <span class="st">"Exposure Dist."</span>)</code></pre></div>
 <p>We then set-up the two dataframes needed for stap to model these data. The first is a fairly typical data frame with the outcome, covariates and subject ID. This is the same kind of dataset that could be used with a function like <code>lm()</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subject_data &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj,
                            <span class="dt">y =</span> y,
                            <span class="dt">sex =</span> <span class="kw">factor</span>(Z,<span class="dt">labels=</span><span class="kw">c</span>(<span class="st">"M"</span>,<span class="st">"F"</span>)))
 subject_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>() <span class="op">%&gt;%</span><span class="st"> </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="right">subj_id</th>
-<th align="right">y</th>
-<th align="left">sex</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right">1</td>
-<td align="right">20.29179</td>
-<td align="left">M</td>
-</tr>
-<tr class="even">
-<td align="right">2</td>
-<td align="right">24.09694</td>
-<td align="left">M</td>
-</tr>
-<tr class="odd">
-<td align="right">3</td>
-<td align="right">17.18173</td>
-<td align="left">M</td>
-</tr>
-<tr class="even">
-<td align="right">4</td>
-<td align="right">19.32872</td>
-<td align="left">F</td>
-</tr>
-<tr class="odd">
-<td align="right">5</td>
-<td align="right">21.09976</td>
-<td align="left">F</td>
-</tr>
-<tr class="even">
-<td align="right">6</td>
-<td align="right">25.59412</td>
-<td align="left">M</td>
-</tr>
-</tbody>
-</table>
-<p>The distance dataframe contains the corresponding subject id to pair with each built environment feature in the chosen space. Note that the Built Environment Features are labeled as “Fast_Food” for this example - this will be important syntactically for the <code><a href="../reference/stap_glm.html">stap_glm()</a></code> function.</p>
+<p>The distance dataframe contains the corresponding subject id to pair with each built environment feature in the chosen space along with their associated distance. Note that the Built Environment Features are labeled as “Fast_Food” for this example - this will be important syntactically for the <code><a href="../reference/stap_glm.html">stap_glm()</a></code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/gather.html">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
 
 distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>() <span class="op">%&gt;%</span><span class="st"> </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="right">subj_id</th>
-<th align="left">BEF</th>
-<th align="right">Distance</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right">1</td>
-<td align="left">Fast_Food</td>
-<td align="right">1.372604</td>
-</tr>
-<tr class="even">
-<td align="right">2</td>
-<td align="left">Fast_Food</td>
-<td align="right">1.823389</td>
-</tr>
-<tr class="odd">
-<td align="right">3</td>
-<td align="left">Fast_Food</td>
-<td align="right">1.517761</td>
-</tr>
-<tr class="even">
-<td align="right">4</td>
-<td align="left">Fast_Food</td>
-<td align="right">1.666337</td>
-</tr>
-<tr class="odd">
-<td align="right">5</td>
-<td align="left">Fast_Food</td>
-<td align="right">1.068184</td>
-</tr>
-<tr class="even">
-<td align="right">6</td>
-<td align="left">Fast_Food</td>
-<td align="right">1.215359</td>
-</tr>
-</tbody>
-</table>
-<p>These data are then modeled with rstap in the following manner - note the placement of “Fast_Food” and <code>sap()</code>, designating the rows labeled as Fast_Food in the distance_data as the appropriate ones to model as <strong>Spatial</strong> Aggregated Predictor with these data.</p>
+<p>These data are then modeled with rstap in the following manner - note the placement of “Fast_Food” and <code>sap()</code>, designating the rows labeled as Fast_Food in the distance_data as the appropriate ones to model as <strong>Spatial</strong> Aggregated Predictor with these data. Note that we sample the posterior with 4 chains for 2000 iterations here. This is very conservative and fewer samples/chains could be used when first fitting a model to make sure the sampler is functioning appropriately.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(<span class="dt">formula =</span> y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food),
                 <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
-                <span class="dt">id_key =</span> <span class="st">'subj_id'</span>,
+                <span class="dt">subject_ID =</span> <span class="st">'subj_id'</span>,
                 <span class="dt">prior =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">5</span>,<span class="dt">autoscale =</span> F),
                 <span class="dt">prior_intercept =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">25</span>, <span class="dt">scale =</span> <span class="dv">5</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>, <span class="dt">cores =</span> <span class="dv">4</span>) ## include all data</code></pre></div>
+                <span class="dt">max_distance =</span> <span class="kw">max</span>(dists), 
+                <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>, <span class="dt">cores =</span> <span class="dv">4</span>) ## include all data</code></pre></div>
 <p>We’ll first look at the quick summary contained in the model’s print-out</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit
-<span class="co">#&gt; stap_glm</span>
-<span class="co">#&gt;  family:       gaussian [identity]</span>
-<span class="co">#&gt;  formula:      y ~ sex + sap(Fast_Food)</span>
-<span class="co">#&gt;  observations: 550</span>
-<span class="co">#&gt;  Intercept:  TRUE</span>
-<span class="co">#&gt;  fixed predictors:   1</span>
-<span class="co">#&gt;  spatial predictors:  1</span>
-<span class="co">#&gt;  temporal predictors:  0</span>
-<span class="co">#&gt; ------</span>
-<span class="co">#&gt;                         Median MAD_SD</span>
-<span class="co">#&gt; (Intercept)             22.3    0.1  </span>
-<span class="co">#&gt; sexF                    -0.9    0.2  </span>
-<span class="co">#&gt; Fast_Food                1.2    0.1  </span>
-<span class="co">#&gt; Fast_Food_spatial_scale  0.4    0.1  </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Auxiliary parameter(s):</span>
-<span class="co">#&gt;       Median MAD_SD</span>
-<span class="co">#&gt; sigma 2.3    0.1   </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Sample avg. posterior predictive distribution of y:</span>
-<span class="co">#&gt;          Median MAD_SD</span>
-<span class="co">#&gt; mean_PPD 22.0    0.1  </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; ------</span>
-<span class="co">#&gt; * For help interpreting the printed output see ?print.stapreg</span>
-<span class="co">#&gt; * For info on the priors used see ?prior_summary.stapreg</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit</code></pre></div>
 <p>Further model details, including diagnostics concerning convergence properties can be found by using the <code>summary</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(fit)
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model Info:</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  function:     stap_glm</span>
-<span class="co">#&gt;  family:       gaussian [identity]</span>
-<span class="co">#&gt;  formula:      y ~ sex + sap(Fast_Food)</span>
-<span class="co">#&gt;  priors:       see help('prior_summary')</span>
-<span class="co">#&gt;  sample:       4000 (posterior sample size)</span>
-<span class="co">#&gt;  observations: 550</span>
-<span class="co">#&gt;  Spatial Predictors:   1</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Estimates:</span>
-<span class="co">#&gt;                           mean    sd      2.5%    25%     50%     75%  </span>
-<span class="co">#&gt; (Intercept)                22.3     0.1    22.1    22.3    22.3    22.4</span>
-<span class="co">#&gt; sexF                       -0.9     0.2    -1.3    -1.0    -0.9    -0.8</span>
-<span class="co">#&gt; Fast_Food                   1.2     0.1     1.0     1.1     1.2     1.2</span>
-<span class="co">#&gt; Fast_Food_spatial_scale     0.4     0.1     0.3     0.4     0.4     0.4</span>
-<span class="co">#&gt; sigma                       2.3     0.1     2.2     2.2     2.3     2.3</span>
-<span class="co">#&gt; mean_PPD                   22.0     0.1    21.7    21.9    22.0    22.1</span>
-<span class="co">#&gt; log-posterior           -1246.1     1.6 -1250.1 -1247.0 -1245.8 -1244.9</span>
-<span class="co">#&gt;                           97.5%</span>
-<span class="co">#&gt; (Intercept)                22.6</span>
-<span class="co">#&gt; sexF                       -0.5</span>
-<span class="co">#&gt; Fast_Food                   1.4</span>
-<span class="co">#&gt; Fast_Food_spatial_scale     0.5</span>
-<span class="co">#&gt; sigma                       2.4</span>
-<span class="co">#&gt; mean_PPD                   22.2</span>
-<span class="co">#&gt; log-posterior           -1244.0</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Diagnostics:</span>
-<span class="co">#&gt;                         mcse Rhat n_eff</span>
-<span class="co">#&gt; (Intercept)             0.0  1.0  4000 </span>
-<span class="co">#&gt; sexF                    0.0  1.0  4000 </span>
-<span class="co">#&gt; Fast_Food               0.0  1.0  4000 </span>
-<span class="co">#&gt; Fast_Food_spatial_scale 0.0  1.0  4000 </span>
-<span class="co">#&gt; sigma                   0.0  1.0  4000 </span>
-<span class="co">#&gt; mean_PPD                0.0  1.0  4000 </span>
-<span class="co">#&gt; log-posterior           0.0  1.0  1844 </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).</span></code></pre></div>
-<p>Checking our estimates, the model captures the true values very well. <img src="Introduction_files/figure-html/results_1-1.png" width="700"></p>
-<p>We’ll take this as sufficient evidence (for this vignette) that the model works. Typical model evaluation can be found in a different vignette (to be added later). Let’s now examine the case when we mis-specify the inclusion distance or superflous data is included.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(fit, <span class="dt">waic=</span>T)</code></pre></div>
+<p>Checking our estimates, the model captures the true values very well.</p>
+<p>One typical way to check for model goodness-of-fit is via posterior predictive checks. These are available here via the <code>posterior_predict</code> function and the <code>ppc_dens_overlay</code> function from the <code>bayesplot</code> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pps &lt;-<span class="st"> </span><span class="kw"><a href="../reference/posterior_predict.stapreg.html">posterior_predict</a></span>(fit,<span class="dt">draws =</span> <span class="dv">50</span>,<span class="dt">seed =</span> <span class="dv">34234</span>)
+bayesplot<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/bayesplot/topics/PPC-distributions">ppc_dens_overlay</a></span>(<span class="dt">y =</span> subject_data<span class="op">$</span>y,
+                            <span class="dt">yrep =</span> pps)</code></pre></div>
+<p>We’ll take this as sufficient evidence (for this vignette) that the model works. Further model evaluation can be found in a different vignette, to be added later. Let’s now examine the case when we mis-specify the inclusion distance or superflous data is included.</p>
 <div id="mis-specified-inclusion-distance" class="section level2">
 <h2 class="hasAnchor">
 <a href="#mis-specified-inclusion-distance" class="anchor"></a>Mis-Specified Inclusion Distance</h2>
-<p>While there are tools, such as the <a href="https://github.com/Biostatistics4SocialImpact/dlm">dlm</a> package that can provide an investigator with a sense of what appropriate inclusiong distance to set, it is still worth considering what may occur if the inclusion distance is mis-specified. The following section considers this in two cases of data exclusion: non-informative, and informative.</p>
+<p>While there are tools, such as the <a href="https://github.com/Biostatistics4SocialImpact/dlm">dlm</a> package, that can provide an investigator with a sense of what appropriate inclusiong distance to set, it is still worth considering what may occur if the inclusion distance is mis-specified. The following section considers this in two cases of data exclusion: non-informative, and informative.</p>
 <div id="non-informative-data-excluded" class="section level3">
 <h3 class="hasAnchor">
 <a href="#non-informative-data-excluded" class="anchor"></a>Non-Informative data excluded</h3>
 <p>Note that the histogram of distances include many over 1 unit - which from the above graph we know only add “negligible” information.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(dists)</code></pre></div>
-<p><img src="Introduction_files/figure-html/dists_hist-1.png" width="700"></p>
 <p>Keeping this in mind - let’s see what happens to our estimates when we set the exclusion distance to be 1.25 miles.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_<span class="dv">125</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food), <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
-                <span class="dt">id_key =</span> <span class="st">'subj_id'</span>,
+                <span class="dt">subject_ID =</span> <span class="st">'subj_id'</span>,
                 <span class="dt">prior =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>,<span class="dt">autoscale =</span> F),
                 <span class="dt">prior_intercept =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">25</span>, <span class="dt">scale =</span> <span class="dv">5</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
@@ -346,9 +201,8 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
                 <span class="dt">max_distance =</span> <span class="fl">1.25</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>, <span class="dt">cores =</span> <span class="dv">4</span>)</code></pre></div>
 <p>We excluded about half of the total data (not exactly even across individuals)</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(dists<span class="op">&lt;=</span><span class="fl">1.25</span>)<span class="op">/</span><span class="kw">sum</span>(dists<span class="op">&gt;=</span><span class="dv">0</span>) 
-<span class="co">#&gt; [1] 0.4793719</span></code></pre></div>
-<p>and yet the estimates are still very good <img src="Introduction_files/figure-html/results_2-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(dists<span class="op">&lt;=</span><span class="fl">1.25</span>)<span class="op">/</span><span class="kw">sum</span>(dists<span class="op">&gt;=</span><span class="dv">0</span>) </code></pre></div>
+<p>and yet the estimates are still very good</p>
 </div>
 </div>
 <div id="informative-data-excluded" class="section level2">
@@ -358,38 +212,14 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_<span class="dv">25</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food), <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
-                <span class="dt">id_key =</span> <span class="st">'subj_id'</span>,
+                <span class="dt">subject_ID =</span> <span class="st">'subj_id'</span>,
                 <span class="dt">prior =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>,<span class="dt">autoscale =</span> F),
                 <span class="dt">prior_intercept =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">25</span>, <span class="dt">scale =</span> <span class="dv">5</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
-                <span class="dt">max_distance =</span> .<span class="dv">25</span>, <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="fl">6E2</span>) 
-<span class="co">#&gt; </span>
-<span class="co">#&gt; SAMPLING FOR MODEL 'stap_continuous' NOW (CHAIN 1).</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Gradient evaluation took 0.000427 seconds</span>
-<span class="co">#&gt; 1000 transitions using 10 leapfrog steps per transition would take 4.27 seconds.</span>
-<span class="co">#&gt; Adjust your expectations accordingly!</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Iteration:   1 / 600 [  0%]  (Warmup)</span>
-<span class="co">#&gt; Iteration:  60 / 600 [ 10%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 120 / 600 [ 20%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 180 / 600 [ 30%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 240 / 600 [ 40%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 300 / 600 [ 50%]  (Warmup)</span>
-<span class="co">#&gt; Iteration: 301 / 600 [ 50%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 360 / 600 [ 60%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 420 / 600 [ 70%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 480 / 600 [ 80%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 540 / 600 [ 90%]  (Sampling)</span>
-<span class="co">#&gt; Iteration: 600 / 600 [100%]  (Sampling)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  Elapsed Time: 2.13039 seconds (Warm-up)</span>
-<span class="co">#&gt;                1.05912 seconds (Sampling)</span>
-<span class="co">#&gt;                3.18952 seconds (Total)</span></code></pre></div>
-<p>We can now see that our spatial scale and the corresponding effect are biased <img src="Introduction_files/figure-html/results_3-1.png" width="700"></p>
+                <span class="dt">max_distance =</span> .<span class="dv">25</span>, <span class="dt">chains =</span> <span class="dv">1</span>, <span class="dt">iter =</span> <span class="fl">6E2</span>) </code></pre></div>
+<p>We can now see that our spatial scale and the corresponding effect are biased</p>
 <p>The shift in estimate, in addition to increased noise, is to be expected since we’re increasingly missing informative data for our spatial parameter.</p>
 </div>
 <div id="extreme-missing-data" class="section level2">
@@ -400,11 +230,9 @@ distance_data <span class="op">%&gt;%</span><span class="st"> </span><span class
 X_theta_one &lt;-<span class="st"> </span>pracma<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/pracma/topics/erfz">erfc</a></span>(d<span class="op">/</span>theta_<span class="dv">2</span>)
 <span class="kw">plot</span>(d,X_theta_one,<span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exposure Decay Function"</span>, <span class="dt">xlab =</span> <span class="st">"Distance"</span>,
      <span class="dt">ylab =</span> <span class="st">"Exposure"</span>,<span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
-<p><img src="Introduction_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <p>Fitting the model on a reduced domain of distances from the terminating distance,results in an highly inflated estimate of the spatial scale, as the posterior will attempt to approximate the second graph shown below - an exposure relationship that is approaching uniform on the domain of distances “observed”.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(d,X_theta_one,<span class="dt">type=</span><span class="st">'l'</span>,<span class="dt">main =</span> <span class="st">"Exposure Decay Function - reduced domain"</span>, <span class="dt">xlab =</span> <span class="st">"Distance"</span>,
      <span class="dt">ylab =</span> <span class="st">"Exposure"</span>,<span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">0</span>,.<span class="dv">5</span>))</code></pre></div>
-<p><img src="Introduction_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <p>Simulating a dataset under this model and fitting an rstap model to it with the restricted domain…</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]),
                        <span class="kw">as.matrix</span>(bef_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]))
@@ -420,32 +248,27 @@ subject_data &lt;-<span class="st"> </span><span class="kw"><a href="http://dply
 fit_unif &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_glm.html">stap_glm</a></span>(y <span class="op">~</span><span class="st"> </span>sex <span class="op">+</span><span class="st"> </span><span class="kw">sap</span>(Fast_Food), <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
-                <span class="dt">id_key =</span> <span class="st">'subj_id'</span>,
+                <span class="dt">subject_ID =</span> <span class="st">'subj_id'</span>,
                 <span class="dt">prior =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>,<span class="dt">autoscale =</span> F),
                 <span class="dt">prior_intercept =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">25</span>, <span class="dt">scale =</span> <span class="dv">5</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_theta =</span> <span class="kw"><a href="../reference/priors.html">log_normal</a></span>(<span class="dt">location =</span> <span class="dv">1</span>, <span class="dt">scale =</span> <span class="dv">1</span>), 
                 <span class="dt">prior_aux =</span> <span class="kw"><a href="../reference/priors.html">cauchy</a></span>(<span class="dt">location =</span> <span class="dv">0</span>,<span class="dt">scale =</span> <span class="dv">5</span>),
                 <span class="dt">max_distance =</span> .<span class="dv">25</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">iter =</span> <span class="fl">2E3</span>,<span class="dt">cores =</span> <span class="dv">4</span>) </code></pre></div>
-<p>We can see a much wider estimate of the scale parameter, as well as the corresponding effect. <img src="Introduction_files/figure-html/unif_scale_estimates-1.png" width="700"></p>
+<p>We can see a much wider estimate of the scale parameter, as well as the corresponding effect.</p>
 <p>Here is a plot of the estimate on the full domain of the data - we can see that the exposure function approximation becomes less accurate on the set of distances not included in the model.</p>
-<p><img src="Introduction_files/figure-html/unif_scale_full_domain-1.png" width="700"></p>
 <p>As can be seen below, the approximation is quite good on the reduced domain, but the reduced number of distances results in a wider uncertainty interval, and the constrained domain results in an inflated estimate.</p>
-<pre><code>#&gt; Warning: Removed 209 rows containing missing values (geom_path).
-
-#&gt; Warning: Removed 209 rows containing missing values (geom_path).</code></pre>
-<p><img src="Introduction_files/figure-html/unif_scale_red_domain-1.png" width="700"></p>
-<div id="inclusion-of-superflous-data" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inclusion-of-superflous-data" class="anchor"></a>Inclusion of superflous data</h3>
+</div>
+<div id="inclusion-of-superflous-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#inclusion-of-superflous-data" class="anchor"></a>Inclusion of superflous data</h2>
 <p>If additional fast food restaurants were included, beyond that which were truly “needed”“, what would happen to our model estimates? Is this equivalent to the non-informative data exclusion?</p>
-<p><img src="Introduction_files/figure-html/extra_befs-1.png" width="700"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dists &lt;-<span class="st"> </span>fields<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/fields/topics/rdist">rdist</a></span>(<span class="kw">as.matrix</span>(sub_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]),
                        <span class="kw">as.matrix</span>(<span class="kw">rbind</span>(bef_df[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],extra_befs[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])))
 
 distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span>num_subj) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span>tidyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span>tidyr<span class="op">::</span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/gather.html">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>),<span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
 
 
@@ -453,7 +276,7 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
                 <span class="dt">subject_data =</span> subject_data,
                 <span class="dt">distance_data =</span> distance_data,
                 <span class="dt">family =</span> <span class="kw">gaussian</span>(<span class="dt">link =</span> <span class="st">'identity'</span>),
-                <span class="dt">id_key =</span> <span class="st">'subj_id'</span>,
+                <span class="dt">subject_ID =</span> <span class="st">'subj_id'</span>,
                 <span class="dt">prior =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">5</span>,<span class="dt">autoscale =</span> F),
                 <span class="dt">prior_intercept =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">25</span>, <span class="dt">scale =</span> <span class="dv">5</span>, <span class="dt">autoscale =</span> F),
                 <span class="dt">prior_stap =</span> <span class="kw"><a href="../reference/priors.html">normal</a></span>(<span class="dt">location =</span> <span class="dv">0</span>, <span class="dt">scale =</span> <span class="dv">3</span>, <span class="dt">autoscale =</span> F),
@@ -471,17 +294,15 @@ fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/stap_gl
            <span class="dt">is_alpha =</span> (parameter<span class="op">==</span><span class="st">"alpha"</span>) )
 
 edf <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">rbind</span>(.,fd_df) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>() <span class="op">+</span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_linerange">geom_pointrange</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x =</span> parameter, <span class="dt">ymin=</span>lower,<span class="dt">y =</span> mid, <span class="dt">ymax=</span>upper, <span class="dt">color =</span> model),
-                    <span class="dt">position =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/position_dodge">position_dodge</a></span>(<span class="dt">width =</span> .<span class="dv">2</span>)) <span class="op">+</span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_abline">geom_hline</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">yintercept =</span> Truth),<span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/coord_flip">coord_flip</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/facet_wrap">facet_wrap</a></span>(<span class="op">~</span>is_alpha,<span class="dt">scales =</span> <span class="st">"free"</span>) <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/theme">theme</a></span>( <span class="dt">strip.background =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/element">element_blank</a></span>(),
-           <span class="dt">strip.text.x =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/element">element_blank</a></span>()) <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">xlab</a></span>(<span class="st">""</span>) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ylab</a></span>(<span class="st">"Estimate"</span>)</code></pre></div>
-<p><img src="Introduction_files/figure-html/results_4-1.png" width="700"></p>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>() <span class="op">+</span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_linerange.html">geom_pointrange</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x =</span> parameter, <span class="dt">ymin=</span>lower,<span class="dt">y =</span> mid, <span class="dt">ymax=</span>upper, <span class="dt">color =</span> model),
+                    <span class="dt">position =</span> <span class="kw"><a href="ggplot2.tidyverse.org/reference/position_dodge.html">position_dodge</a></span>(<span class="dt">width =</span> .<span class="dv">2</span>)) <span class="op">+</span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">yintercept =</span> Truth),<span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/coord_flip.html">coord_flip</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span>(<span class="op">~</span>is_alpha,<span class="dt">scales =</span> <span class="st">"free"</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/theme.html">theme</a></span>( <span class="dt">strip.background =</span> <span class="kw"><a href="ggplot2.tidyverse.org/reference/element.html">element_blank</a></span>(),
+           <span class="dt">strip.text.x =</span> <span class="kw"><a href="ggplot2.tidyverse.org/reference/element.html">element_blank</a></span>()) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">""</span>) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Estimate"</span>)</code></pre></div>
 <p>Our model is still able to recover the estimates correctly - about as well as it did in the typical model setting! This is because the additional parameters only contribute an increasingly small amount of information as a function of distance, reasonable <em>a priori</em> choices of the <span class="math inline">\(\theta\)</span> spatial scale.</p>
-</div>
 </div>
 <div id="caveats" class="section level2">
 <h2 class="hasAnchor">
@@ -507,6 +328,7 @@ edf <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">rbin
 <li><a href="#mis-specified-inclusion-distance">Mis-Specified Inclusion Distance</a></li>
       <li><a href="#informative-data-excluded">Informative data excluded</a></li>
       <li><a href="#extreme-missing-data">Extreme Missing data</a></li>
+      <li><a href="#inclusion-of-superflous-data">Inclusion of superflous data</a></li>
       <li><a href="#caveats">Caveats</a></li>
       </ul>
 </li>

@@ -97,6 +97,9 @@
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -134,11 +137,11 @@
 
     <pre class="usage"><span class='co'># S3 method for stapreg</span>
 <span class='fu'>summary</span>(<span class='no'>object</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>probs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>, <span class='kw'>digits</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+  <span class='kw'>probs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>waic</span> <span class='kw'>=</span> <span class='no'>F</span>, <span class='no'>...</span>, <span class='kw'>digits</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='co'># S3 method for summary.stapreg</span>
-<span class='fu'>print</span>(<span class='no'>x</span>, <span class='kw'>digits</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='fl'>1</span>, <span class='fu'>attr</span>(<span class='no'>x</span>, <span class='st'>"print.digits"</span>)),
-  <span class='no'>...</span>)
+<span class='fu'>print</span>(<span class='no'>x</span>, <span class='kw'>digits</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='fl'>1</span>, <span class='fu'>attr</span>(<span class='no'>x</span>,
+  <span class='st'>"print.digits"</span>)), <span class='no'>...</span>)
 
 <span class='co'># S3 method for summary.stapreg</span>
 <span class='fu'>as.data.frame</span>(<span class='no'>x</span>, <span class='no'>...</span>)</pre>
@@ -149,7 +152,7 @@
     <tr>
       <th>object</th>
       <td><p>A fitted model object returned by one of the 
-<span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
+<span class="pkg">rstap</span> modeling functions. See <code><a href='stapreg-objects.html'>stapreg-objects</a></code>.</p></td>
     </tr>
     <tr>
       <th>pars</th>
@@ -190,6 +193,10 @@ using optimization.</p></td>
       <td><p>For models fit using MCMC, 
 an optional numeric vector of probabilities passed to 
 <code><a href='http://www.rdocumentation.org/packages/stats/topics/quantile'>quantile</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>waic</th>
+      <td><p>logical to determine whether waic should be calculated and printed with the summary object</p></td>
     </tr>
     <tr>
       <th>...</th>

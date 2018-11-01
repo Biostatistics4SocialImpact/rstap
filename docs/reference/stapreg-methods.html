@@ -99,6 +99,9 @@ those pages are provided in the See Also section, below." />
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -130,7 +133,7 @@ those pages are provided in the See Also section, below." />
     <div class="ref-description">
     
     <p>The methods documented on this page are actually some of the least important 
-methods defined for stapreg objects. The most 
+methods defined for <a href='stapreg-objects.html'>stapreg</a> objects. The most 
 important methods are documented separately, each with its own page. Links to
 those pages are provided in the <strong>See Also</strong> section, below.</p>
     
@@ -140,7 +143,7 @@ those pages are provided in the <strong>See Also</strong> section, below.</p>
 <span class='fu'>coef</span>(<span class='no'>object</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for stapreg</span>
-<span class='fu'>confint</span>(<span class='no'>object</span>, <span class='no'>parm</span>, <span class='kw'>level</span> <span class='kw'>=</span> <span class='fl'>0.95</span>, <span class='no'>...</span>)
+<span class='fu'>confint</span>(<span class='no'>object</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for stapreg</span>
 <span class='fu'>fitted</span>(<span class='no'>object</span>, <span class='no'>...</span>)
@@ -190,22 +193,11 @@ those pages are provided in the <strong>See Also</strong> section, below.</p>
     <tr>
       <th>object, x</th>
       <td><p>A fitted model object returned by one of the 
-<span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
+<span class="pkg">rstap</span> modeling functions. See <code><a href='stapreg-objects.html'>stapreg-objects</a></code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Ignored, except by the <code>update</code> method. See
-<code>update</code>.</p></td>
-    </tr>
-    <tr>
-      <th>parm</th>
-      <td><p>For <code>confint</code>, an optional character vector of parameter
-names.</p></td>
-    </tr>
-    <tr>
-      <th>level</th>
-      <td><p>For <code>confint</code>, a scalar between \(0\) and \(1\)
-indicating the confidence level to use.</p></td>
+      <td><p>Ignored</p></td>
     </tr>
     <tr>
       <th>correlation</th>
@@ -233,10 +225,7 @@ in <code><a href='print.stapreg.html'>print.stapreg</a></code> for more details.
 <dt><code>se</code></dt><dd><p>The <code>se</code> function returns standard errors based on 
 <code>mad</code>. See the <em>Uncertainty estimates</em> section in
 <code><a href='print.stapreg.html'>print.stapreg</a></code> for more details.</p></dd>
-<dt><code>confint</code></dt><dd><p>For models fit using optimization, confidence intervals are returned via a 
-call to <code><a href='http://www.rdocumentation.org/packages/stats/topics/confint'>confint.default</a></code>. If <code>algorithm</code> is 
-<code>"sampling"</code>, <code>"meanfield"</code>, or <code>"fullrank"</code>, the
-<code>confint</code> will throw an error because the
+<dt><code>confint</code></dt><dd><p><code>confint</code> will throw an error because the
 <code><a href='posterior_interval.stapreg.html'>posterior_interval</a></code> function should be used to compute Bayesian 
 uncertainty intervals.</p></dd>
 </dl>
@@ -247,19 +236,14 @@ uncertainty intervals.</p></dd>
 <li><p>The <code><a href='print.stapreg.html'>print</a></code>,
    <code><a href='summary.stapreg.html'>summary</a></code>, and <code><a href='prior_summary.stapreg.html'>prior_summary</a></code> 
    methods for stapreg objects for information on the fitted model.</p></li>
-<li><p><code>launch_shinystan</code> to use the ShinyStan GUI to explore a
-   fitted <span class="pkg">rstap</span> model.</p></li>
 <li><p>The <code><a href='plot.stapreg.html'>plot</a></code> method to plot estimates and
    diagnostics.</p></li>
-<li><p>The <code>pp_check</code> method for graphical posterior predictive
-   checking.</p></li>
-<li><p>The <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code> and <code><a href='predictive_error.stapreg.html'>predictive_error</a></code>
-   methods for predictions and predictive errors.</p></li>
-<li><p>The <code><a href='posterior_interval.stapreg.html'>posterior_interval</a></code> and <code>predictive_interval</code>
+<li><p>The <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code> and <code><a href='predictive_error.html'>predictive_error</a></code>
+   methods for predictions and predictive errors - can be used for posterior predictive checks.</p></li>
+<li><p>The <code><a href='posterior_interval.stapreg.html'>posterior_interval</a></code> and <code><a href='predictive_interval.stapreg.html'>predictive_interval</a></code>
    methods for uncertainty intervals for model parameters and predictions.</p></li>
-<li><p>The <code><a href='loo.stapreg.html'>loo</a></code>, <code><a href='loo.stapreg.html'>kfold</a></code>, and
- <code><a href='log_lik.stapreg.html'>log_lik</a></code> methods for leave-one-out or K-fold cross-validation, 
-   model comparison, and computing the log-likelihood of (possibly new) data.</p></li>
+<li><p><code><a href='log_lik.stapreg.html'>log_lik</a></code> method for  computing the log-likelihood 
+  of (possibly new) data.</p></li>
 <li><p>The <code><a href='as.matrix.stapreg.html'>as.matrix</a></code>, <code>as.data.frame</code>, 
    and <code>as.array</code> methods to access posterior draws.</p></li>
 </ul></div>

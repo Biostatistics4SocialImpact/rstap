@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>formula method for stapreg objects — formula.stapreg • rstap</title>
+<title>Fitted model objects — stapreg-objects • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,12 @@
 
 
 
-<meta property="og:title" content="formula method for stapreg objects — formula.stapreg" />
+<meta property="og:title" content="Fitted model objects — stapreg-objects" />
 
-<meta property="og:description" content="formula method for stapreg objects" />
+<meta property="og:description" content="The rstap model-fitting functions return an object of class 
+'stapreg', which is a list containing at a minimum the components listed 
+below. Each stapreg object will also have additional classes (e.g. 'glm')
+" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -122,41 +125,61 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>formula method for stapreg objects</h1>
+    <h1>Fitted model objects</h1>
     
-    <div class="hidden name"><code>formula.stapreg.Rd</code></div>
+    <div class="hidden name"><code>stapreg-objects.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>formula method for stapreg objects</p>
+    <p>The <span class="pkg">rstap</span> model-fitting functions return an object of class 
+<code>'stapreg'</code>, which is a list containing at a minimum the components listed 
+below. Each <code>stapreg</code> object will also have additional classes (e.g. 'glm')
+<br /></p>
     
     </div>
 
-    <pre class="usage"><span class='co'># S3 method for stapreg</span>
-<span class='fu'>formula</span>(<span class='no'>x</span>, <span class='no'>...</span>, <span class='kw'>m</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+        
+    <h2 class="hasAnchor" id="elements-for-stapreg-objects"><a class="anchor" href="#elements-for-stapreg-objects"></a>Elements for <code>stapreg</code> objects</h2>
+
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>x</th>
-      <td><p>A stapreg object.</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>Can contain <code>fixed.only</code> and <code>random.only</code> arguments 
-that both default to <code>FALSE</code>.</p></td>
-    </tr>
-    </table>
+    <dl class='dl-horizontal'>
+  <dt><code>coefficients</code></dt><dd><p>Point estimates, as described in <code><a href='print.stapreg.html'>print.stapreg</a></code>.</p></dd>
+  <dt><code>ses</code></dt><dd><p>Standard errors based on <code><a href='http://www.rdocumentation.org/packages/stats/topics/mad'>mad</a></code>, as described in
+  <code><a href='print.stapreg.html'>print.stapreg</a></code>.</p></dd>
+  <dt><code>residuals</code></dt><dd><p>Residuals of type <code>'response'</code>.</p></dd>
+  <dt><code>fitted.values</code></dt><dd><p>Fitted mean values. For GLMs the linear predictors are transformed by the
+  inverse link function.</p></dd>
+  <dt><code>linear.predictors</code></dt><dd><p>Linear fit on the link scale. For linear models this is the same as
+  <code>fitted.values</code>.</p></dd>
+  <dt><code>covmat</code></dt><dd><p>Variance-covariance matrix for the coefficients based on draws from the
+  posterior distribution.</p></dd>
+  <dt><code>model,x,y,z</code></dt><dd><p>If requested, the latent samples,  model frame, model matrix and response variable used, 
+  respectively.</p></dd>
+  <dt><code>family</code></dt><dd><p>The <code><a href='http://www.rdocumentation.org/packages/stats/topics/family'>family</a></code> object used.</p></dd>
+  <dt><code>call</code></dt><dd><p>The matched call.</p></dd>
+  <dt><code>formula</code></dt><dd><p>The model <code><a href='http://www.rdocumentation.org/packages/stats/topics/formula'>formula</a></code>.</p></dd>
+  <dt><code>data,offset,weights</code></dt><dd><p>The <code>data</code>, <code>offset</code>, and <code>weights</code> arguments.</p></dd>
+  <dt><code>prior.info</code></dt><dd><p>A list with information about the prior distributions used.</p></dd>
+  <dt><code>stapfit,stan_summary</code></dt><dd><p>The object of <code><a href='http://www.rdocumentation.org/packages/rstan/topics/stanfit-class'>stanfit-class</a></code> returned by RStan and a
+  matrix of various summary statistics from the stanfit object.</p></dd>
+  <dt><code>rstan_version</code></dt><dd><p>The version of the <span class="pkg">rstan</span> package that was used to fit the model.</p></dd>
+</dl>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='stapreg-methods.html'>stapreg-methods</a></code></p></div>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#elements-for-stapreg-objects">Elements for <code>stapreg</code> objects</a></li>
+
+      <li><a href="#see-also">See also</a></li>
+          </ul>
 
   </div>
 </div>

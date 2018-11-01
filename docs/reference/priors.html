@@ -38,7 +38,7 @@ The default priors used in the various rstap modeling functions are
 intended to be weakly informative in that they provide moderate
 regularlization and help stabilize computation. For many applications the
 defaults will perform well, but prudent use of more informative priors is
-encouraged. Many of these are informed by the priors in rstanarm." />
+encouraged. All of the priors here are informed by the priors in rstanarm, though it should be noted that the heirarchical shape priors are not included." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -102,6 +102,9 @@ encouraged. Many of these are informed by the priors in rstanarm." />
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -138,7 +141,7 @@ The default priors used in the various <span class="pkg">rstap</span> modeling f
 intended to be <em>weakly informative</em> in that they provide moderate
 regularlization and help stabilize computation. For many applications the
 defaults will perform well, but prudent use of more informative priors is
-encouraged. Many of these are informed by the priors in <span class="pkg">rstanarm</span>.</p>
+encouraged. All of the priors here are informed by the priors in <span class="pkg">rstanarm</span>, though it should be noted that the heirarchical shape priors are not included.</p>
     
     </div>
 
@@ -147,10 +150,6 @@ encouraged. Many of these are informed by the priors in <span class="pkg">rstana
 <span class='fu'>student_t</span>(<span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 
 <span class='fu'>cauchy</span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-
-<span class='fu'>hs</span>(<span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>global_df</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>global_scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
-
-<span class='fu'>hs_plus</span>(<span class='kw'>df1</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>df2</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>global_df</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>global_scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
 <span class='fu'>laplace</span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 
@@ -162,13 +161,9 @@ encouraged. Many of these are informed by the priors in <span class="pkg">rstana
 
 <span class='fu'>log_normal</span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
-<span class='fu'>beta_prior</span>(<span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>beta</span> <span class='kw'>=</span> <span class='fl'>1</span>)
-
 <span class='fu'>decov</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>concentration</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
-<span class='fu'>lkj</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-
-<span class='fu'>R2</span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"mode"</span>, <span class='st'>"mean"</span>, <span class='st'>"median"</span>, <span class='st'>"log"</span>))</pre>
+<span class='fu'>lkj</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -178,8 +173,7 @@ encouraged. Many of these are informed by the priors in <span class="pkg">rstana
       <td><p>Prior location. In most cases, this is the prior mean, but
 for <code>cauchy</code> (which is equivalent to <code>student_t</code> with
 <code>df=1</code>), the mean does not exist and <code>location</code> is the prior
-median. The default value is \(0\), except for <code>R2</code> which has no
-default value for <code>location</code>.</p></td>
+median. The default value is \(0\).</p></td>
     </tr>
     <tr>
       <th>scale</th>
@@ -202,19 +196,11 @@ priors and divide by the range of <code>x</code>; for a predictor <code>x</code>
 more than two unique values, we divide the prior scale(s) by <code>sd(x)</code>.</p></td>
     </tr>
     <tr>
-      <th>df, df1, df2</th>
+      <th>df</th>
       <td><p>Prior degrees of freedom. The default is \(1\) for 
-<code>student_t</code>, in which case it is equivalent to <code>cauchy</code>. For the 
-hierarchical shrinkage priors (<code>hs</code> and <code>hs_plus</code>) the degrees of
-freedom parameter(s) default to \(3\). For the <code>product_normal</code> 
-prior, the degrees of freedom parameter must be an integer (vector) that is
-at least \(2\) (the default).</p></td>
-    </tr>
-    <tr>
-      <th>global_df, global_scale</th>
-      <td><p>Optional arguments for the hierarchical
-shrinkage priors. See the <em>Hierarchical shrinkage family</em> section
-below.</p></td>
+<code>student_t</code>, in which case it is equivalent to <code>cauchy</code>.
+For the <code>product_normal</code>   prior, the degrees of freedom 
+parameter must be an integer (vector) that is  at least \(2\) (the default).</p></td>
     </tr>
     <tr>
       <th>rate</th>
@@ -240,19 +226,6 @@ distribution. The default is \(1\), implying a joint uniform prior.</p></td>
 default) then the gamma prior simplifies to the unit-exponential
 distribution.</p></td>
     </tr>
-    <tr>
-      <th>what</th>
-      <td><p>A character string among <code>'mode'</code> (the default),
-<code>'mean'</code>, <code>'median'</code>, or <code>'log'</code> indicating how the
-<code>location</code> parameter is interpreted in the <code>LKJ</code> case. If
-<code>'log'</code>, then <code>location</code> is interpreted as the expected
-logarithm of the \(R^2\) under a Beta distribution. Otherwise,
-<code>location</code> is interpreted as the <code>what</code> of the \(R^2\)
-under a Beta distribution. If the number of predictors is less than
-or equal to two, the mode of this Beta distribution does not exist
-and an error will prompt the user to specify another choice for
-<code>what</code>.</p></td>
-    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -269,7 +242,8 @@ and an error will prompt the user to specify another choice for
 <li><p><code>student_t(df, location, scale)</code></p></li>
 <li><p><code>cauchy(location, scale)</code></p></li>
 </ul>
-  Each of these functions also takes an argument <code>autoscale</code>.
+  Each of these functions also takes an argument <code>autoscale</code> which is relevant 
+  if used for any of the non-stap related parameters. It is not used otherwise.
     For the prior distribution for the intercept, <code>location</code>, 
   <code>scale</code>, and <code>df</code> should be scalars. As the 
   degrees of freedom approaches infinity, the Student t distribution 
@@ -282,41 +256,6 @@ and an error will prompt the user to specify another choice for
     If the <code>autoscale</code> argument is <code>TRUE</code> (the default), then the 
   scales will be further adjusted as described above in the documentation of 
   the <code>autoscale</code> argument in the <strong>Arguments</strong> section.
-    <h3>Hierarchical shrinkage family</h3>
-    Family members:
-  <ul>
-<li><p><code>hs(df, global_df, global_scale)</code></p></li>
-<li><p><code>hs_plus(df1, df2, global_df, global_scale)</code></p></li>
-</ul>
-    The hierarchical shrinkage priors are normal with a mean of zero and a 
-  standard deviation that is also a random variable. The traditional 
-  hierarchical shrinkage prior utilizes a standard deviation that is 
-  distributed half Cauchy with a median of zero and a scale parameter that is
-  also half Cauchy. This is called the "horseshoe prior". The hierarchical 
-  shrinkage (<code>hs</code>) prior in the <span class="pkg">rstanarm</span> package instead utilizes 
-  a half Student t distribution for the standard deviation (with 3 degrees of
-  freedom by default), as described by Piironen and Vehtari (2015). It is
-  possible to change the <code>df</code> argument, the prior degrees of freedom, to
-  obtain less or more shrinkage. Traditionally the standard deviation
-  parameter is then scaled by the square root of a <em>global</em> half Cauchy 
-  parameter, although <span class="pkg">rstanarm</span> allows setting <code>global_df</code> and 
-  <code>global_scale</code> arguments, in which case this global parameter is 
-  distributed half Student t with degrees of freedom <code>global_df</code> and 
-  scale <code>global_scale</code>.
-    The hierarhical shrinkpage plus (<code>hs_plus</code>) prior is a normal with a 
-  mean of zero and a standard deviation that is distributed as the product of
-  two independent half Student t parameters (both with \(3\) degrees of
-  freedom (<code>df1</code>, <code>df2</code>) by default) that are each scaled in a
-  similar way to the <code>hs</code> prior.
-    The hierarchical shrinkage priors have very tall modes and very fat tails.
-  Consequently, they tend to produce posterior distributions that are very
-  concentrated near zero, unless the predictor has a strong influence on the
-  outcome, in which case the prior has little influence. Hierarchical 
-  shrinkage priors often require you to increase the 
-  adapt_delta tuning parameter in order to diminish the number 
-  of divergent transitions. For more details on tuning parameters and 
-  divergent transitions see the Troubleshooting section of the <em>How to
-  Use the rstanarm Package</em> vignette.
     <h3>Laplace family</h3>
     Family members:
   <ul>
@@ -388,7 +327,7 @@ N05 &lt;- normal(0, 5)</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>The various vignettes for the <span class="pkg">rstanarm</span> package also discuss 
+    <div class='dont-index'><p>The various vignettes for the <span class="pkg">rstanarm</span> and <span class="pkg">rstap</span> packages also discuss 
   and demonstrate the use of some of the supported prior distributions.</p>
 <p>#'</p></div>
     

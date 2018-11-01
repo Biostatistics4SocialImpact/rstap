@@ -43,7 +43,7 @@
 #'   coefficients, and the auxiliary parameter \code{sigma} (error standard 
 #'   deviation) are multiplied by \code{sd(y)}. Additionally --- not only for 
 #'   Gaussian models --- if the \code{QR} argument to the model fitting function
-#'   (e.g. \code{stan_glm}) is \code{FALSE} then: for a predictor with only one 
+#'   (e.g. \code{stap_glm}) is \code{FALSE} then: for a predictor with only one 
 #'   value nothing is changed; for a predictor \code{x} with exactly two unique 
 #'   values, we take the user-specified (or default) scale(s) for the selected 
 #'   priors and divide by the range of \code{x}; for a predictor \code{x} with 

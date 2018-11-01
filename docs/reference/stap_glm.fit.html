@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fitting Generalized Linear STKAP models — stap_glm.fit • rstap</title>
+<title>Fitting Generalized Linear STAP models — stap_glm.fit • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Fitting Generalized Linear STKAP models — stap_glm.fit" />
+<meta property="og:title" content="Fitting Generalized Linear STAP models — stap_glm.fit" />
 
-<meta property="og:description" content="Fitting Generalized Linear STKAP models" />
+<meta property="og:description" content="Fitting Generalized Linear STAP models" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -96,6 +96,9 @@
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -119,23 +122,24 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Fitting Generalized Linear STKAP models</h1>
+    <h1>Fitting Generalized Linear STAP models</h1>
     
     <div class="hidden name"><code>stap_glm.fit.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Fitting Generalized Linear STKAP models</p>
+    <p>Fitting Generalized Linear STAP models</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>stap_glm.fit</span>(<span class='no'>y</span>, <span class='no'>z</span>, <span class='no'>dists_crs</span>, <span class='no'>u_s</span>, <span class='no'>times_crs</span>, <span class='no'>u_t</span>, <span class='no'>weight_functions</span>, <span class='no'>stap_data</span>,
-  <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fl'>3L</span>, <span class='kw'>weights</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fu'>NROW</span>(<span class='no'>y</span>)), <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>0</span>, <span class='fu'>NROW</span>(<span class='no'>y</span>)),
+    <pre class="usage"><span class='fu'>stap_glm.fit</span>(<span class='no'>y</span>, <span class='no'>z</span>, <span class='no'>dists_crs</span>, <span class='no'>u_s</span>, <span class='no'>times_crs</span>, <span class='no'>u_t</span>, <span class='no'>weight_functions</span>,
+  <span class='no'>stap_data</span>, <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='no'>dists_crs</span>), <span class='kw'>max_time</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='no'>times_crs</span>),
+  <span class='kw'>weights</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>1</span>, <span class='fu'>NROW</span>(<span class='no'>y</span>)), <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'>rep</span>(<span class='fl'>0</span>, <span class='fu'>NROW</span>(<span class='no'>y</span>)),
   <span class='kw'>family</span> <span class='kw'>=</span> <span class='kw pkg'>stats</span><span class='kw ns'>::</span><span class='fu'><a href='http://www.rdocumentation.org/packages/stats/topics/family'>gaussian</a></span>(), <span class='no'>...</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
   <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>group</span> <span class='kw'>=</span> <span class='fu'>list</span>(),
-  <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>theta_one</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>()), <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>cauchy</a></span>(<span class='kw'>location</span> <span class='kw'>=</span>
-  <span class='fl'>0L</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5L</span>), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+  <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>theta_one</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>()), <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>cauchy</a></span>(<span class='kw'>location</span>
+  <span class='kw'>=</span> <span class='fl'>0L</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5L</span>), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -145,18 +149,70 @@
       <td><p>n length vector or n x 2 matrix of outcomes</p></td>
     </tr>
     <tr>
+      <th>z</th>
+      <td><p>n x p design matrix of subject specific covariates</p></td>
+    </tr>
+    <tr>
       <th>dists_crs</th>
-      <td><p>q x M matrix of distances between outcome observations and
-environmental features where q is the number of spatial covariates,
- and M is the maximum number of environmental features amongst all q features</p></td>
+      <td><p>(q_s+q_st) x M matrix of distances between outcome 
+observations and built environment features with a hypothesized spatial scale</p></td>
+    </tr>
+    <tr>
+      <th>u_s</th>
+      <td><p>n x (q *2) matrix of compressed row storage array indices for dists_crs</p></td>
+    </tr>
+    <tr>
+      <th>times_crs</th>
+      <td><p>(q_t+q_st) x M matrix of times where the outcome observations
+were exposed to the built environment features with a hypothesized temporal scale</p></td>
+    </tr>
+    <tr>
+      <th>u_t</th>
+      <td><p>n x (q*2) matrix of compressed row storage array  indices for times_crs</p></td>
+    </tr>
+    <tr>
+      <th>weight_functions</th>
+      <td><p>a Q x 2 matrix with integers coding the appropriate weight function for each STAP</p></td>
+    </tr>
+    <tr>
+      <th>stap_data</th>
+      <td><p>object of class "stap_data" that contains information on all the spatial-temporal predictors in the model</p></td>
     </tr>
     <tr>
       <th>max_distance</th>
-      <td><p>the upper bound of distance for which all</p></td>
+      <td><p>the upper bound on any and all distances included in the model</p></td>
     </tr>
     <tr>
-      <th>Z</th>
-      <td><p>n x p design matrix of subject specific covariates</p></td>
+      <th>max_time</th>
+      <td><p>the upper bound on any and all times included in the model</p></td>
+    </tr>
+    <tr>
+      <th>weights</th>
+      <td><p>weights to be added to the likelihood observation for a given subject</p></td>
+    </tr>
+    <tr>
+      <th>offset</th>
+      <td><p>offset term to be added to the outcome for a given subject</p></td>
+    </tr>
+    <tr>
+      <th>family</th>
+      <td><p>distributional family - only binomial gaussian or poisson currently allowed</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>optional arguments passed to the sampler - e.g. iter,warmup, etc.</p></td>
+    </tr>
+    <tr>
+      <th>prior, prior_intercept, prior_stap, prior_theta, prior_aux</th>
+      <td><p>see <code>stap_glm</code> for more information</p></td>
+    </tr>
+    <tr>
+      <th>group</th>
+      <td><p>list of of group terms from <code>lme4::glmod</code></p></td>
+    </tr>
+    <tr>
+      <th>adapt_delta</th>
+      <td><p>See the <a href='adapt_delta.html'>adapt_delta</a> help page for details.</p></td>
     </tr>
     </table>
     

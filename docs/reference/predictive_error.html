@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extract X, Y or Z from a stapreg object — get_y • rstap</title>
+<title>In-sample or out-of-sample predictive errors — predictive_error • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,16 @@
 
 
 
-<meta property="og:title" content="Extract X, Y or Z from a stapreg object — get_y" />
+<meta property="og:title" content="In-sample or out-of-sample predictive errors — predictive_error" />
 
-<meta property="og:description" content="The rstap model-fitting functions return an object of class 
+<meta property="og:description" content="This is a convenience function for computing \(y - y^{rep}\) 
+(in-sample, for observed \(y\)) or \(y - \tilde{y}\) 
+(out-of-sample, for new or held-out \(y\)). The method for stapreg objects 
+calls posterior_predict internally, whereas the method for
+objects with class &quot;ppd&quot; accepts the matrix returned by 
+posterior_predict as input and can be used to avoid multiple calls to 
+posterior_predict.
+The rstap model-fitting functions return an object of class 
 'stapreg', which is a list containing at a minimum the components listed 
 below. Each stapreg object will also have additional classes (e.g. 'glm')
 and several additional components depending on the model and estimation 
@@ -127,14 +134,21 @@ algorithm.
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extract X, Y or Z from a stapreg object</h1>
+    <h1>In-sample or out-of-sample predictive errors</h1>
     
-    <div class="hidden name"><code>get_y.Rd</code></div>
+    <div class="hidden name"><code>predictive_error.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>The <span class="pkg">rstap</span> model-fitting functions return an object of class 
+    <p>This is a convenience function for computing \(y - y^{rep}\) 
+(in-sample, for observed \(y\)) or \(y - \tilde{y}\) 
+(out-of-sample, for new or held-out \(y\)). The method for stapreg objects 
+calls <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code> internally, whereas the method for
+objects with class <code>"ppd"</code> accepts the matrix returned by 
+<code>posterior_predict</code> as input and can be used to avoid multiple calls to 
+<code>posterior_predict</code>.</p>
+<p>The <span class="pkg">rstap</span> model-fitting functions return an object of class 
 <code>'stapreg'</code>, which is a list containing at a minimum the components listed 
 below. Each <code>stapreg</code> object will also have additional classes (e.g. 'glm')
 and several additional components depending on the model and estimation 
@@ -143,41 +157,51 @@ algorithm. <br />
     
     </div>
 
-    <pre class="usage"><span class='fu'>get_y</span>(<span class='no'>object</span>, <span class='no'>...</span>)
-
-<span class='fu'>get_z</span>(<span class='no'>object</span>, <span class='no'>...</span>)
-
-<span class='fu'>get_x</span>(<span class='no'>object</span>, <span class='no'>...</span>)
-
-<span class='fu'>get_w</span>(<span class='no'>object</span>, <span class='no'>...</span>)
-
-<span class='fu'>get_z</span>(<span class='no'>object</span>, <span class='no'>...</span>)
-
-<span class='co'># S3 method for default</span>
-<span class='fu'>get_z</span>(<span class='no'>object</span>, <span class='no'>...</span>)
-
-<span class='co'># S3 method for default</span>
-<span class='fu'>get_x</span>(<span class='no'>object</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='co'># S3 method for stapreg</span>
+<span class='fu'>predictive_error</span>(<span class='no'>object</span>, <span class='kw'>newsubjdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>newdistdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>newtimedata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>draws</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>re.form</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A fitted model object returned by one of the 
-<span class="pkg">rstap</span> modeling functions. See <code><a href='stapreg-objects.html'>stapreg-objects</a></code>.</p></td>
+      <td><p>Either a fitted model object returned by one of the 
+<span class="pkg">rstap</span> modeling functions (a <a href='stapreg-objects.html'>stapreg 
+object</a>) or, for the <code>"ppd"</code> method, a matrix of draws from the 
+posterior predictive distribution returned by 
+<code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>newsubjdata, newdistdata, newtimedata, draws, seed, offset, re.form</th>
+      <td><p>Optional arguments passed to 
+<code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code>. For binomial models, please see the
+<strong>Note</strong> section below if <code>newsubjdata</code> will be specified.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Other arguments passed to methods. For a <code>stanmvreg</code> object
-this can be an integer <code>m</code> specifying the submodel.</p></td>
+      <td><p>Currently ignored.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>For <code>get_x</code> and <code>get_z</code>, a matrix. For <code>get_y</code>, either
-  a vector or a matrix, depending on how the response variable was specified.</p>
+    <p>A <code>draws</code> by <code>nrow(newsubjdata)</code> matrix. If <code>newsubjdata</code> is 
+  not specified then it will be <code>draws</code> by <code>nobs(object)</code>.</p>
+    
+    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
+
+    <p>The <strong>Note</strong> section in <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code> about 
+  <code>nnewsubjdata</code> for binomial models also applies for
+  <code>predictive_error</code>, with one important difference. For
+  <code>posterior_predict</code> if the left-hand side of the model formula is 
+  <code>cbind(successes, failures)</code> then the particular values of 
+  <code>successes</code> and <code>failures</code> in <code>newsubjdata</code> don't matter, only 
+  that they add to the desired number of trials. <strong>This is not the case
+  for</strong> <code>predictive_error</code>. For <code>predictive_error</code> the particular
+  value of <code>successes</code> matters because it is used as \(y\) when
+  computing the error.</p>
     
     <h2 class="hasAnchor" id="elements-for-stapreg-objects"><a class="anchor" href="#elements-for-stapreg-objects"></a>Elements for <code>stapreg</code> objects</h2>
 
@@ -206,6 +230,12 @@ this can be an integer <code>m</code> specifying the submodel.</p></td>
   <dt><code>rstan_version</code></dt><dd><p>The version of the <span class="pkg">rstan</span> package that was used to fit the model.</p></dd>
 </dl>
     
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code> to draw
+  from the posterior predictive distribution without computing predictive
+  errors.</p></div>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -215,7 +245,11 @@ this can be an integer <code>m</code> specifying the submodel.</p></td>
       
       <li><a href="#value">Value</a></li>
 
+      <li><a href="#note">Note</a></li>
+
       <li><a href="#elements-for-stapreg-objects">Elements for <code>stapreg</code> objects</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

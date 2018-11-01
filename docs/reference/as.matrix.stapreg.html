@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extract the posterior sample — as.matrix.stapreg • rstap</title>
+<title>Extract the posterior sample via matrix — as.matrix.stapreg • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Extract the posterior sample — as.matrix.stapreg" />
+<meta property="og:title" content="Extract the posterior sample via matrix — as.matrix.stapreg" />
 
-<meta property="og:description" content="For models fit using MCMC  the posterior sample ---the post-warmup 
+<meta property="og:description" content="The posterior sample ---the post-warmup 
 draws from the posterior distribution--- can be extracted 
 from a fitted model object as a matrix, data frame, or array. The 
 as.matrix and as.data.frame methods merge all chains together, 
@@ -100,6 +100,9 @@ whereas the as.array method keeps the chains separate." />
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -123,14 +126,14 @@ whereas the as.array method keeps the chains separate." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extract the posterior sample</h1>
+    <h1>Extract the posterior sample via matrix</h1>
     
     <div class="hidden name"><code>as.matrix.stapreg.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>For models fit using MCMC  the posterior sample ---the post-warmup 
+    <p>The posterior sample ---the post-warmup 
 draws from the posterior distribution--- can be extracted 
 from a fitted model object as a matrix, data frame, or array. The 
 <code>as.matrix</code> and <code>as.data.frame</code> methods merge all chains together, 
@@ -153,7 +156,7 @@ whereas the <code>as.array</code> method keeps the chains separate.</p>
     <tr>
       <th>x</th>
       <td><p>A fitted model object returned by one of the 
-<span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
+<span class="pkg">rstap</span> modeling functions. See <code><a href='stapreg-objects.html'>stapreg-objects</a></code>.</p></td>
     </tr>
     <tr>
       <th>...</th>

@@ -58,16 +58,13 @@
       <a href="../articles/Spatial_Correlation_I.html">STAP-Spatial_Correlation</a>
     </li>
     <li>
-      <a href="../articles/clustered_poisson.html">Spatial Correlation II</a>
+      <a href="../articles/hawkes-processes.html">Spatial Correlation II</a>
     </li>
     <li>
-      <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
+      <a href="../articles/longitudinal-i.html">Vignette Title</a>
     </li>
     <li>
-      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
-    </li>
-    <li>
-      <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
+      <a href="../articles/misspecified-kernel.html">Mis-Specified Weight Function</a>
     </li>
     <li>
       <a href="../articles/scale-priors.html">Scale Priors</a>
@@ -90,10 +87,10 @@
       <h1>Spatial Correlation II</h1>
                         <h4 class="author">Adam Peterson</h4>
             
-            <h4 class="date">2018-10-31</h4>
+            <h4 class="date">2018-09-04</h4>
       
       
-      <div class="hidden name"><code>clustered_poisson.Rmd</code></div>
+      <div class="hidden name"><code>hawkes-processes.Rmd</code></div>
 
     </div>
 
@@ -122,8 +119,8 @@ xy &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class
 z &lt;-<span class="st"> </span><span class="kw">intenfun</span>(xy<span class="op">$</span>x,xy<span class="op">$</span>y)
 <span class="kw">cbind</span>(<span class="dt">x=</span>xy<span class="op">$</span>x,<span class="dt">y=</span>xy<span class="op">$</span>y,<span class="dt">mean =</span> z) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">cut_y =</span> <span class="kw">cut</span>(y,<span class="dv">4</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x=</span>x,<span class="dt">y=</span>y,<span class="dt">color=</span>z)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/scale_gradient.html">scale_color_continuous</a></span>(<span class="dt">low=</span><span class="st">'white'</span>,<span class="dt">high=</span><span class="st">'red'</span>) <span class="op">+</span>
-<span class="st">        </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Intensity Function: Mean of Poisson Across 2D Space"</span>)</code></pre></div>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>x,<span class="dt">y=</span>y,<span class="dt">color=</span>z)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_point">geom_point</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/scale_gradient">scale_color_continuous</a></span>(<span class="dt">low=</span><span class="st">'white'</span>,<span class="dt">high=</span><span class="st">'red'</span>) <span class="op">+</span>
+<span class="st">        </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Intensity Function: Mean of Poisson Across 2D Space"</span>)</code></pre></div>
 <p>We continue to generate subjects uniformly across the space. The following plot shows where all subjects and built environment features are located in our artificial space.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">2524</span>)
 bef_rpp &lt;-<span class="st"> </span>spatstat<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/spatstat/topics/rPoissonCluster">rPoissonCluster</a></span>(<span class="dt">kappa =</span> intenfun, <span class="dt">expand =</span> <span class="dv">4</span>, <span class="dt">lmax =</span> <span class="dv">100</span>,
@@ -135,8 +132,8 @@ sub_rpp &lt;-<span class="st"> </span>spatstat<span class="op">::</span><span cl
 sub_df &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">x =</span> sub_rpp<span class="op">$</span>x,
                      <span class="dt">y =</span> sub_rpp<span class="op">$</span>y,
                      <span class="dt">class =</span> <span class="st">"Subject"</span>)
-<span class="kw">rbind</span>(bef_df,sub_df) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="kw"><a href="ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x=</span>x,<span class="dt">y=</span>y,<span class="dt">color=</span>class)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Correlated Business Positions"</span>)</code></pre></div>
+<span class="kw">rbind</span>(bef_df,sub_df) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x=</span>x,<span class="dt">y=</span>y,<span class="dt">color=</span>class)) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_point">geom_point</a></span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>() <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Correlated Business Positions"</span>)</code></pre></div>
 <p>Then suppose the form of some measurement on the subjects is:</p>
 <p><span class="math display">\[
 E[Y_i] = \alpha + Z_i \delta + X_i(\theta)\beta_2\\
@@ -168,7 +165,7 @@ X_theta_one &lt;-<span class="st"> </span>pracma<span class="op">::</span><span 
 <p>Modeling these data with rstap…</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">distance_data &lt;-<span class="st"> </span>dists <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">as_data_frame</a></span>() <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(sub_df)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/gather.html">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>), <span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">contains</a></span>(<span class="st">"V"</span>), <span class="dt">key =</span> <span class="st">'BEF'</span>,<span class="dt">value =</span> <span class="st">'Distance'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">BEF =</span> <span class="st">'Fast_Food'</span>)
 
 subject_data &lt;-<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(<span class="dt">subj_id =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(sub_df),

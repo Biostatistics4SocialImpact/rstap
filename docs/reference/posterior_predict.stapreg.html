@@ -104,6 +104,9 @@ distribution to generate predicted outcomes." />
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -148,8 +151,9 @@ distribution to generate predicted outcomes.</p>
 
     <pre class="usage"><span class='co'># S3 method for stapreg</span>
 <span class='fu'>posterior_predict</span>(<span class='no'>object</span>, <span class='kw'>newsubjdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>newdistancedata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>newtimedata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>draws</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>re.form</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>newdistdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>newtimedata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>draws</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>subject_ID</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>group_ID</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>re.form</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>seed</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -157,7 +161,30 @@ distribution to generate predicted outcomes.</p>
     <tr>
       <th>object</th>
       <td><p>A fitted model object returned by one of the 
-<span class="pkg">rstap</span> modeling functions. See <code>stapreg-objects</code>.</p></td>
+<span class="pkg">rstap</span> modeling functions. See <code><a href='stapreg-objects.html'>stapreg-objects</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>newsubjdata</th>
+      <td><p>Optionally, a data frame of the subject-specific data
+in which to look for variables with which to predict.
+If omitted, the original datasets are used. If <code>newsubjdata</code>
+is provided and any variables were transformed (e.g. rescaled) in the data
+used to fit the model, then these variables must also be transformed in
+<code>newsubjdata</code>. This only applies if variables were transformed before
+passing the data to one of the modeling functions and <em>not</em> if
+transformations were specified inside the model formula. Also see the Note
+section below for a note about using the <code>newdata</code> argument with with
+binomial models.</p></td>
+    </tr>
+    <tr>
+      <th>newdistdata</th>
+      <td><p>If newsubjdata is provided a data frame of the subject-distance
+must also be given for models with a spatial component</p></td>
+    </tr>
+    <tr>
+      <th>newtimedata</th>
+      <td><p>If newsubjdata is provided, a data frame of the subject-time data
+must also be given for models with a temporal component</p></td>
     </tr>
     <tr>
       <th>draws</th>
@@ -165,8 +192,16 @@ distribution to generate predicted outcomes.</p>
 and maximum number of draws is the size of the posterior sample.</p></td>
     </tr>
     <tr>
+      <th>subject_ID</th>
+      <td><p>name of column to join on between subject_data and bef_data</p></td>
+    </tr>
+    <tr>
+      <th>group_ID</th>
+      <td><p>name of column to join on between <code>subject_data</code> and bef_data that uniquely identifies the correlated groups (e.g. visits,schools). Currently only one group (e.g. a measurement ID) can be accounted for in a spatial temporal setting.</p></td>
+    </tr>
+    <tr>
       <th>re.form</th>
-      <td><p>If <code>object</code> contains <code>group-level</code>
+      <td><p>If <code>object</code> contains <code><a href='stap_glmer.html'>group-level</a></code>
 parameters, a formula indicating which group-level parameters to
 condition on when making predictions. <code>re.form</code> is specified in the
 same form as for <code><a href='http://www.rdocumentation.org/packages/lme4/topics/predict.merMod'>predict.merMod</a></code>. The default,
@@ -189,21 +224,13 @@ object, a string naming a function, etc.</p></td>
     </tr>
     <tr>
       <th>offset</th>
-      <td><p>A vector of offsets. Only required if <code>newdata</code> is
+      <td><p>A vector of offsets. Only required if <code>newsubjdata</code> is
 specified and an <code>offset</code> argument was specified when fitting the
 model.</p></td>
     </tr>
     <tr>
-      <th>newdata</th>
-      <td><p>Optionally, a data frame in which to look for variables with
-which to predict. If omitted, the model matrix is used. If <code>newdata</code>
-is provided and any variables were transformed (e.g. rescaled) in the data
-used to fit the model, then these variables must also be transformed in
-<code>newdata</code>. This only applies if variables were transformed before
-passing the data to one of the modeling functions and <em>not</em> if
-transformations were specified inside the model formula. Also see the Note
-section below for a note about using the <code>newdata</code> argument with with
-binomial models.</p></td>
+      <th>...</th>
+      <td><p>optional arguments to pass to pp_args</p></td>
     </tr>
     </table>
     
@@ -219,7 +246,7 @@ binomial models.</p></td>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>For binomial models with a number of trials greater than one (i.e., not
-  Bernoulli models), if <code>newdata</code> is specified then it must include all
+  Bernoulli models), if <code>newsubjdata</code> is specified then it must include all
   variables needed for computing the number of binomial trials to use for the
   predictions. For example if the left-hand side of the model formula is
   <code>cbind(successes, failures)</code> then both <code>successes</code> and
@@ -227,23 +254,16 @@ binomial models.</p></td>
   <code>successes</code> and <code>failures</code> in <code>newdata</code> do not matter so
   long as their sum is the desired number of trials. If the left-hand side of
   the model formula were <code>cbind(successes, trials - successes)</code> then
-  both <code>trials</code> and <code>successes</code> would need to be in <code>newdata</code>,
+  both <code>trials</code> and <code>successes</code> would need to be in <code>newsubjdata</code>,
   probably with <code>successes</code> set to <code>0</code> and <code>trials</code> specifying
-  the number of trials. See the Examples section below and the
-  <em>How to Use the rstaparm Package</em> for examples.</p>
-<p>For models estimated with <code>stan_clogit</code>, the number of 
-  successes per stratum is ostensibly fixed by the research design. Thus, when
-  doing posterior prediction with new data, the <code>data.frame</code> passed to
-  the <code>newdata</code> argument must contain an outcome variable and a stratifying
-  factor, both with the same name as in the original <code>data.frame</code>. Then, the 
-  posterior predictions will condition on this outcome in the new data.</p>
+  the number of trials.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code>pp_check</code> for graphical posterior predictive checks.
   Examples of posterior predictive checking can also be found in the
   <span class="pkg">rstanarm</span> vignettes and demos.</p>
-<p><code><a href='predictive_error.stapreg.html'>predictive_error</a></code> and <code>predictive_interval</code>.</p></div>
+<p><code><a href='predictive_error.html'>predictive_error</a></code> and <code><a href='predictive_interval.stapreg.html'>predictive_interval</a></code>.</p></div>
     
 
   </div>

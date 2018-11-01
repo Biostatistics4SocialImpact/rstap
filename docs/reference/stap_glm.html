@@ -32,9 +32,8 @@
 
 <meta property="og:title" content="Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan — stap_glm" />
 
-<meta property="og:description" content="
-Generalized linear modeling with optional prior distributions for the
-coefficients, intercept, and auxiliary parameters." />
+<meta property="og:description" content="Generalized linear modeling with spatial temporal aggregated predictors using
+prior distributions for the coefficients, intercept, spatial-temporal scales, and auxiliary parameters." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -98,6 +97,9 @@ coefficients, intercept, and auxiliary parameters." />
       <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
+      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
+    </li>
+    <li>
       <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
     </li>
     <li>
@@ -128,64 +130,71 @@ coefficients, intercept, and auxiliary parameters." />
 
     <div class="ref-description">
     
-    <p><img src='figures/stanlogo.png' width="25px" alt="http://mc-stan.org/about/logo/" />
-Generalized linear modeling with optional prior distributions for the
-coefficients, intercept, and auxiliary parameters.</p>
+    <p>Generalized linear modeling with spatial temporal aggregated predictors using
+prior distributions for the coefficients, intercept, spatial-temporal scales, and auxiliary parameters.</p>
     
     </div>
 
     <pre class="usage"><span class='fu'>stap_glm</span>(<span class='no'>formula</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'>gaussian</span>(), <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>time_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>id_key</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>max_distance</span>,
-  <span class='no'>subset</span>, <span class='no'>weights</span>, <span class='kw'>na.action</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>z</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>x</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>,
-  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
+  <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>time_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>subject_ID</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_time</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>weights</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>model</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
+  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
   <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>log_normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>1L</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1L</span>),
-  <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>exponential</a></span>(), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+  <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>exponential</a></span>(), <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+
+<span class='fu'>stap_lm</span>(<span class='no'>formula</span>, <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>time_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>weights</span>, <span class='kw'>na.action</span> <span class='kw'>=</span> <span class='fu'>getOption</span>(<span class='st'>"na.action"</span>,
+  <span class='st'>"na.omit"</span>), <span class='no'>offset</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),
+  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(), <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>exponential</a></span>(),
+  <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>formula, subset</th>
-      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>,</p></td>
+      <th>formula</th>
+      <td><p>Same as for <code>link[stats]{glm}</code>. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.</p></td>
     </tr>
     <tr>
       <th>family</th>
-      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code> for gaussian, binomial, and poisson</p></td>
+      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code> for gaussian, binomial, and poisson families.</p></td>
     </tr>
     <tr>
       <th>subject_data</th>
-      <td><p>a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the id_key on which to join the distance and time_data</p></td>
+      <td><p>a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data</p></td>
     </tr>
     <tr>
       <th>distance_data</th>
-      <td><p>a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2)</p></td>
+      <td><p>a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.</p></td>
     </tr>
     <tr>
       <th>time_data</th>
       <td><p>same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance</p></td>
     </tr>
     <tr>
-      <th>id_key</th>
-      <td><p>name of column to join on between subject_data and bef_data</p></td>
+      <th>subject_ID</th>
+      <td><p>name of column(s) to join on between subject_data and bef_data</p></td>
     </tr>
     <tr>
       <th>max_distance</th>
       <td><p>the inclusion distance; upper bound for all elements of dists_crs</p></td>
     </tr>
     <tr>
-      <th>na.action, contrasts</th>
-      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>, but
-rarely specified.</p></td>
+      <th>max_time</th>
+      <td><p>inclusion time; upper bound for all elements of times_crs</p></td>
     </tr>
     <tr>
       <th>offset, weights</th>
       <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>.</p></td>
     </tr>
     <tr>
+      <th>model</th>
+      <td><p>logical denoting whether or not to return the fixed covariates model frame object in the fitted object</p></td>
+    </tr>
+    <tr>
       <th>y</th>
-      <td><p>In <code>stap_glm</code>, logical scalar indicating whether to
-return the response vector. In <code>stan_glm.fit</code>, a response vector.</p></td>
+      <td><p>In <code>stap_glm</code>, logical scalar indicating whether to return the response vector. In <code>stan_glm.fit</code>, a response vector.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -244,6 +253,14 @@ intercept always correspond to a parameterization without centered
 predictors (i.e., same as in <code>glm</code>).</p></td>
     </tr>
     <tr>
+      <th>prior_stap</th>
+      <td><p>prior for spatial-temporal aggregated predictors. Note that prior is set on the standardized latent covariates.</p></td>
+    </tr>
+    <tr>
+      <th>prior_theta</th>
+      <td><p>prior for the spatial-temporal aggregated predictors' scale. Can either be a single prior or a prior nested within a list of lists.</p></td>
+    </tr>
+    <tr>
       <th>prior_aux</th>
       <td><p>The prior distribution for the "auxiliary" parameter (if
 applicable). The "auxiliary" parameter refers to a different parameter 
@@ -268,13 +285,18 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
     </tr>
     <tr>
       <th>adapt_delta</th>
-      <td><p>See the adapt_delta help page for details.</p></td>
+      <td><p>See the <a href='adapt_delta.html'>adapt_delta</a> help page for details.</p></td>
+    </tr>
+    <tr>
+      <th>na.action, contrasts</th>
+      <td><p>Same as <code><a href='http://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>, but
+rarely specified.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A stapreg object is returned 
+    <p>A <a href='stapreg-objects.html'>stapreg</a> object is returned 
 for <code>stap_glm</code>.</p>
 <p>A stapfit object (or a slightly modified 
   stapfit object) is returned if <code>stan_glm.fit</code> is called directly.</p>
@@ -283,14 +305,13 @@ for <code>stap_glm</code>.</p>
 
     <p>The <code>stap_glm</code> function is similar in syntax to
 <code><a href='http://www.rdocumentation.org/packages/rstanarm/topics/stan_glm'>stan_glm</a></code> except instead of performing full bayesian
-inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
-as detailed in in --need to add citation --</p>
+inference for a generalized linear model stap_glm incorporates spatial-temporal covariates</p>
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>Gelman, A. and Hill, J. (2007). <em>Data Analysis Using
   Regression and Multilevel/Hierarchical Models.</em> Cambridge University Press,
-  Cambridge, UK. (Ch. 3-6)</p>
+  Cambridge, UK.</p>
 <p>Muth, C., Oravecz, Z., and Gabry, J. (2018)
 User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinystan.
 <em>The Quantitative Methods for Psychology</em>. 14(2), 99--119.

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Pointwise log-likelihood matrix — log_lik.stapreg • rstap</title>
+<title>Predictive intervals — predictive_interval.stapreg • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,11 +30,13 @@
 
 
 
-<meta property="og:title" content="Pointwise log-likelihood matrix — log_lik.stapreg" />
+<meta property="og:title" content="Predictive intervals — predictive_interval.stapreg" />
 
-<meta property="og:description" content="For models fit using MCMC, the log_lik method returns the
-\(S\) by \(N\) pointwise log-likelihood matrix, where \(S\) is the size
-of the posterior sample and \(N\) is the number of data points." />
+<meta property="og:description" content="The predictive_interval function computes Bayesian predictive intervals. 
+The method for stapreg objects calls posterior_predict
+internally, whereas the method for objects of class &quot;ppd&quot; accepts the
+matrix returned by posterior_predict as input and can be used to avoid
+multiple calls to posterior_predict." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -124,30 +126,47 @@ of the posterior sample and \(N\) is the number of data points." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Pointwise log-likelihood matrix</h1>
+    <h1>Predictive intervals</h1>
     
-    <div class="hidden name"><code>log_lik.stapreg.Rd</code></div>
+    <div class="hidden name"><code>predictive_interval.stapreg.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>For models fit using MCMC, the <code>log_lik</code> method returns the
-\(S\) by \(N\) pointwise log-likelihood matrix, where \(S\) is the size
-of the posterior sample and \(N\) is the number of data points.</p>
+    <p>The <code>predictive_interval</code> function computes Bayesian predictive intervals. 
+The method for stapreg objects calls <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code>
+internally, whereas the method for objects of class <code>"ppd"</code> accepts the
+matrix returned by <code>posterior_predict</code> as input and can be used to avoid
+multiple calls to <code>posterior_predict</code>.</p>
     
     </div>
 
     <pre class="usage"><span class='co'># S3 method for stapreg</span>
-<span class='fu'>log_lik</span>(<span class='no'>object</span>, <span class='kw'>newsubjdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>newdistdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>newtimedata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+<span class='fu'>predictive_interval</span>(<span class='no'>object</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
+  <span class='kw'>newsubjdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>newdistdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>newtimedata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>draws</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>subject_ID</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>group_ID</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>re.form</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+
+<span class='co'># S3 method for ppd</span>
+<span class='fu'>predictive_interval</span>(<span class='no'>object</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A fitted model object returned by one of the 
-<span class="pkg">rstap</span> modeling functions. See <code><a href='stapreg-objects.html'>stapreg-objects</a></code>.</p></td>
+      <td><p>Either a fitted model object returned by one of the 
+<span class="pkg">rstap</span> modeling functions (a <a href='stapreg-objects.html'>stapreg 
+object</a>) or, for the <code>"ppd"</code> method, a matrix of draws from the 
+posterior predictive distribution returned by 
+<code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>prob</th>
+      <td><p>A number \(p \in (0,1)\) indicating the desired
+probability mass to include in the intervals. The default is to report
+\(90\)% intervals (<code>prob=0.9</code>) rather than the traditionally used
+\(95\)% .</p></td>
     </tr>
     <tr>
       <th>newsubjdata</th>
@@ -156,24 +175,33 @@ in which to look for variables with which to predict.
 If omitted, the original datasets are used. If <code>newsubjdata</code>
 is provided and any variables were transformed (e.g. rescaled) in the data
 used to fit the model, then these variables must also be transformed in
-<code>newsubjdata</code>.  Also see the Note
+<code>newsubjdata</code>. This only applies if variables were transformed before
+passing the data to one of the modeling functions and <em>not</em> if
+transformations were specified inside the model formula. Also see the Note
 section below for a note about using the <code>newsubjdata</code> argument with with
 binomial models.</p></td>
     </tr>
     <tr>
       <th>newdistdata</th>
       <td><p>If newsubjdata is provided a data frame of the subject-distance
-must also be given for models with a spatial component - can be the same as original distance_dataframe</p></td>
+must also be given for models with a spatial component</p></td>
     </tr>
     <tr>
       <th>newtimedata</th>
-      <td><p>If newsubjdata is provided, a data frame of the subject-time data
-must also be given for models with a temporal component</p></td>
+      <td><p>If newsubjdata is provided, a data frame of the subject-time data</p></td>
     </tr>
     <tr>
-      <th>offset</th>
-      <td><p>A vector of offsets. Only required if <code>newsubjdata</code> is
-specified and an <code>offset</code> was specified when fitting the model.</p></td>
+      <th>draws, fun, offset, re.form, seed</th>
+      <td><p>Passed to 
+<code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>subject_ID</th>
+      <td><p>same as <code><a href='stap_glm.html'>stap_glm</a></code></p></td>
+    </tr>
+    <tr>
+      <th>group_ID</th>
+      <td><p>same as <code><a href='stap_glmer.html'>stap_glmer</a></code></p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -183,8 +211,19 @@ specified and an <code>offset</code> was specified when fitting the model.</p></
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A \(S\) by \(N\) matrix, where \(S\) is the size of the posterior  
-  sample and \(N\) is the number of data points.</p>
+    <p>A matrix with two columns and as many rows as are in <code>newsubjdata</code>. 
+  If <code>newsubjdata</code> is not provided then the matrix will have as many rows as
+  the data used to fit the model. For a given value of <code>prob</code>, \(p\),
+  the columns correspond to the lower and upper \(100p\)% central interval
+  limits and have the names \(100\alpha/2\)% and \(100(1 -
+  \alpha/2)\)%, where \(\alpha = 1-p\). For example, if <code>prob=0.9</code> is
+  specified (a \(90\)% interval), then the column names will be
+  <code>"5%"</code> and <code>"95%"</code>, respectively.</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='predictive_error.html'>predictive_error</a></code>, <code><a href='posterior_predict.stapreg.html'>posterior_predict</a></code>, 
+  <code><a href='posterior_interval.stapreg.html'>posterior_interval</a></code></p></div>
     
 
   </div>
@@ -194,6 +233,8 @@ specified and an <code>offset</code> was specified when fitting the model.</p></
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

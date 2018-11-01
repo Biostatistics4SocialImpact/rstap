@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>formula method for stapreg objects — formula.stapreg • rstap</title>
+<title>Target average acceptance probability — adapt_delta • rstap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,10 @@
 
 
 
-<meta property="og:title" content="formula method for stapreg objects — formula.stapreg" />
+<meta property="og:title" content="Target average acceptance probability — adapt_delta" />
 
-<meta property="og:description" content="formula method for stapreg objects" />
+<meta property="og:description" content="Details about the adapt_delta argument to rstap's modeling
+functions - also found in the rstanarm documentation." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -122,41 +123,49 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>formula method for stapreg objects</h1>
+    <h1>Target average acceptance probability</h1>
     
-    <div class="hidden name"><code>formula.stapreg.Rd</code></div>
+    <div class="hidden name"><code>adapt_delta.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>formula method for stapreg objects</p>
+    <p>Details about the <code>adapt_delta</code> argument to <span class="pkg">rstap</span>'s modeling
+functions - also found in the <span class="pkg">rstanarm</span> documentation.</p>
     
     </div>
 
-    <pre class="usage"><span class='co'># S3 method for stapreg</span>
-<span class='fu'>formula</span>(<span class='no'>x</span>, <span class='no'>...</span>, <span class='kw'>m</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+        
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>For the No-U-Turn Sampler (NUTS), the variant of Hamiltonian Monte 
+  Carlo used used by <span class="pkg">rstap</span>, <code>adapt_delta</code> is the target average
+  proposal acceptance probability for adaptation.</p>  
+<p>The default value of <code>adapt_delta</code> is 0.95</p>  
+<p>In general you should not need to change <code>adapt_delta</code> unless you see
+  a warning message about divergent transitions, in which case you can
+  increase <code>adapt_delta</code> from the default to a value <em>closer</em> to 1
+  (e.g. from 0.95 to 0.99, or from 0.99 to 0.999, etc). The step size used by
+  the numerical integrator is a function of <code>adapt_delta</code> in that
+  increasing <code>adapt_delta</code> will result in a smaller step size and fewer
+  divergences. Increasing <code>adapt_delta</code> will typically result in a
+  slower sampler, but it will always lead to a more robust sampler.</p>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>x</th>
-      <td><p>A stapreg object.</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>Can contain <code>fixed.only</code> and <code>random.only</code> arguments 
-that both default to <code>FALSE</code>.</p></td>
-    </tr>
-    </table>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Stan Development Team. (2017). <em>Stan Modeling Language Users Guide and
+Reference Manual.</em> <a href='http://mc-stan.org/documentation/'>http://mc-stan.org/documentation/</a></p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#details">Details</a></li>
+
+      <li><a href="#references">References</a></li>
+          </ul>
 
   </div>
 </div>
