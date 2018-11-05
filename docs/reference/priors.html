@@ -67,7 +67,7 @@ encouraged. All of the priors here are informed by the priors in rstanarm, thoug
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.0.9000</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
       </span>
     </div>
 
@@ -93,22 +93,10 @@ encouraged. All of the priors here are informed by the priors in rstanarm, thoug
       <a href="../articles/Introduction.html">STAP Introduction</a>
     </li>
     <li>
-      <a href="../articles/Spatial_Correlation_I.html">STAP-Spatial_Correlation</a>
+      <a href="../articles/Longitudinal.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
-      <a href="../articles/clustered_poisson.html">Spatial Correlation II</a>
-    </li>
-    <li>
-      <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
-    </li>
-    <li>
-      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
-    </li>
-    <li>
-      <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
-    </li>
-    <li>
-      <a href="../articles/scale-priors.html">Scale Priors</a>
+      <a href="../articles/WeightFunctions.html">Mis-Specified Weight Function</a>
     </li>
   </ul>
 </li>
@@ -189,7 +177,7 @@ cases. First, for Gaussian models only, the prior scales for the intercept,
 coefficients, and the auxiliary parameter <code>sigma</code> (error standard 
 deviation) are multiplied by <code>sd(y)</code>. Additionally --- not only for 
 Gaussian models --- if the <code>QR</code> argument to the model fitting function
-(e.g. <code>stan_glm</code>) is <code>FALSE</code> then: for a predictor with only one 
+(e.g. <code>stap_glm</code>) is <code>FALSE</code> then: for a predictor with only one 
 value nothing is changed; for a predictor <code>x</code> with exactly two unique 
 values, we take the user-specified (or default) scale(s) for the selected 
 priors and divide by the range of <code>x</code>; for a predictor <code>x</code> with 

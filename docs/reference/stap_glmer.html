@@ -62,7 +62,7 @@ unknown covariance matrices with flexible priors." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.0.9000</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
       </span>
     </div>
 
@@ -88,22 +88,10 @@ unknown covariance matrices with flexible priors." />
       <a href="../articles/Introduction.html">STAP Introduction</a>
     </li>
     <li>
-      <a href="../articles/Spatial_Correlation_I.html">STAP-Spatial_Correlation</a>
+      <a href="../articles/Longitudinal.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
-      <a href="../articles/clustered_poisson.html">Spatial Correlation II</a>
-    </li>
-    <li>
-      <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
-    </li>
-    <li>
-      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
-    </li>
-    <li>
-      <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
-    </li>
-    <li>
-      <a href="../articles/scale-priors.html">Scale Priors</a>
+      <a href="../articles/WeightFunctions.html">Mis-Specified Weight Function</a>
     </li>
   </ul>
 </li>
@@ -135,7 +123,7 @@ unknown covariance matrices with flexible priors.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>stap_glmer</span>(<span class='no'>formula</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='no'>gaussian</span>, <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+    <pre class="usage"><span class='fu'>stap_glmer</span>(<span class='no'>formula</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'>gaussian</span>(), <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>time_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>subject_ID</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>group_ID</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_time</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>weights</span>,
   <span class='no'>offset</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>, <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(),

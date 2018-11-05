@@ -16,11 +16,9 @@
 
 #' Posterior uncertainty intervals
 #'
-#' For models fit using MCMC,  the \code{posterior_interval} 
-#' function computes Bayesian posterior uncertainty
-#' intervals. These intervals are often referred to as \emph{credible}
-#' intervals, but we use the term \emph{uncertainty} intervals to highlight the
-#' fact that wider intervals correspond to greater uncertainty.
+#' The \code{posterior_interval} function computes Bayesian posterior
+#' uncertainty intervals. These intervals are also often referred
+#' to as \emph{credible} intervals.
 #'
 #' @aliases posterior_interval
 #' @export

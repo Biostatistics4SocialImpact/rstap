@@ -87,6 +87,7 @@ stapreg <- function(object){
         z = Z,
         model = object$model,
         max_distance = object$max_distance,
+        max_time = object$max_time,
         family,
         offset = if (any(object$offset != 0)) object$offset else NULL,
         weights = object$weights, 

@@ -2,6 +2,7 @@ language: r
 sudo: false
 r: devel
 cache: packages
+dist: trusty
 
 latex: true
 r_build_args: "--no-build-vignettes"

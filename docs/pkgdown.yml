@@ -3,10 +3,6 @@ pkgdown: 1.1.0
 pkgdown_sha: ~
 articles:
   Introduction: Introduction.html
-  Spatial_Correlation_I: Spatial_Correlation_I.html
-  clustered_poisson: clustered_poisson.html
-  longitudinal-I: longitudinal-I.html
-  longitudinal-ii: longitudinal-ii.html
-  misspecified-weightfunction: misspecified-weightfunction.html
-  scale-priors: scale-priors.html
+  Longitudinal: Longitudinal.html
+  WeightFunctions: WeightFunctions.html
 

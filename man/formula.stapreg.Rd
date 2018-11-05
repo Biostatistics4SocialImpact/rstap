@@ -4,7 +4,7 @@
 \alias{formula.stapreg}
 \title{formula method for stapreg objects}
 \usage{
-\method{formula}{stapreg}(x, ..., m = NULL)
+\method{formula}{stapreg}(x, ...)
 }
 \arguments{
 \item{x}{A stapreg object.}

@@ -352,8 +352,9 @@ model.matrix.stapreg <- function(object,..., subject_data) {
 #' @param ... Can contain \code{fixed.only} and \code{random.only} arguments 
 #'   that both default to \code{FALSE}.
 #' 
-formula.stapreg <- function(x, ..., m = NULL) {
-  if (is.mer(x)) return(formula_mer(x, ...))
+formula.stapreg <- function(x, ...) {
+    dots <- list(...)
+  if (is.mer(x) & is.null(dots$printing)) return(formula_mer(x, ...))
   x$formula
 }
 

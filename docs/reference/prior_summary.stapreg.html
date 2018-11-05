@@ -65,7 +65,7 @@ in general, it can be much more useful to visualize the priors." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.0.9000</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
       </span>
     </div>
 
@@ -91,22 +91,10 @@ in general, it can be much more useful to visualize the priors." />
       <a href="../articles/Introduction.html">STAP Introduction</a>
     </li>
     <li>
-      <a href="../articles/Spatial_Correlation_I.html">STAP-Spatial_Correlation</a>
+      <a href="../articles/Longitudinal.html">STAP in a Longitudinal Data Setting</a>
     </li>
     <li>
-      <a href="../articles/clustered_poisson.html">Spatial Correlation II</a>
-    </li>
-    <li>
-      <a href="../articles/longitudinal-I.html">STAP in a Longitudinal Data Setting</a>
-    </li>
-    <li>
-      <a href="../articles/longitudinal-ii.html">Longitudinal Setting </a>
-    </li>
-    <li>
-      <a href="../articles/misspecified-weightfunction.html">Mis-Specified Weight Function</a>
-    </li>
-    <li>
-      <a href="../articles/scale-priors.html">Scale Priors</a>
+      <a href="../articles/WeightFunctions.html">Mis-Specified Weight Function</a>
     </li>
   </ul>
 </li>
@@ -190,7 +178,15 @@ in general, it can be much more useful to visualize the priors.</p>
   argument). To disable internal prior scale adjustments set the 
   <code>autoscale</code> argument to <code>FALSE</code> when setting a prior using one of
   the distributions that accepts an <code>autoscale</code> argument. For example,
-  <code><a href='priors.html'>normal(0, 5, autoscale=FALSE)</a></code> instead of just <code><a href='priors.html'>normal(0, 5)</a></code>.</p>
+  <code><a href='priors.html'>normal(0, 5, autoscale=FALSE)</a></code> instead of just <code><a href='priors.html'>normal(0, 5)</a></code>. 
+  Note that for prior_stap all priors are set on the scaled covariates this is
+  done so that multiple priors placed on differing staps can be roughly comparable.</p>
+    
+    <h2 class="hasAnchor" id="spatial-temporal-scales"><a class="anchor" href="#spatial-temporal-scales"></a>Spatial - Temporal Scales</h2>
+
+    <p>If only one prior was specified this will be returned
+in a section entitled "STAP scales". Otherwise no priors will be printed out.
+A more structured system for STAP prior printing is planned for the next release.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
@@ -209,6 +205,8 @@ in general, it can be much more useful to visualize the priors.</p>
       <li><a href="#intercept-after-predictors-centered-">Intercept (after predictors centered)</a></li>
 
       <li><a href="#adjusted-scales">Adjusted scales</a></li>
+
+      <li><a href="#spatial-temporal-scales">Spatial - Temporal Scales</a></li>
 
       <li><a href="#see-also">See also</a></li>
           </ul>

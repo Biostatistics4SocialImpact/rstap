@@ -5,7 +5,7 @@
 \alias{stap_lmer}
 \title{Bayesian spatial-temporal generalized linear models with group-specific terms via Stan}
 \usage{
-stap_glmer(formula, family = gaussian, subject_data = NULL,
+stap_glmer(formula, family = gaussian(), subject_data = NULL,
   distance_data = NULL, time_data = NULL, subject_ID = NULL,
   group_ID = NULL, max_distance = NULL, max_time = NULL, weights,
   offset, contrasts = NULL, ..., prior = normal(),

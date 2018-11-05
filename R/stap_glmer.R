@@ -169,6 +169,7 @@ stap_glmer <-
                u_s = crs_data$u_s,
                u_t = crs_data$u_t,
                max_distance = max_distance,
+               max_time = crs_data$max_time,
                offset, weights,
                z = Z, w = W, 
                y = y, data,

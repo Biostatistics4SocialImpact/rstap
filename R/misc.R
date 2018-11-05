@@ -684,21 +684,6 @@ check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
 }
 
 
-# Get the correct column name to use for selecting the median
-#
-# @param algorithm String naming the estimation algorithm (probably
-#   \code{fit$algorithm}).
-# @return Either \code{"50%"} or \code{"Median"} depending on \code{algorithm}.
-select_median <- function(algorithm) {
-  switch(algorithm,
-         sampling = "50%",
-         meanfield = "50%",
-         fullrank = "50%",
-         optimizing = "Median",
-         stop("Bug found (incorrect algorithm name passed to select_median)",
-              call. = FALSE))
-}
-
 # Methods for creating linear predictor
 #
 # Make linear predictor vector from x and point estimates for delta and beta

@@ -67,7 +67,7 @@
 print.stapreg <- function(x, digits = 1, ...) {
   cat(x$stan_function)
   cat("\n family:      ", family_plus_link(x))
-  cat("\n formula:     ", formula_string(formula(x)))
+  cat("\n formula:     ", formula_string(formula(x,printing=T)))
   cat("\n observations:", nobs(x))
   cat("\n Intercept: ", rownames(x$stap_summary)[1] == "(Intercept)")
   cat("\n fixed predictors:  ", (nfix(x) - 1*(rownames(x$stap_summary)[1] == "(Intercept)")))
