@@ -47,6 +47,7 @@ stap_termination <- function(object,
                              exposure_limit= 0.05,
                              pars = NULL,
                              regex_pars = NULL,
+                             max_value = NULL,
                              ...
                              )
     UseMethod("stap_termination")
@@ -58,6 +59,7 @@ stap_termination.stapreg <- function(object,
                                      exposure_limit = 0.05,
                                      pars = NULL,
                                      regex_pars = NULL,
+                                     max_value = NULL,
                                      ...){
 
     stap_data <- object$stap_data
@@ -70,20 +72,22 @@ stap_termination.stapreg <- function(object,
     med <- apply(as.matrix(object)[,scls,drop=F],2,median)
     lower <- median <- upper <- rep(0,length(med))
     scl_ix <- 1 
+    max_dist <- if(!is.null(max_value)) max_value else object$max_distance
+    max_time <- if(!is.null(max_value)) max_value else object$max_time
     for(ix in 1:stap_data$Q){
         if(stap_data$stap_code[ix] %in% c(0,2)){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix]) - exposure_limit}, c(0,object$max_distance))
-            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix]) - exposure_limit}, c(0,object$max_distance))
-            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix]) - exposure_limit},  c(0,object$max_distance))
+            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix]) - exposure_limit}, c(0,max_distance))
+            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix]) - exposure_limit}, c(0,max_distance))
+            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix]) - exposure_limit},  c(0,max_distance))
             if(stap_data$stap_code[ix] == 2)
                 scl_ix <- scl_ix + 1
         }
         if(stap_data$stap_code[ix] %in% c(1,2)){
             f <- get_weight_function(stap_data$weight_mats[ix,2])
-            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix]) - (1-exposure_limit)}, c(0,object$max_time))
-            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix]) - (1-exposure_limit)}, c(0,object$max_time))
-            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix]) - (1-exposure_limit)},  c(0,object$max_time)) 
+            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix]) - (1-exposure_limit)}, c(0,max_time))
+            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix]) - (1-exposure_limit)}, c(0,max_time))
+            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix]) - (1-exposure_limit)},  c(0,max_time)) 
         }
         scl_ix <- scl_ix + 1
     }
