@@ -8,15 +8,14 @@
 This is an R package that fits spatial temporal aggregated predictor models   
 using [Stan](http://mc-stan.org) (via the **rstan** package) for the back-end
 estimation. The primary target audience is researchers interested in the effect of built environment features (BEFs) on human health, though other
-applications are possible. See the package's [website](https://biostastics4socialimpact.github.io/rstap) for an [introduction](https://biostatistics4socialimpact.github.io/rstap/articles/Introduction.html).
+applications are possible. See the package's [website](https://biostatistics4socialimpact.github.io/rstap) for an [introduction](https://biostatistics4socialimpact.github.io/rstap/articles/Introduction.html).
 
 
 ### Installation
 
 #### Development Version
-The current development version can be installed 
 
-To install from GitHub, first make sure that you can install the **rstan**
+To install the current development version from GitHub, first make sure that you can install the **rstan**
 package and C++ toolchain by following these
 [instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
 
