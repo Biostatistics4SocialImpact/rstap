@@ -72,7 +72,7 @@ stap_termination.stapreg <- function(object,
     med <- apply(as.matrix(object)[,scls,drop=F],2,median)
     lower <- median <- upper <- rep(0,length(med))
     scl_ix <- 1 
-    max_dist <- if(!is.null(max_value)) max_value else object$max_distance
+    max_distance <- if(!is.null(max_value)) max_value else object$max_distance
     max_time <- if(!is.null(max_value)) max_value else object$max_time
     for(ix in 1:stap_data$Q){
         if(stap_data$stap_code[ix] %in% c(0,2)){
