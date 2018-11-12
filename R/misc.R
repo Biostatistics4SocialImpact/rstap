@@ -266,7 +266,7 @@ get_stapless_formula <- function(f){
     sap_ics <- which(all.names(f) %in% c("sap","sap_log"))
     tap_ics <- which(all.names(f) %in% c("tap","tap_log"))
     if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
-        stop("No covariates designated as 'stap','sap',or 'tap'  in formula")
+        stop("No covariates designated as 'stap','sap',or 'tap'  in formula", .call = F)
     stap_nms <- all.names(f)[stap_ics + 1]
     sap_nms <- all.names(f)[sap_ics + 1]
     tap_nms <- all.names(f)[tap_ics + 1]
@@ -274,6 +274,8 @@ get_stapless_formula <- function(f){
     formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
     bar_components <- sapply(lme4::findbars(with_bars),paste_bars)
     formula_components <- c(formula_components,bar_components)
+    if(any(grepl("scale",formula_components)))
+        stop("Don't use variable names with the word `scale` in them - this will cause problems with rstap methods downstream", call.=F)
     if(!attr(terms(f),"intercept"))
         formula_components <- c(formula_components,"0")
     if(grepl("cbind",all.names(f))[2]){

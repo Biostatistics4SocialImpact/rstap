@@ -34,6 +34,9 @@
 #'          amount of exposure for which the function will return an estimate of
 #'           distance/time. 
 #'           Note that the exposure_limit corresponds to spatial exposure and 1-temporal exposure.
+#' @param max_value by defuault the max_distance and/or time from the model's original input
+#'        will be used to calculate the upper bound of possible terminating 
+#'        distances/times - the max_value can be used to specify a new value for this value.
 #' @return A matrix with two columns and as many rows as model parameters (or
 #'   the subset of parameters specified by \code{pars} and/or
 #'   \code{regex_pars}). For a given value of \code{prob}, \eqn{p}, the columns

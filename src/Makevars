@@ -3,6 +3,7 @@ PKG_CPPFLAGS = -I"../inst/include" -I"$(STANHEADERS_SRC)" -DBOOST_RESULT_OF_USE_
 
 
 CXX_STD = CXX14
+CXX14 = g++ -std=c++1y
 
 SOURCES = $(wildcard stan_files/*.stan)
 OBJECTS = $(SOURCES:.stan=.o) init.o
