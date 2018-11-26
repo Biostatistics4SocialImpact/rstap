@@ -45,6 +45,41 @@
 #'   = 1-p}. For example, if \code{prob=0.9} is specified (a \eqn{90}\%
 #'   interval), then the column names will be \code{"5\%"} and \code{"95\%"},
 #'   respectively.
+#'@examples
+#'\dontrun{
+#' fit_glm <- stap_glm(formula = y ~ sex + sap(Fast_Food),
+#'                    subject_data = homog_subject_data,
+#'                      distance_data = homog_distance_data,
+#'                      family = gaussian(link = 'identity'),
+#'                      subject_ID = 'subj_id',
+#'                      prior = normal(location = 0, scale = 5, autoscale = F),
+#'                      prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+#'                      prior_stap = normal(location = 0, scale = 3, autoscale = F),
+#'                      prior_theta = log_normal(location = 1, scale = 1),
+#'                      prior_aux = cauchy(location = 0,scale = 5),
+#'                      max_distance = max(homog_distance_data$Distance),
+#'                      chains = CHAINS, iter = ITER,
+#'                      refresh = -1,verbose = F)
+#'terminal_points <- stap_termination(fit_glm, prob = .9, exposure_limit = 0.01)
+#'}
+#'@examples
+#' \dontrun{
+#' fit_glm <- stap_glm(formula = y ~ sex + sap(Fast_Food),
+#'                    subject_data = homog_subject_data,
+#'                      distance_data = homog_distance_data,
+#'                      family = gaussian(link = 'identity'),
+#'                      subject_ID = 'subj_id',
+#'                      prior = normal(location = 0, scale = 5, autoscale = F),
+#'                      prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+#'                      prior_stap = normal(location = 0, scale = 3, autoscale = F),
+#'                      prior_theta = log_normal(location = 1, scale = 1),
+#'                      prior_aux = cauchy(location = 0,scale = 5),
+#'                      max_distance = max(homog_distance_data$Distance),
+#'                      chains = CHAINS, iter = ITER,
+#'                      refresh = -1,verbose = F)
+#'terminal_vals <- stap_termination(fit_glm, prob = .9, exposure_limit = 0.01)
+#'}
+#'
 stap_termination <- function(object,
                              prob = .9,
                              exposure_limit= 0.05,

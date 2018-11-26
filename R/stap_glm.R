@@ -35,7 +35,7 @@
 #' @template reference-gelman-hill
 #' @template reference-muth
 #'
-#' @param formula Same as for \code{link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.
+#' @param formula Same as for \code{\link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson families.
 #' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data
 #' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.
@@ -54,6 +54,22 @@
 #'   \url{https://biostatistics4socialimpact.github.io/rstap/articles}
 #'
 #'@export stap_glm
+#'@examples
+#'
+#' fit_glm <- stap_glm(formula = y ~ sex + sap(Fast_Food),
+#'                    subject_data = homog_subject_data[1:100,], # for speed of example only
+#'                      distance_data = homog_distance_data,
+#'                      family = gaussian(link = 'identity'),
+#'                      subject_ID = 'subj_id',
+#'                      prior = normal(location = 0, scale = 5, autoscale = FALSE),
+#'                      prior_intercept = normal(location = 25, scale = 5, autoscale = FALSE),
+#'                      prior_stap = normal(location = 0, scale = 3, autoscale = FALSE),
+#'                      prior_theta = log_normal(location = 1, scale = 1),
+#'                      prior_aux = cauchy(location = 0,scale = 5),
+#'                      max_distance = max(homog_distance_data$Distance),
+#'                      chains = 1, iter = 300, # for speed of example only
+#'                      refresh = -1, verbose = FALSE) 
+#'
 stap_glm <- function(formula,
                      family = gaussian(),
                      subject_data = NULL,

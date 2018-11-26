@@ -786,13 +786,6 @@ model_has_weights <- function(x) {
   }
 }
 
-# Test if stapreg object used stan_nlmer
-#
-# @param x A stanreg object.
-is.nlmer <- function(x) {
-  is.mer(x) && inherits(x, "nlmerMod")
-}
-
 # Get the posterior sample size
 #
 # @param x A stapreg object
@@ -822,4 +815,47 @@ paste_bars <- function(bar_element){
         paste0("(1",all_names[1],all_names[2],")")
     else
         paste0("(",paste(all_names[2:(l-1)],collapse = "+"),all_names[1],all_names[l], ")")
+}
+
+
+get_space_constraint <- function(stap_data, quantile = 0.975){
+
+    possible_scales <- rep(NA,3) 
+    if(any(stap_data$weight_mat[,1] == 2 ))
+        possible_scales[1] <- pracma::erfcinv(quantile)
+    if(any(stap_data$weight_mat[,1] ==  4))
+        possible_scales[2] <- qexp(p = quantile, rate = 1, lower.tail = F)
+    if(any(stap_data$weight_mat[,1] == 6))
+        possible_scales[3] <- qweibull(p = quantile, shape = 1, lower.tail = F)
+    
+    
+    if(all(is.na(possible_scales)))
+        out <- 1
+    else if(any(is.na(possible_scales)))
+        out <- min(possible_scales, na.rm=T)
+    else
+        out <- min(possible_scales)
+
+    return(out)
+}
+
+
+get_time_constraint <- function(stap_data, quantile = 0.975){
+
+    possible_scales <- rep(NA,3) 
+    if(any(stap_data$weight_mat[,2] == 1) )
+        possible_scales[1] <- pracma::erfinv(quantile)
+    if(any(stap_data$weight_mat[,2] ==  3))
+        possible_scales[2] <- qexp(p = quantile, rate = 1, lower.tail = T)
+    if(any(stap_data$weight_mat[,2] == 5))
+        possible_scales[3] <- qweibull(p = quantile, shape = 1, lower.tail = T)
+
+    if(all(is.na(possible_scales)))
+        out <- 1
+    else if(any(is.na(possible_scales)))
+        out <- min(possible_scales, na.rm=T)
+    else
+        out <- min(possible_scales)
+
+    return(out)
 }

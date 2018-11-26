@@ -67,7 +67,10 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         prior_dist <- prior_dist_for_intercept <- prior_dist_for_aux <- prior_mean <-
         prior_mean_for_intercept <- prior_mean_for_aux <- prior_scale <-
         prior_scale_for_intercept <- prior_scale_for_aux <- prior_autoscale <-
-        prior_autoscale_for_intercept <- prior_autoscale_for_aux <- NULL
+        prior_autoscale_for_intercept <- prior_autoscale_for_aux <- ztemp <-
+        zbar <- prior_dist_for_stap <- prior_mean_for_stap <- 
+        prior_scale_for_stap <- prior_df_for_stap <- prior_dist_for_theta <- 
+        prior_scale_for_theta <- prior_df_for_theta <- prior_mean_for_theta <- NULL
 
     z_stuff <- center_z(z)
 
@@ -227,8 +230,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         zbar = as.array(zbar),
         family = stan_family_number(famname),
         link,
-        max_distance = max_distance / pracma::erfcinv(0.975),
-        max_time = max_time / pracma::erfcinv(0.975),
+        max_distance = max_distance / get_space_constraint(stap_data,quantile= 0.975),
+        max_time = max_time / get_time_constraint(stap_data,0.975),
         u_s = u_s,
         u_t = u_t,
         dists_crs = dists_crs,
@@ -518,14 +521,14 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     check <- try(check_stanfit(stapfit))
     if (!isTRUE(check)) return(standata)
     if(standata$len_theta_L){
-        thetas_ref <- rstan::extract(stapfit, pars = "theta_L", inc_warmup = F,
-                              permuted = F)
+        thetas_ref <- rstan::extract(stapfit, pars = "theta_L", inc_warmup = FALSE,
+                              permuted = FALSE)
         cnms <- group$cnms
         nc <- sapply(cnms, FUN = length)
         nms <- names(cnms)
         Sigma <- apply(thetas_ref, 1:2, FUN = function(theta) {
                            Sigma <- lme4::mkVarCorr(sc = 1, cnms, nc, theta, nms)
-                           unlist(sapply(Sigma, simplify = F,
+                           unlist(sapply(Sigma, simplify = FALSE,
                                          FUN = function(x) x[lower.tri(x,TRUE)]))
                               })
         l <- length(dim(Sigma))

@@ -1,7 +1,7 @@
 Package: rstap
 Type: Package
-Version: 1.0.0
-Title: Spatio-Temporal Aggregated Predictor Models via stan 
+Version: 1.0.1
+Title: Spatial Temporal Aggregated Predictor Models via Stan 
 Description: Estimates previously compiled stap regression models using the 'rstan' package. Users specify models via a custom R syntax with a formula and data.frame plus additional arguments for priors.
 License: GPL (>=3)
 Authors@R: person("Adam", "Peterson", , "atpvyc@umich.edu", c("aut", "cre"))

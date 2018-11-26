@@ -3,6 +3,9 @@ ITER <- 10
 CHAINS <- 2
 REFRESH <- 0
 SW <- suppressWarnings
+distdata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","dist")]
+timedata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","time")]
+timedata$time <- as.numeric(timedata$time)
 capture_output(
     stap_glm1 <- SW(stap_glm(formula = y ~ sex + sap(Fast_Food),
                       subject_data = homog_subject_data,
@@ -23,8 +26,8 @@ capture_output(
                SW(stap_glmer1 <- stap_glmer(y_bern ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
                           family = binomial(link='logit'),
                           subject_data = homog_longitudinal_subject_data,
-                          distance_data = homog_longitudinal_distance_data,
-                          time_data = homog_longitudinal_time_data,
+                          distance_data = distdata,
+                          time_data = timedata,
                           subject_ID = 'subj_ID',group_ID = 'measure_ID',
                           prior_intercept = normal(location = 25, scale = 4, autoscale = F),
                           prior = normal(location = 0, scale = 4, autoscale=F),
@@ -41,8 +44,8 @@ capture_output(
 capture_output(
     stap_lmer1 <- SW(stap_lmer(y ~ centered_income + sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
                             subject_data = homog_longitudinal_subject_data,
-                            distance_data = homog_longitudinal_distance_data,
-                            time_data = homog_longitudinal_time_data,
+                            distance_data = distdata,
+                            time_data = timedata,
                             subject_ID = 'subj_ID', group_ID = "measure_ID",
                             prior_intercept = normal(location = 25, scale = 4, autoscale = F),
                             prior = normal(location = 0, scale = 4, autoscale = F),

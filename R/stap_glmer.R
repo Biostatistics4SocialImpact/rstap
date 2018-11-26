@@ -68,6 +68,29 @@
 #'    
 #' @importFrom lme4 glFormula
 #' @importFrom Matrix Matrix t
+#'@examples
+#'\dontrun{
+#' distdata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","dist")]
+#' timedata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","time")]
+#' timedata$time <- as.numeric(timedata$time)
+#' fit <- stap_glmer(y_bern ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
+#'                   family = binomial(link='logit'),
+#'                   subject_data = homog_longitudinal_subject_data,
+#'                   distance_data = distdata,
+#'                   time_data = timedata,
+#'                   subject_ID = 'subj_ID',
+#'                   group_ID = 'measure_ID',
+#'                   prior_intercept = normal(location = 25, scale = 4, autoscale = F),
+#'                   prior = normal(location = 0, scale = 4, autoscale=F),
+#'                   prior_stap = normal(location = 0, scale = 4),
+#'                   prior_theta = list(Coffee_Shop = list(spatial = log_normal(location = 1,
+#'                                                                              scale = 1),
+#'                                                          temporal = log_normal(location = 1,
+#'                                                                                scale = 1))),
+#'                   max_distance = 3, max_time = 50,
+#'                   chains = 4, refresh = -1, verbose = FALSE, 
+#'                   iter = 1E3, cores = 1)
+#'}
 stap_glmer <- 
   function(formula,
            family = gaussian(),
