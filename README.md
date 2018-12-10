@@ -13,14 +13,6 @@ applications are possible. See the package's [website](https://biostatistics4soc
 
 ### Installation
 
-#### CRAN
-
-To install the latest version uploaded to CRAN using the following code in R:
-
-```r
-install.packages("rstap", dependences = TRUE)
-```
-
 #### Development Version
 
 To install the current development version from GitHub, first make sure that you can install the **rstan**
