@@ -36,6 +36,22 @@
 #' 
 #' @seealso \code{\link{stapreg-methods}}
 #' 
+#' @examples
+#' \donttest{
+#' if (!exists("example_model")) example(example_model)
+#' # Extract posterior sample after MCMC
+#' draws <- as.matrix(example_model)
+#' print(dim(draws))
+#'
+#' # For example, we can see that the median of the draws for the intercept 
+#' # is the same as the point estimate rstanarm uses
+#' print(median(draws[, "(Intercept)"]))
+#' print(example_model$coefficients[["(Intercept)"]])
+#' 
+#' # The as.array method keeps the chains separate
+#' draws_array <- as.array(example_model)
+#' print(dim(draws_array)) # iterations x chains x parameters
+#'}
 as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
   pars <- collect_pars(x, pars, regex_pars)
   user_pars <- !is.null(pars)

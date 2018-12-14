@@ -85,6 +85,10 @@
 #' @template reference-morey
 #' 
 #' 
+#' @examples
+#' if (!exists("example_model")) example(example_model)
+#' posterior_interval(example_model)
+#' posterior_interval(example_model, regex_pars = "FF")
 posterior_interval.stapreg <-
   function(object,
            prob = 0.9,

@@ -177,19 +177,26 @@ stap_glm <- function(formula,
 #' @export
 stap_lm <- 
   function(formula,
+           family = gaussian(),
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,
+           subject_ID = NULL,
+           max_distance = NULL,
+           max_time = NULL,
            weights,
-           na.action = getOption("na.action", "na.omit"),
-           offset,
+           offset = NULL,
+           model = TRUE,
+           y = TRUE,
            contrasts = NULL,
            ...,
            prior = normal(),
            prior_intercept = normal(),
+           prior_stap = normal(),
+           prior_theta = log_normal(location = 1L, scale = 1L),
            prior_aux = exponential(),
-           adapt_delta = NULL
-           ) {
+           adapt_delta = NULL){
+
   if ("family" %in% names(list(...))) {
     stop(
       "'family' should not be specified. ", 

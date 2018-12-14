@@ -64,15 +64,17 @@
 #'   The \code{stap_lmer} function is equivalent to \code{stap_glmer} with 
 #'   \code{family = gaussian(link = "identity")}. 
 #'   
-#' @seealso The \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{vignette} for \code{stap_glmer} 
+#' @seealso The Longituinal \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Vignette} for \code{stap_glmer}.
 #'    
 #' @importFrom lme4 glFormula
 #' @importFrom Matrix Matrix t
 #'@examples
 #'\dontrun{
+#' ## subset to only include id, class name and distance variables
 #' distdata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","dist")]
 #' timedata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","time")]
-#' timedata$time <- as.numeric(timedata$time)
+#' ## distance or time column must be numeric
+#' timedata$time <- as.numeric(timedata$time) 
 #' fit <- stap_glmer(y_bern ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
 #'                   family = binomial(link='logit'),
 #'                   subject_data = homog_longitudinal_subject_data,
@@ -214,16 +216,21 @@ stap_lmer <-
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,
+           subject_ID = NULL,
+           group_ID = NULL,
+           max_distance = NULL,
+           max_time = NULL,
            weights,
            offset,
            contrasts = NULL,
            ...,
            prior = normal(),
            prior_intercept = normal(),
+           prior_stap = normal(),
+           prior_theta = log_normal(location = 1L, scale = 1L),
            prior_aux = exponential(),
            prior_covariance = decov(),
-           adapt_delta = NULL
-           ) {
+           adapt_delta = NULL) {
   if ("family" %in% names(list(...))) {
     stop(
       "'family' should not be specified. ", 
