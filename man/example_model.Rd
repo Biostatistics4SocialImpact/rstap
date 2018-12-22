@@ -17,30 +17,31 @@ A model for use in \pkg{rstap} examples.
 }
 \examples{
  ## following lines make example run faster
-distdata <- subset(homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","dist")],subj_ID<=25)
-timedata <- subset(homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","time")],subj_ID<=25)
+distdata <- subset(homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","dist")],
+                   subj_ID<=25)
+timedata <- subset(homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","time")],
+                   subj_ID<=25)
 timedata$time <- as.numeric(timedata$time)
 subjdata <- subset(homog_longitudinal_subject_data,subj_ID<=25)
 example_model <- 
   stap_glmer(y_bern ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
-                  family = binomial(link='logit'),
-                  subject_data = subjdata,
-                  distance_data = distdata,
-                  time_data = timedata,
-                  subject_ID = 'subj_ID',
-                  group_ID = 'measure_ID',
-                  prior_intercept = normal(location = 25, scale = 4, autoscale = F),
-                  prior = normal(location = 0, scale = 4, autoscale=F),
-                  prior_stap = normal(location = 0, scale = 4),
-                  prior_theta = list(Coffee_Shop = list(spatial = log_normal(location = 1,
+             family = gaussian(),
+             subject_data = subjdata,
+             distance_data = distdata,
+             time_data = timedata,
+             subject_ID = 'subj_ID',
+             group_ID = 'measure_ID',
+             prior_intercept = normal(location = 25, scale = 4, autoscale = FALSE),
+             prior = normal(location = 0, scale = 4, autoscale = FALSE),
+             prior_stap = normal(location = 0, scale = 4),
+             prior_theta = list(Coffee_Shop = list(spatial = log_normal(location = 1,
                                                                              scale = 1),
                                                          temporal = log_normal(location = 1,
                                                                                scale = 1))),
-                  max_distance = 3, max_time = 50,
-                  # chains, cores, and iter set to make the example small and fast
-                  chains = 1,  
-                  iter = 5E2, cores = 1)
-example_model
+             max_distance = 3, max_time = 50,
+             # chains, cores, and iter set to make the example small and fast
+             chains = 1, iter = 5E2, cores = 1)
+
 }
 \seealso{
 The Longituinal \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Vignette} for \code{stap_glmer}.

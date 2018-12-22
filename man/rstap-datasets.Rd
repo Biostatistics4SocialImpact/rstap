@@ -28,31 +28,6 @@ Simulated data for the longitudinal simulation
 
 Source: \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Longitudinal Vignette}
 
-\item{\code{homog_longitudinal_distance_data}}{
-A subset of \code{homog_longitudinal_bef_data}'s columns
-\itemize{
-\item \code{subj_ID}: The subject unique identifier
-\item\code{measure_ID}: The measurement unique identifier
-\item \code{bef_ID}: The Built Environment Feature unique identifier
-\item \code{class}: The name of the Built Environment Feature class - only Coffee_Shop is included in this dataset
-\item \code{dist}: The euclidean distance between the subject and Coffee Shop's locations
-}
-}
-
-Source: \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Longitudinal Vignette}
-
-item{\code{homog_longitudinal_time_data}}{
-A subset of \code{homog_longitudinal_bef_data}'s columns
-\itemize{
-\item \code{subj_ID}: The subject unique identifier
-\item \code{measure_ID}: The measurement unique identifier
-\item \code{bef_ID}: The Built Environment Feature unique identifier
-\item \code{class}: The name of the Built Environment Feature class - only Coffee_Shop is included in this dataset
-\item \code{time}: The time the subject has spent at the associated location with the associated Coffee Shop 
-}}
-
-Source: \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Longitudinal Vignette}
-
 \item{\code{homog_longitudinal_subject_data}}{
 \itemize{
 \item \code{subj_ID}: The subject unique identifier

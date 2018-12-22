@@ -46,6 +46,27 @@ to use the functions from the \pkg{bayesplot} package directly rather than
 via the \code{plot} method. Examples of both methods of plotting are given
 below.
 }
+\examples{
+\dontrun{
+# Not run for CRAN check speed
+fit_glm <- stap_glm(formula = y ~ sex + sap(Fast_Food),
+                   subject_data = homog_subject_data,
+                     distance_data = homog_distance_data,
+                     family = gaussian(link = 'identity'),
+                     subject_ID = 'subj_id',
+                     prior = normal(location = 0, scale = 5, autoscale = F),
+                     prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                     prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                     prior_theta = log_normal(location = 1, scale = 1),
+                     prior_aux = cauchy(location = 0,scale = 5),
+                     max_distance = max(homog_distance_data$Distance),
+                     chains = CHAINS, iter = ITER,
+                     refresh = -1,verbose = F)
+
+plot(fit_glm, plotfun = 'mcmc_hist', pars = "Fast_Food")
+}
+
+}
 \references{
 Gabry, J., Simpson, D., Vehtari, A., Betancourt, M., and Gelman,
   A. (2018). Visualization in Bayesian workflow. \emph{Journal of the Royal

@@ -88,7 +88,7 @@
 #' @examples
 #' if (!exists("example_model")) example(example_model)
 #' posterior_interval(example_model)
-#' posterior_interval(example_model, regex_pars = "FF")
+#' posterior_interval(example_model, regex_pars = "Coffee_Shop")
 posterior_interval.stapreg <-
   function(object,
            prob = 0.9,

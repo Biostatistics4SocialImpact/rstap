@@ -15,8 +15,11 @@ stap_glmer(formula, family = gaussian(), subject_data = NULL,
   adapt_delta = NULL)
 
 stap_lmer(formula, subject_data = NULL, distance_data = NULL,
-  time_data = NULL, weights, offset, contrasts = NULL, ...,
-  prior = normal(), prior_intercept = normal(),
+  time_data = NULL, subject_ID = NULL, group_ID = NULL,
+  max_distance = NULL, max_time = NULL, weights, offset,
+  contrasts = NULL, ..., prior = normal(),
+  prior_intercept = normal(), prior_stap = normal(),
+  prior_theta = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), prior_covariance = decov(),
   adapt_delta = NULL)
 }
@@ -149,6 +152,32 @@ The \code{stap_glmer} function is similar in syntax to
   The \code{stap_lmer} function is equivalent to \code{stap_glmer} with 
   \code{family = gaussian(link = "identity")}.
 }
+\examples{
+\dontrun{
+## subset to only include id, class name and distance variables
+distdata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","dist")]
+timedata <- homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","time")]
+## distance or time column must be numeric
+timedata$time <- as.numeric(timedata$time) 
+fit <- stap_glmer(y_bern ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
+                  family = binomial(link='logit'),
+                  subject_data = homog_longitudinal_subject_data,
+                  distance_data = distdata,
+                  time_data = timedata,
+                  subject_ID = 'subj_ID',
+                  group_ID = 'measure_ID',
+                  prior_intercept = normal(location = 25, scale = 4, autoscale = F),
+                  prior = normal(location = 0, scale = 4, autoscale=F),
+                  prior_stap = normal(location = 0, scale = 4),
+                  prior_theta = list(Coffee_Shop = list(spatial = log_normal(location = 1,
+                                                                             scale = 1),
+                                                         temporal = log_normal(location = 1,
+                                                                               scale = 1))),
+                  max_distance = 3, max_time = 50,
+                  chains = 4, refresh = -1, verbose = FALSE, 
+                  iter = 1E3, cores = 1)
+}
+}
 \references{
 Gelman, A. and Hill, J. (2007). \emph{Data Analysis Using
   Regression and Multilevel/Hierarchical Models.} Cambridge University Press,
@@ -163,5 +192,5 @@ User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinyst
 \code{\link{stapreg-methods}} and 
 \code{\link[lme4]{glmer}}.
 
-The \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{vignette} for \code{stap_glmer}
+The Longituinal \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Vignette} for \code{stap_glmer}.
 }

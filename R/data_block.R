@@ -474,13 +474,17 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
 .get_crs_u <- function(list_data,id_key,stap_col,stap_covs){
 
     if(length(id_key)==2){
+        if(length(stap_covs)>1)
         freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key[1]) + get(id_key[2]) + get(stap_col),
                                                               data = list_data[[x]], addNA = TRUE)[,,stap_covs[x]])
+        else
+            freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key[1]) + get(id_key[2]) + get(stap_col),
+                                                                   data = list_data[[x]], addNA = TRUE))
         id_data <- unique(list_data[[1]][,id_key])
         .merge_u_data <- function(id_data,freq_data,id_key){
             freq_data <- data.frame(freq_data)
             nms <- colnames(freq_data)[1:2]
-            out <- merge(id_data,freq_data,by.x=id_key,by.y=nms,all.x=T)
+            out <- merge(id_data,freq_data,by.x=id_key,by.y = nms,all.x = T)
             out <- out[order(out[,2],out[,1]),"Freq"]
             return(out)
         }

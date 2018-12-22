@@ -13,14 +13,16 @@ stap_glm(formula, family = gaussian(), subject_data = NULL,
   prior_theta = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), adapt_delta = NULL)
 
-stap_lm(formula, subject_data = NULL, distance_data = NULL,
-  time_data = NULL, weights, na.action = getOption("na.action",
-  "na.omit"), offset, contrasts = NULL, ..., prior = normal(),
-  prior_intercept = normal(), prior_aux = exponential(),
-  adapt_delta = NULL)
+stap_lm(formula, family = gaussian(), subject_data = NULL,
+  distance_data = NULL, time_data = NULL, subject_ID = NULL,
+  max_distance = NULL, max_time = NULL, weights, offset = NULL,
+  model = TRUE, y = TRUE, contrasts = NULL, ..., prior = normal(),
+  prior_intercept = normal(), prior_stap = normal(),
+  prior_theta = log_normal(location = 1L, scale = 1L),
+  prior_aux = exponential(), adapt_delta = NULL)
 }
 \arguments{
-\item{formula}{Same as for \code{link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}
+\item{formula}{Same as for \code{\link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}
 
 \item{family}{Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson families.}
 
@@ -41,6 +43,9 @@ stap_lm(formula, subject_data = NULL, distance_data = NULL,
 \item{model}{logical denoting whether or not to return the fixed covariates model frame object in the fitted object}
 
 \item{y}{In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.}
+
+\item{contrasts}{Same as \code{\link[stats]{glm}}, but
+rarely specified.}
 
 \item{...}{Further arguments passed to the function in the \pkg{rstap} 
 to specify \code{iter}, \code{chains}, \code{cores}, \code{refresh}, etc.}
@@ -120,9 +125,6 @@ prior ---i.e., to use a flat (improper) uniform prior--- set
 \code{prior_aux} to \code{NULL}.}
 
 \item{adapt_delta}{See the \link{adapt_delta} help page for details.}
-
-\item{na.action, contrasts}{Same as \code{\link[stats]{glm}}, but
-rarely specified.}
 }
 \value{
 A \link[=stapreg-objects]{stapreg} object is returned 
@@ -139,6 +141,23 @@ prior distributions for the coefficients, intercept, spatial-temporal scales, an
 The \code{stap_glm} function is similar in syntax to
 \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
+}
+\examples{
+
+fit_glm <- stap_glm(formula = y ~ sex + sap(Fast_Food),
+                   subject_data = homog_subject_data[1:100,], # for speed of example only
+                     distance_data = homog_distance_data,
+                     family = gaussian(link = 'identity'),
+                     subject_ID = 'subj_id',
+                     prior = normal(location = 0, scale = 5, autoscale = FALSE),
+                     prior_intercept = normal(location = 25, scale = 5, autoscale = FALSE),
+                     prior_stap = normal(location = 0, scale = 3, autoscale = FALSE),
+                     prior_theta = log_normal(location = 1, scale = 1),
+                     prior_aux = cauchy(location = 0,scale = 5),
+                     max_distance = max(homog_distance_data$Distance),
+                     chains = 1, iter = 300, # for speed of example only
+                     refresh = -1, verbose = FALSE) 
+
 }
 \references{
 Gelman, A. and Hill, J. (2007). \emph{Data Analysis Using

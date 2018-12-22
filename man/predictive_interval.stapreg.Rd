@@ -67,6 +67,21 @@ internally, whereas the method for objects of class \code{"ppd"} accepts the
 matrix returned by \code{posterior_predict} as input and can be used to avoid
 multiple calls to \code{posterior_predict}.
 }
+\examples{
+if (!exists("example_model")) example(example_model)
+
+predictive_interval(example_model)
+newdata <- data.frame(subj_ID = 1, measure_ID = 1,
+                     centered_income = -1, sex = 0,
+                     centered_age = -1) 
+# newdata
+predictive_interval(example_model, newsubjdata = newdata,
+                    newdistdata = distdata,
+                    newtimedata = timedata,
+                    subject_ID = "subj_ID",
+                    group_ID = "measure_ID")
+
+}
 \seealso{
 \code{\link{predictive_error}}, \code{\link{posterior_predict}}, 
   \code{\link{posterior_interval}}

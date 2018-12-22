@@ -19,7 +19,7 @@
 #' @templateVar pkg stats
 #' @templateVar pkgfun glm
 #' @templateVar sameargs offset,weights
-#' @templateVar rareargs na.action,contrasts
+#' @templateVar rareargs contrasts
 #' @templateVar fun stap_glm
 #' @templateVar fitfun stan_glm.fit
 #' @template return-stapreg-object
@@ -161,7 +161,6 @@ stap_glm <- function(formula,
                  max_distance = max_distance,
                  offset, weights, z = Z, y = Y,
                  model = mf,  terms = mt, call,
-                 na.action = attr(mf, "na.action"),
                  contrasts = attr(Z, "contrasts"),
                  stan_function = "stap_glm")
     out <- stapreg(fit)

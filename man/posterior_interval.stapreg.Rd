@@ -79,6 +79,11 @@ can estimate. Additional possibilities may be provided in future releases as
 more models become available.
 }
 }
+\examples{
+if (!exists("example_model")) example(example_model)
+posterior_interval(example_model)
+posterior_interval(example_model, regex_pars = "Coffee_Shop")
+}
 \references{
 Gelman, A. and Carlin, J. (2014). Beyond power calculations:
 assessing Type S (sign) and Type M (magnitude) errors. \emph{Perspectives on

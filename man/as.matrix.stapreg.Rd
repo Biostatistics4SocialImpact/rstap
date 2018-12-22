@@ -38,6 +38,23 @@ from a fitted model object as a matrix, data frame, or array. The
 \code{as.matrix} and \code{as.data.frame} methods merge all chains together, 
 whereas the \code{as.array} method keeps the chains separate.
 }
+\examples{
+\donttest{
+if (!exists("example_model")) example(example_model)
+# Extract posterior sample after MCMC
+draws <- as.matrix(example_model)
+print(dim(draws))
+
+# For example, we can see that the median of the draws for the intercept 
+# is the same as the point estimate rstanarm uses
+print(median(draws[, "(Intercept)"]))
+print(example_model$coefficients[["(Intercept)"]])
+
+# The as.array method keeps the chains separate
+draws_array <- as.array(example_model)
+print(dim(draws_array)) # iterations x chains x parameters
+}
+}
 \seealso{
 \code{\link{stapreg-methods}}
 }
