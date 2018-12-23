@@ -71,9 +71,9 @@ multiple calls to \code{posterior_predict}.
 if (!exists("example_model")) example(example_model)
 
 predictive_interval(example_model)
-newdata <- data.frame(subj_ID = 1, measure_ID = 1,
-                     centered_income = -1, sex = 0,
-                     centered_age = -1) 
+newdata <- data.frame(subj_ID = c(1,1), measure_ID = c(1,2),
+                     centered_income = c(-1,-.7), sex = c(0,0),
+                     centered_age = c(-1,-.7)) 
 # newdata
 predictive_interval(example_model, newsubjdata = newdata,
                     newdistdata = distdata,

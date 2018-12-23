@@ -474,13 +474,21 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
 .get_crs_u <- function(list_data,id_key,stap_col,stap_covs){
 
     if(length(id_key)==2){
-        if(length(stap_covs)>1)
-        freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key[1]) + get(id_key[2]) + get(stap_col),
-                                                              data = list_data[[x]], addNA = TRUE)[,,stap_covs[x]])
-        else
-            freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key[1]) + get(id_key[2]) + get(stap_col),
-                                                                   data = list_data[[x]], addNA = TRUE))
         id_data <- unique(list_data[[1]][,id_key])
+        form <- as.formula(paste("~",paste(id_key,collapse = "+"),"+",stap_col))
+        if(length(stap_covs)>1){
+        freq <- lapply(1:length(list_data), function(x) xtabs( form,
+                                                              data = list_data[[x]],
+                                                              addNA = TRUE)[,,stap_covs[x]])
+        } else{
+            freq <- lapply(1:length(list_data), function(x) xtabs(form,
+                                                                   data = list_data[[x]],
+                                                                   addNA = TRUE))
+            for(i in 1:length(list_data)){
+                freq[[i]] <- freq[[i]][,,which(dimnames(freq[[i]])[[3]] == stap_covs[i]),drop =F]
+                # if(length)
+            }
+        }
         .merge_u_data <- function(id_data,freq_data,id_key){
             freq_data <- data.frame(freq_data)
             nms <- colnames(freq_data)[1:2]
