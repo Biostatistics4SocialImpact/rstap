@@ -27,12 +27,11 @@ if (!require(devtools)) {
   install.packages("devtools")
   library(devtools)
 }
-install_github("biostatistics4socialimpact/rstap", build_vignettes = FALSE)
+install_github("biostatistics4socialimpact/rstap")
 ```
 
-You can switch `build_vignettes` to `TRUE` but it takes longer to install and the 
-vignettes are already separately available from the 
-[stap website](https://biostatistics4socialimpact.github.io/rstap). 
+Note that vignettes for this package are separately available from the 
+[rstap website](https://biostatistics4socialimpact.github.io/rstap). 
 
 If installation fails, please let us know by [filing an issue](https://github.com/biostatistics4socialimpact/rstap/issues).
 
