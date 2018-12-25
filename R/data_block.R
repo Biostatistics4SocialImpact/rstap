@@ -429,12 +429,14 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
 .handle_missing_stap <- function(data,stap_covs,type_of_data = "time"){
     if(!any(lapply(data,nrow)==0))
         return(data)
+    else if(any(sapply(data, function(x) any(is.na(x)))))
+        stop("No NA data values allowed in BEF time or distance data")
     else{
         missing <- stap_covs[which(sapply(data,nrow)==0)]
         stap_covs <- stap_covs[which(sapply(data,nrow)!=0)]
         warning(paste("The following stap covariates are not present in ", type_of_data, 
                       paste(missing, collapse = ", ")), 
-                "THese will be ommitted from the analysis")
+                "These will be ommitted from the analysis")
         data <- lapply(data, function(x) if(nrow(x)!=0) x)
         data[sapply(data,is.null)] <- NULL
         return(data)

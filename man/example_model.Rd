@@ -18,11 +18,11 @@ A model for use in \pkg{rstap} examples.
 \examples{
  ## following lines make example run faster
 distdata <- subset(homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","dist")],
-                   subj_ID<=25)
+                   subj_ID<=10)
 timedata <- subset(homog_longitudinal_bef_data[,c("subj_ID","measure_ID","class","time")],
-                   subj_ID<=25)
+                   subj_ID<=10)
 timedata$time <- as.numeric(timedata$time)
-subjdata <- subset(homog_longitudinal_subject_data,subj_ID<=25)
+subjdata <- subset(homog_longitudinal_subject_data,subj_ID<=10)
 example_model <- 
   stap_glmer(y_bern ~ centered_income +  sex + centered_age + stap(Coffee_Shop) + (1|subj_ID),
              family = gaussian(),
@@ -40,7 +40,7 @@ example_model <-
                                                                                scale = 1))),
              max_distance = 3, max_time = 50,
              # chains, cores, and iter set to make the example small and fast
-             chains = 1, iter = 5E2, cores = 1)
+             chains = 1, iter = 25, cores = 1)
 
 }
 \seealso{
