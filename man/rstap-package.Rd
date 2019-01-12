@@ -10,4 +10,5 @@ rstap is a package that implements spatial-temporal aggregated predictor functio
 }
 \references{
 Stan Development Team (2018). RStan: the R interface to Stan. R package version 2.17.3. http://mc-stan.org
+Adam Peterson: “rstap: An R Package for Spatial Temporal Aggregated Predictor Models”, 2018; [http://arxiv.org/abs/1812.10208 arXiv:1812.10208].
 }

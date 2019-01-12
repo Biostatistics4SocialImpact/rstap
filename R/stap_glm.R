@@ -51,7 +51,7 @@
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 #' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
 #' @seealso The various vignettes for \code{stap_glm} at
-#'   \url{https://biostatistics4socialimpact.github.io/rstap/articles}
+#'   \url{https://biostatistics4socialimpact.github.io/rstap/articles} and the \href{http://arxiv.org/abs/1812.10208}{preprint} article.  
 #'
 #'@export stap_glm
 #'@examples

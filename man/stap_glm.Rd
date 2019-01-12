@@ -174,5 +174,5 @@ User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinyst
 \code{\link[stats]{glm}}.
 
 The various vignettes for \code{stap_glm} at
-  \url{https://biostatistics4socialimpact.github.io/rstap/articles}
+  \url{https://biostatistics4socialimpact.github.io/rstap/articles} and the \href{http://arxiv.org/abs/1812.10208}{preprint} article.
 }

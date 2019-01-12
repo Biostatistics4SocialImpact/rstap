@@ -192,5 +192,6 @@ User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinyst
 \code{\link{stapreg-methods}} and 
 \code{\link[lme4]{glmer}}.
 
-The Longituinal \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Vignette} for \code{stap_glmer}.
+The Longituinal \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Vignette} for \code{stap_glmer} 
+and the \href{http://arxiv.org/abs/1812.10208}{preprint} article available through arXiv.
 }

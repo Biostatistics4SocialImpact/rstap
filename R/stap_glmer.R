@@ -64,7 +64,8 @@
 #'   The \code{stap_lmer} function is equivalent to \code{stap_glmer} with 
 #'   \code{family = gaussian(link = "identity")}. 
 #'   
-#' @seealso The Longituinal \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Vignette} for \code{stap_glmer}.
+#' @seealso The Longituinal \href{https://biostatistics4socialimpact.github.io/rstap/articles/longitudinal-I.html}{Vignette} for \code{stap_glmer} 
+#' and the \href{http://arxiv.org/abs/1812.10208}{preprint} article available through arXiv.
 #'    
 #' @importFrom lme4 glFormula
 #' @importFrom Matrix Matrix t
