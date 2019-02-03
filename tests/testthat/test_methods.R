@@ -169,7 +169,7 @@ test_that("VarCorr returns correct structure", {
 # ranef,fixef,coef --------------------------------------------------------
 test_that("ranef returns correct structure", {
     expect_error(ranef(stap_glm1), "stan_glmer and stan_lmer models only")
-    re_stap1 <- ranef(stap_glmer1);re_glmer1 <- ranef(glmer1)
+    re_stap1 <- ranef(stap_glmer1);re_glmer1 <- ranef(glmer1, condVar=FALSE)
     expect_s3_class(re_stap1,class(re_glmer1))
     check_att_names(re_stap1,re_glmer1)
 
