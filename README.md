@@ -1,7 +1,10 @@
 [<img src = "https://avatars1.githubusercontent.com/u/28572271?s=400&u=4cfc3435602d8ad1cc847faa0000caa418713ce4&v=4" height = "42" width = "42"/>](https://biostatistics4socialimpact.github.io)
 # rstap
+<!---
 [![Build Status](https://travis-ci.org/Biostatistics4SocialImpact/rstap.svg?branch=master)](https://travis-ci.org/Biostatistics4SocialImpact/rstap)
+-->
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/rstap?color=green)](http://cran.r-project.org/package=rstap)
 
 ## Spatial-Temporal Aggregated Predictor Models Implemented in R
 
