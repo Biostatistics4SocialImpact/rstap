@@ -4,10 +4,12 @@ f1 <- y ~ sex + stap(Fast_Food)
 f2 <- y ~ Age + stap(Fast_Food) + sap(Coffee_Shops)
 f3 <- y ~ Age + stap(Fast_Food,cerf,exp) + sex + tap(Coffee_Shops)
 f4 <- y ~ Age + stap(Fast_Food) + sex + (1|ID)
+f5 <- y ~ Age + stap_dnd(Fast_Food) + sex
 m3 <- rbind(c(2,3),c(0,1))
 a1 <- c("Fast_Food"=2)
 a2 <- c(a1,"Coffee_Shops"=0)
 a3 <- c("Fast_Food"=2,"Coffee_Shops"=1)
+a5 <- c("")
 
 test_that("correctly assigns weights",{
     expect_equal(get_weight_code(all.names(f1),'Fast_Food',c(2)),
@@ -50,8 +52,10 @@ context("test stap data extraction functions")
 f1 <- BMI ~ Age +  sap(Coffee_Shops)
 f2 <- BMI ~ Age + tap(Coffee_Shops)
 f3 <- BMI ~ Age + sap(Fast_Food)
-f4 <- BMI ~ Age + stap(Coffee_Shops)
+f4 <- BMI ~ Age + stap_log(Coffee_Shops)
 f5 <- BMI ~ Age + stap(Coffee_Shops)
+f6 <- BMI ~ Age + sap_dnd_bar(Coffee_Shops)
+f7 <- BMI ~ Age + tap_bar(Coffee_Shops)
 distance_data <- data.frame(subj_id = c(1:10,1:10),
                             BEF = c(rep("Coffee_Shops",10),rep("Fast_Food",10)),
                             dist = rexp(20))
@@ -114,6 +118,8 @@ stap_data_2 <- extract_stap_data(f2)
 stap_data_3 <- extract_stap_data(f3)
 stap_data_4 <- extract_stap_data(f4)
 stap_data_5 <- extract_stap_data(f5)
+stap_data_6 <- extract_stap_data(f6)
+stap_data_7 <- extract_stap_data(f7)
 
 test_that("extract_crs_data correctly errors when no distance or time data are given",{
     expect_error(extract_crs_data(formula = y ~ X,

@@ -25,9 +25,12 @@ stap_data <- function(object) {
     Q_s <- sum(stap_code == 0)
     Q_st <- sum(stap_code == 2)
     Q <- length(object)
+    # dnd <- 
     covariates <- sapply(object, function(x) x$covariate) 
     weight_mats <-  t(sapply(object, function(x) x$weight_code))
     log_switch <- array(sapply(object, function(x) x$log_switch), dim = Q)
+    dnd_code <- array(sapply(object, function(x) x$dnd_code), dim = Q)
+    bar_code <- array(sapply(object, function(x) x$bar_code), dim = Q)
     t_only <- Q_t == Q
     d_only <- Q_s == Q
     any_t <- Q_t > 0
@@ -38,6 +41,8 @@ stap_data <- function(object) {
                  stap_code,
                  weight_mats,
                  log_switch,
+                 dnd_code,
+                 bar_code,
                  Q_t,
                  Q_s,
                  Q_st,
@@ -82,6 +87,18 @@ any_stap <- function(x)
 
 check_dups <- function(x)
     UseMethod("check_dups")
+
+any_dnd <- function(x)
+    UseMethod("any_dnd")
+
+any_bar <- function(x)
+    UseMethod("any_bar")
+
+any_dnd.stap_data <- function(object)
+    return(any(object$dnd_code==1))
+
+any_bar.stap_data <- function(object)
+    return(any(object$bar_code==1))
 
 sap_covs.stap_data <- function(object)
     object$covariates[which(object$stap_code==0)]

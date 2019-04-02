@@ -1,3 +1,16 @@
+# Part of the rstap2 package for estimating model parameters
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+# # This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the # GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #' Fitting Generalized Linear STAP models
 #'
 #'@template args-adapt_delta
@@ -49,7 +62,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     supported_links <- supported_glm_links(supported_families[fam])
     link <- which(supported_links == family$link)
     if(!length(link))
-        # stop("'link' must be one of", paste( supported_links, collapse = ', '))
+         stop("'link' must be one of", paste( supported_links, collapse = ', '))
     if (binom_y_prop(y, family, weights))
         stop("To specify 'y' as proportion of successes and 'weights' as ",
              "number of trials please use stan_glm rather than calling ",

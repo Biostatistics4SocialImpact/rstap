@@ -1,5 +1,4 @@
-# Part of the rstap package for estimating model parameters
-# Copyright (c) 2018
+# Part of the rstap2 package for estimating model parameters
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -161,7 +160,28 @@ stap_glmer <-
                                id_key = c(subject_ID,group_ID),
                                max_distance,
                                max_time)
-  stapfit <- stap_glm.fit(y = y,z = Z, 
+  if(any_dnd(stap_data) || any_bar(stap_data)){
+      stapfit <- stapdnd_glm.fit(y = y, z = Z,
+                                  subj_n =  table(glmod$reTrms$flist[[subject_ID]]),
+                                  subj_matrix = as.matrix(Matrix::fac2sparse(glmod$reTrms$flist[[subject_ID]])),
+                                  dists_crs = crs_data$d_mat,
+                                  u_s = crs_data$u_s,
+                                  times_crs = crs_data$t_mat,
+                                  u_t = crs_data$u_t,
+                                  stap_data = stap_data,
+                                  max_distance = crs_data$max_distance,
+                                  max_time =crs_data$max_time,
+                                  weights = weights,
+                                  offset = offset, family = family,
+                                  prior = prior,
+                                  prior_intercept = prior_intercept,
+                                  prior_stap = prior_stap,
+                                  prior_aux = prior_aux, 
+                                  prior_theta = prior_theta,
+                                  adapt_delta = adapt_delta,
+                                  group = group,  ...)
+  }else{
+    stapfit <- stap_glm.fit(y = y,z = Z, 
                           dists_crs = crs_data$d_mat,
                           u_s = crs_data$u_s,
                           times_crs = crs_data$t_mat,
@@ -178,6 +198,7 @@ stap_glmer <-
                           prior_theta = prior_theta,
                           adapt_delta = adapt_delta,
                           group = group,  ...)
+  }
   sel <- apply(Z, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
   Z <- Z[ , !sel, drop = FALSE]
   W <- pad_reTrms(Ztlist = group$Ztlist, cnms = group$cnms, 

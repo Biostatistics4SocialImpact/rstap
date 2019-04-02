@@ -251,45 +251,7 @@ validate_timedata <- function(time_data){
     return(tcol_ix)
 }
 
-#' get_stapless_formula
-#'
-#' Get formula for typical covariates
-#'
-#' @param f formula from stap_glm
-#' @return formula without ~ stap() components
-#'
-get_stapless_formula <- function(f){
-    
-    with_bars <- f
-    f <- lme4::nobars(f)
-    stap_ics <- which(all.names(f)%in% c("stap","stap_log"))
-    sap_ics <- which(all.names(f) %in% c("sap","sap_log"))
-    tap_ics <- which(all.names(f) %in% c("tap","tap_log"))
-    if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
-        stop("No covariates designated as 'stap','sap',or 'tap'  in formula", .call = F)
-    stap_nms <- all.names(f)[stap_ics + 1]
-    sap_nms <- all.names(f)[sap_ics + 1]
-    tap_nms <- all.names(f)[tap_ics + 1]
-    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf","wei","cwei") 
-    formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
-    bar_components <- sapply(lme4::findbars(with_bars),paste_bars)
-    formula_components <- c(formula_components,bar_components)
-    if(any(grepl("scale",formula_components)))
-        stop("Don't use variable names with the word `scale` in them - this will cause problems with rstap methods downstream", call.=F)
-    if(!attr(terms(f),"intercept"))
-        formula_components <- c(formula_components,"0")
-    if(grepl("cbind",all.names(f))[2]){
-        new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
-        ix <- 3
-    }
-    else{
-        new_f1 <- paste0(formula_components[1],' ~ ')
-        ix <- 2
-    }
-    new_f2 <- paste(formula_components[ix:length(formula_components)],collapse = "+")
-    new_f <- paste0(new_f1,new_f2)
-    return(as.formula(new_f, env = environment(f)))
-}
+
 
 # Throw a warning if 'data' argument to modeling function is missing
 stop_data_arg_missing <- function() {

@@ -234,23 +234,27 @@ check_theta_priors <- function(prior_list,stap_code,coef_names){
 #
 extract_stap_data <- function(formula){
 
-
-   
     all_names <- all.names(formula)
-    staps <- c("sap","tap","stap","sap_log","tap_log","stap_log")
+    staps <- c("sap","tap","stap")
+    staps <- c(staps,paste0(staps,"_log"),paste0(staps,"_dnd"),paste0(staps,"_bar"),
+               paste0(staps,"_dnd_bar"),paste0(staps,"_bar_dnd"))
     stap_covs <- all_names[which(all_names%in% staps) +1]
     if(length(stap_covs)==0)
         stop("No stap covariates specified")
     stap_code <- get_stap_code(all_names,stap_covs)
+    dnd_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_dnd",x))*1
+    bar_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_bar",x))*1
     weight_code <- get_weight_code(all_names,stap_covs,stap_code)
     log_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_log",x))*1
-    out <- lapply(1:length(stap_covs),function(x) list(covariate = stap_covs[x],
+    out <- lapply(1:length(stap_covs),function(x){ list(covariate = stap_covs[x],
                                                     stap_type = get_stap_name(stap_code[x]),
                                                     stap_code = stap_code[x],
+                                                    dnd_code = dnd_code[x],
+                                                    bar_code = bar_code[x],
                                                     weight_function = get_weight_name(weight_code[x,]),
                                                     weight_code = weight_code[x,],
-                                                    log_switch = log_code[x]))
-    stap_data(out)
+                                                    log_switch = log_code[x])} )
+    return(stap_data(out))
 }
 
 get_weight_name <- function(code){
@@ -304,9 +308,13 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
 # @return vector of length equal to number of staps + saps + taps
 # with the appropriate coding for each appropriate predictor
 get_stap_code <- function(all_names,stap_covs){
-    staps <- list("sap"=0,"tap"=1,"stap"=2,
-                  "sap_log" = 0, "tap_log" = 1, "stap_log" = 2)
-    sapply(stap_covs,function(x) as.vector(staps[[all_names[which(all_names == x)-1]]]))
+    staps <- c("sap"=0,"tap"=1,"stap"=2,
+                "sap_log" = 0, "tap_log" = 1, "stap_log" = 2,
+                "sap_dnd" = 0, "tap_dnd" = 1, "stap_dnd" = 2,
+                "sap_bar" = 0, "tap_bar" = 1, "stap_bar" = 2,
+                "sap_dnd_bar" = 0, "tap_dnd_bar"=1,"stap_dnd_bar" =2,
+               "sap_bar_dnd" = 0, "tap_bar_dnd"=1,"stap_dnd_bar" =2)
+    sapply(unique(stap_covs),function(x) as.vector(staps[all_names[which(all_names == x)-1]]))
 }
 
 # extract crs data
@@ -517,5 +525,48 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         dimnames(u) <- NULL
         return(u)
     }
+}
+
+#' get_stapless_formula
+#'
+#' Get formula for typical covariates
+#'
+#' @param f formula from stap_glm
+#' @return formula without ~ stap() components
+#'
+get_stapless_formula <- function(f){
+    
+    with_bars <- f
+    f <- lme4::nobars(f)
+    stap_ics <- which(all.names(f)%in% c("stap","stap_log","stap_dnd_bar",
+                                         "stap_dnd","stap_bar","stap_bar_dnd"))
+    sap_ics <- which(all.names(f) %in% c("sap","sap_log","sap_dnd_bar",
+                                         "sap_dnd","sap_bar","sap_bar_dnd"))
+    tap_ics <- which(all.names(f) %in% c("tap","tap_log","sap_dnd_bar",
+                                         "sap_dnd","sap_bar","sap_bar_dnd"))
+    if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
+        stop("No covariates designated as 'stap','sap',or 'tap'  in formula", .call = F)
+    stap_nms <- all.names(f)[stap_ics + 1]
+    sap_nms <- all.names(f)[sap_ics + 1]
+    tap_nms <- all.names(f)[tap_ics + 1]
+    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf","wei","cwei") 
+    formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
+    bar_components <- sapply(lme4::findbars(with_bars),paste_bars)
+    formula_components <- c(formula_components,bar_components)
+    if(any(grepl("scale",formula_components)))
+        stop("Don't use variable names with the word `scale` in them - this will cause problems with rstap methods downstream", call.=F)
+    if(!attr(terms(f),"intercept"))
+        formula_components <- c(formula_components,"0")
+    if(grepl("cbind",all.names(f))[2]){
+        new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
+        ix <- 3
+    }
+    else{
+        new_f1 <- paste0(formula_components[1],' ~ ')
+        ix <- 2
+    }
+    new_f2 <- paste(formula_components[ix:length(formula_components)],collapse = "+")
+    new_f <- paste0(new_f1,new_f2)
+    return(as.formula(new_f, env = environment(f)))
 }
 
