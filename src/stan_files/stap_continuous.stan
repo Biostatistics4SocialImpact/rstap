@@ -48,7 +48,7 @@ transformed parameters {
 
   // defines beta, delta, X, X_tilde
 #include /tparameters/tparameters_glm.stan
-  if (t > 0) {
+if (t > 0) {
     if (special_case == 1) {
       int start = 1;
       theta_L = scale .* tau * aux;
@@ -65,6 +65,7 @@ transformed parameters {
       b = make_b(z_b, theta_L, p, l);
     }
   }
+
 }
 model {
 #include /model/make_eta.stan
@@ -114,7 +115,7 @@ model {
     }
 
 #include /model/priors_glm.stan
-  if (t > 0) decov_lp (z_b, z_T, rho, zeta, tau, regularization, del, shape, t, p);
+  if(t>0)  decov_lp (z_b, z_T, rho, zeta, tau, regularization, del, shape, t, p);
 }
 generated quantities {
   real alpha[has_intercept];
@@ -161,6 +162,6 @@ generated quantities {
     }
     mean_PPD = mean_PPD / len_y;
     }
-    adj_beta = beta ./ colsds(X); 
+    adj_beta = beta ./ colsds(X);
   }
 }
