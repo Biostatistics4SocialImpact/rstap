@@ -1,5 +1,4 @@
-
-  vector[K] delta;
+vector[K] delta;
   vector[Q] beta;
   matrix[N,Q] X;
   matrix[N,Q] X_tilde;

@@ -161,9 +161,15 @@ stap_glmer <-
                                max_distance,
                                max_time)
   if(any_dnd(stap_data) || any_bar(stap_data)){
+      subj_matrix <- as.matrix(Matrix::fac2sparse(glmod$reTrms$flist[[subject_ID]]))
+      subj_n_vec <- 1/table(glmod$reTrms$flist[[subject_ID]])
+      if(num_dnd(stap_data) > 1)
+          subj_n_mat <- Reduce(cbind,lapply(1:(sum(stap_data$dnd_code)),function(x) x))
+      else
+          subj_n_mat <- matrix(subj_n_vec,ncol=1)
       stapfit <- stapdnd_glm.fit(y = y, z = Z,
-                                  subj_n =  table(glmod$reTrms$flist[[subject_ID]]),
-                                  subj_matrix = as.matrix(Matrix::fac2sparse(glmod$reTrms$flist[[subject_ID]])),
+                                  subj_n = subj_n_mat,
+                                  subj_matrix = subj_matrix,
                                   dists_crs = crs_data$d_mat,
                                   u_s = crs_data$u_s,
                                   times_crs = crs_data$t_mat,
@@ -220,6 +226,8 @@ stap_glmer <-
                offset, weights,
                z = Z, w = W, 
                y = y, data,
+               subj_matrix = subj_matrix,
+               subj_n = subj_n,
                call, terms = NULL,
                model = NULL,
                contrasts, glmod, 

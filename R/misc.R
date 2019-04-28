@@ -821,3 +821,11 @@ get_time_constraint <- function(stap_data, quantile = 0.975){
 
     return(out)
 }
+
+check_IDS <- function(sid, gids,sdf,ddf,need_gid = F){
+    if(is.null(sid))
+        stop("Subject ID must be provided for all stap_ functions")
+    if(is.null(gid) && need_gid)
+        stop("Group ID must be provided for stap_ functions involving dnd components or any stap_glmer functions")
+
+}

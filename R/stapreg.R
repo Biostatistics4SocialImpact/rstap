@@ -41,8 +41,14 @@ stapreg <- function(object){
                           stanmat[,grep("_scale",coef_names(stap_data),value = T), drop=F],
                           stap_data)
     X_tilde <- array(NA, dim(x))
-    for(n_ix in 1:dim(x)[1]) X_tilde[n_ix,,] <- as.matrix(scale(x[n_ix,,]))
-    colnames(stanmat) <- c(colnames(object$z),
+    if(any_dnd(stap_data)){
+         X_tilde <- apply(x,1,function(x) x - t(object$subj_matrix) %*% ((object$subj_matrix %*% x) * object$subj_n) )
+         X_tilde <- array(X_tilde,dim(x))
+    }
+    else{
+        for(n_ix in 1:dim(x)[1]) X_tilde[n_ix,,] <- as.matrix(scale(x[n_ix,,]))
+    }
+        colnames(stanmat) <- c(colnames(object$z),
                            coef_names(stap_data),
                            if(mer) colnames(object$w))
                            
@@ -110,7 +116,7 @@ stapreg <- function(object){
     if(mer)
         out$glmod <- object$glmod
 
-    structure(out, class = c("stapreg", "glm","lm"))
+    structure(out, class = c("stapreg"))
 
 }
 

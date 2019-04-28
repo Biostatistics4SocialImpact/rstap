@@ -94,6 +94,51 @@ any_dnd <- function(x)
 any_bar <- function(x)
     UseMethod("any_bar")
 
+num_norm <- function(x)
+    UseMethod("num_norm")
+
+num_dnd <- function(x)
+    UseMethod("num_dnd")
+
+num_dnd <- function(object)
+    return(sum(object$dnd_code))
+
+num_bar <- function(x)
+    UseMethod("num_dnd")
+
+any_sbar <- function(x)
+    UseMethod("any_sbar")
+
+any_tbar <- function(x)
+    UseMethod("any_tbar")
+
+bar_ics <- function(x)
+    UseMethod("any_tbar")
+
+any_norm <- function(x)
+    UseMethod("any_norm")
+
+num_bar <- function(object)
+    return(sum(object$bar_code))
+
+bar_ics <- function(object)
+    return(which(object$bar_code==1))
+
+dnd_ics <- function(object)
+    return(which(object$dnd_code==1))
+
+any_norm <- function(object)
+    return(num_norm(object)>0)
+
+num_norm.stap_data <- function(object){
+    bar_array <- which(object$bar_code==1)
+    num_bar <- sum(object$bar_code)
+    dnd_array <- which(object$dnd_code==1)
+    num_dnd <- num_dnd(object)
+    return(object$Q - (num_bar + num_dnd - length(intersect(bar_array,dnd_array)) ))
+    
+}
+    
 any_dnd.stap_data <- function(object)
     return(any(object$dnd_code==1))
 
@@ -117,6 +162,22 @@ any_tap.stap_data <- function(object)
 
 any_stap.stap_data <- function(object)
     object$any_st
+
+any_sbar.stap_data <- function(object){
+    if(length(intersect( which(object$stap_code == 0),
+                         which(object$bar_code == 1))))
+        return(TRUE)
+    else
+        return(FALSE)
+}
+
+any_tbar.stap_data <- function(object){
+    if(length(intersect( which(object$stap_code == 1),
+                         which(object$bar_code == 1))))
+        return(TRUE)
+    else
+        return(FALSE)
+}
 
 coef_names.stap_data <- function(object){
     get_name <- function(x,y){
