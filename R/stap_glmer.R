@@ -226,12 +226,14 @@ stap_glmer <-
                offset, weights,
                z = Z, w = W, 
                y = y, data,
-               subj_matrix = subj_matrix,
-               subj_n = subj_n,
                call, terms = NULL,
                model = NULL,
                contrasts, glmod, 
                stan_function = "stap_glmer")
+  if(any_dnd(stap_data) || any_bar(stap_data)) {
+      fit$subj_matrix <- subj_matrix
+      fit$subj_n <- subj_n
+  }
   out <- stapreg(fit)
   class(out) <- c(class(out), "lmerMod")
   

@@ -128,7 +128,7 @@ test_that("extract_crs_data correctly errors when no distance or time data are g
 })
 
 test_that("extract_crs_data correctly extracts data",{
-    expect_equal(extract_crs_data(stap_data_1,
+    expect_equivalent(extract_crs_data(stap_data_1,
                                   subject_data = subj_data,
                                   distance_data = distance_data,
                                   time_data = NULL,
@@ -136,28 +136,28 @@ test_that("extract_crs_data correctly extracts data",{
                                   max_distance = max(distance_data$dist),
                                   max_time = NULL),
                  a1)
-    expect_equal(extract_crs_data(stap_data_2,subj_data,
+    expect_equivalent(extract_crs_data(stap_data_2,subj_data,
                                   distance_data = NULL,
                                   time_data = time_data,
                                   id_key = 'subj_id',
                                   max_distance = NULL,
                                   max_time = max(time_data$time)),
                  a2)
-    expect_equal(extract_crs_data(stap_data_3,subj_data,
+    expect_equivalent(extract_crs_data(stap_data_3,subj_data,
                                   distance_data = distance_data,
                                   time_data = NULL,
                                   id_key = 'subj_id',
                                   max_distance = max(distance_data$dist),
                                   max_time = NULL),
                  a3)
-    expect_equal(extract_crs_data(stap_data_4,subject_data = subj_data,
+    expect_equivalent(extract_crs_data(stap_data_4,subject_data = subj_data,
                                   distance_data = distance_data,
                                   time_data = time_data,
                                   id_key ='subj_id',
                                   max_distance = max(distance_data$dist),
                                   max_time = max(time_data$time)),
                  a4)
-    expect_equal(extract_crs_data(stap_data_5,
+    expect_equivalent(extract_crs_data(stap_data_5,
                                   subject_data = subj_data_long,
                                   distance_data = dist_data_long,
                                   time_data = time_data_long,
