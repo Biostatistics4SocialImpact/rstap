@@ -1,4 +1,4 @@
- // Log-priors for coefficients
+  // Log-priors for coefficients
        if (prior_dist == 1) target += normal_lpdf(z_delta | 0, 1);
   else if (prior_dist == 2) target += normal_lpdf(z_delta | 0, 1); // Student t via Cornish-Fisher expansion
   else if (prior_dist == 5) { // laplace
@@ -26,15 +26,29 @@
   }
 
   // Log-priors for stap_coefficients 
-       if (prior_dist_for_stap == 1) target += normal_lpdf(z_beta | 0, 1);
-  else if (prior_dist_for_stap == 2) target += normal_lpdf(z_beta | 0, 1); // Student t via Cornish-Fisher expansion
+       if (prior_dist_for_stap == 1){ 
+            target += normal_lpdf(z_beta | 0, 1);
+            target += normal_lpdf(z_beta_bar | 0 , 1);
+        }
+  else if (prior_dist_for_stap == 2){
+        target += normal_lpdf(z_beta | 0, 1);
+        target += normal_lpdf(z_beta_bar | 0 , 1);
+  }
   else if (prior_dist_for_stap == 5) { // laplace
     target += normal_lpdf(z_beta | 0, 1);
+    target += normal_lpdf(z_beta_bar | 0, 1);
+    target += exponential_lpdf(mix_stap[1] | 1);
+    target += exponential_lpdf(mix_stap[1] | 1);
     target += exponential_lpdf(mix_stap[1] | 1);
   }
   else if (prior_dist_for_stap == 6) { // lasso
     target += normal_lpdf(z_beta | 0, 1);
+    target += normal_lpdf(z_beta_bar | 0, 1);
     target += exponential_lpdf(mix_stap[1] | 1);
+    target += exponential_lpdf(mix_stap[1] | 1);
+    target += exponential_lpdf(mix_stap[1] | 1);
+    target += chi_square_lpdf(one_over_lambda_stap[1] | prior_df[1]);
+    target += chi_square_lpdf(one_over_lambda_stap[1] | prior_df[1]);
     target += chi_square_lpdf(one_over_lambda_stap[1] | prior_df[1]);
   }
   else if (prior_dist_for_stap == 7) { // product_normal
