@@ -167,9 +167,8 @@ stap_glmer <-
           subj_n_mat <- Reduce(cbind,lapply(1:(sum(stap_data$dnd_code)),function(x) x))
       else
           subj_n_mat <- matrix(subj_n_vec,ncol=1)
-      stapfit <- stapdnd_glm.fit(y = y, z = Z,
-                                  subj_n = subj_n_mat,
-                                  subj_matrix = subj_matrix,
+      stapfit <- stapdnd_glm.fit(y = y, z = Z,subject_n = subj_n_mat,
+                                  subject_matrix = subj_matrix,
                                   dists_crs = crs_data$d_mat,
                                   u_s = crs_data$u_s,
                                   times_crs = crs_data$t_mat,
@@ -185,7 +184,7 @@ stap_glmer <-
                                   prior_aux = prior_aux, 
                                   prior_theta = prior_theta,
                                   adapt_delta = adapt_delta,
-                                  group = group,  ...)
+                                  group = group)
   }else{
     stapfit <- stap_glm.fit(y = y,z = Z, 
                           dists_crs = crs_data$d_mat,

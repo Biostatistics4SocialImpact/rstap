@@ -4,38 +4,32 @@ functions {
 #include /functions/continuous_likelihoods.stan
 }
 data{
-
-    #include /data/dnd_data.stan
-    int N;
-    int M;
-    int n;
-    int K;
+#include /data/dnd_data.stan
     vector[N] y;
-    vector[K] zbar;
-    matrix[N,K] Z;
-    matrix[1,M] dists_crs;
-    int u_s[N,2];
-    matrix[n,N] subj_mat;
-    matrix[n,1] subj_n;
+
+
 }
 parameters{
     real<lower=0> theta_s;
     real gamma;
-    vector[1] beta;
+    vector[Q] beta;
     vector[K] delta;
-    real<lower=0> aux;
+    real<lower=0> aux_unscaled;
 }
 transformed parameters {
 
+    real aux = aux_unscaled;
     matrix[N,1] X;
     matrix[N,1] X_bar;
     matrix[N,1] X_delta;
     matrix[N,1] X_tilde;
-    for(n_ix in 1:N){
-        if(u_s[n_ix,1] > u_s[n_ix,2])
-            X[n_ix,1] = 0;
-        else
-            X[n_ix,1] = sum(exp(- dists_crs[1,u_s[n_ix,1]:u_s[n_ix,2]] * inv(theta_s)));
+    for(q_ix in 1:Q){
+        for(n_ix in 1:N){
+            if(u_s[n_ix,q_ix] > u_s[n_ix,q_ix])
+                X[n_ix,q_ix] = 0;
+            else
+                X[n_ix,q_ix] = sum(exp(- dists_crs[1,u_s[n_ix,(q_ix*2) -1]:u_s[n_ix,(q_ix * 2 )]] * inv(theta_s)));
+        }
     }
 
     X_bar = subj_mat' * ((subj_mat * X) .* subj_n);
@@ -44,9 +38,8 @@ transformed parameters {
 }
 model {
 
-    vector[N] eta;
-    eta = gamma +  Z*delta + X_tilde*beta;
-    y ~ normal(eta,aux);
+#include /model/make_dnd_eta.stan
+    y ~ normal(gamma + eta,aux);
     aux ~ cauchy(0,5);
     beta ~ normal(0,3);
     delta ~ normal(0,3);
@@ -62,9 +55,8 @@ generated quantities{
     alpha = gamma - dot_product(zbar,delta) - mean(X_tilde[,1]) * adj_beta[1];
     mean_PPD = 0;
     {
-    vector[N] eta;
-    eta = alpha +  Z*delta + X_tilde*beta;
-
+#include /model/make_dnd_eta.stan
+    eta = eta + gamma;
     for(n_ix in 1:N)
         mean_PPD = mean_PPD + normal_rng(eta[n_ix],aux);
     }

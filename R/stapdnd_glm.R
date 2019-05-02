@@ -53,7 +53,7 @@
 #' @seealso The various vignettes for \code{stap_glm} at
 #'   \url{https://biostatistics4socialimpact.github.io/rstap/articles} and the \href{http://arxiv.org/abs/1812.10208}{preprint} article.  
 #'
-#'@export stapdnd_glm
+#' @export stapdnd_glm
 #'
 stapdnd_glm <- function(formula,
                          family = gaussian(),
@@ -167,7 +167,6 @@ stapdnd_glm <- function(formula,
     return(out)
 }
 
-#' @rdname stap_glm
 #' @export
 stapdnd_lm <- 
   function(formula,
