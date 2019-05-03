@@ -64,7 +64,7 @@
 #' 
 #' @seealso \code{\link{summary.stapreg}}, \code{\link{stapreg-methods}}
 #' 
-print.stapreg <- function(x, digits = 1, ...) {
+print.stapreg <- function(x, digits = 1, include_X = FALSE, ...) {
   cat(x$stan_function)
   cat("\n family:      ", family_plus_link(x))
   cat("\n formula:     ", formula_string(formula(x,printing=T)))
@@ -80,13 +80,17 @@ print.stapreg <- function(x, digits = 1, ...) {
   mer <- is.mer(x)
 
   aux_nms <- .aux_name(x)
+  if(!include_X)
+    X_nms <- c(aux_nms,paste0("X_theta_",1:nobs(x)))
+  else
+    X_nms <- c()
   
     
   if (isTRUE(x$stan_function %in% c("stan_lm", "stan_aov"))) {
       aux_nms <- c("R2", "log-fit_ratio", aux_nms)
    }
     mat <- as.matrix(x$stapfit) # don't used as.matrix.stapreg method b/c want access to mean_PPD
-    nms <- setdiff(rownames(x$stap_summary), c("log-posterior", aux_nms))
+    nms <- setdiff(rownames(x$stap_summary), c("log-posterior", aux_nms,X_nms))
 
     if(mer) 
         nms <- setdiff(nms, grep("b\\[", nms, value = TRUE))

@@ -519,6 +519,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
               if(length(group)) "b",
               if(standata$len_theta_L) "theta_L",
               if (is_continuous | is_nb) "aux",
+              "X",
               "mean_PPD")
 
     sampling_args <- set_sampling_args(
@@ -574,6 +575,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
                    if (is_gamma) "shape",
                    if (is_ig) "lambda",
                    if (is_nb) "reciprocal_dispersion",
+                   paste0("X_theta_",1:nrow(ztemp)),
                    "mean_PPD",
                    "log-posterior")
     stapfit@sim$fnames_oi <- new_names

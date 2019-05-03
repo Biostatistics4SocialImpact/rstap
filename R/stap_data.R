@@ -25,7 +25,7 @@ stap_data <- function(object) {
     Q_s <- sum(stap_code == 0)
     Q_st <- sum(stap_code == 2)
     Q <- length(object)
-    # dnd <- 
+    
     covariates <- sapply(object, function(x) x$covariate) 
     weight_mats <-  t(sapply(object, function(x) x$weight_code))
     log_switch <- array(sapply(object, function(x) x$log_switch), dim = Q)
@@ -180,15 +180,21 @@ any_tbar.stap_data <- function(object){
 }
 
 coef_names.stap_data <- function(object){
-    get_name <- function(x,y){
-        switch(x+1,
-               c(y,paste0(y,"_spatial_scale")),
-               c(y,paste0(y,"_temporal_scale")),
-               c(y,
-                 paste0(y,"_spatial_scale"),
-                 paste0(y,"_temporal_scale")))
+    get_name <- function(x,y,z){
+        if(z==0)
+            return(switch(x+1,
+                   c(y,paste0(y,"_spatial_scale")),
+                   c(y,paste0(y,"_temporal_scale")),
+                   c(y,paste0(y,"_spatial_scale"),
+                     paste0(y,"_temporal_scale"))))
+        if(z==1)
+            return(switch(x+1,
+                   c(y,paste0(y,"_bar"),paste0(y,"_spatial_scale")),
+                   c(y,paste0(y,"_bar"),paste0(y,"_temporal_scale")),
+                   c(y,paste0(y,"_bar"),paste0(y,"_spatial_scale"),
+                     paste0(y,"_temporal_scale"))))
     }
-    as.vector(sapply(1:object$Q,function(z) get_name(object$stap_code[z],object$covariates[z])))
+    out <- as.vector(sapply(1:object$Q,function(z) get_name(object$stap_code[z],object$covariates[z],object$bar_code[z])))
 }
 
 beta_names.stap_data <- function(object){

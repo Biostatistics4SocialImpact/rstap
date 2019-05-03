@@ -13,6 +13,7 @@ parameters{
     real<lower=0> theta_s;
     real gamma;
     vector[Q] beta;
+    vector[num_bar] beta_bar;
     vector[K] delta;
     real<lower=0> aux_unscaled;
 }

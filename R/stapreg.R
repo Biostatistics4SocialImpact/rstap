@@ -27,7 +27,7 @@ stapreg <- function(object){
     family <- object$family
     y <- object$y
     Z <- object$z
-    nvars <- ncol(Z) + stap_data$Q_s*2 + stap_data $Q_t*2 +stap_data$Q_st*3  
+    nvars <- ncol(Z) + stap_data$Q_s*2 + stap_data $Q_t*2 +stap_data$Q_st*3  + num_bar(stap_data)
     if(mer){
         nvars <- nvars + ncol(object$w)
     }
@@ -36,19 +36,17 @@ stapreg <- function(object){
     stap_summary <- make_stap_summary(stapfit)
     coefs <- stap_summary[1:nvars, "50%"]
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
-    x <- .calculate_stap_X(object$dists_crs, object$times_crs,
-                          object$u_s, object$u_t,
-                          stanmat[,grep("_scale",coef_names(stap_data),value = T), drop=F],
-                          stap_data)
-    X_tilde <- array(NA, dim(x))
+    
+    x <- t(sapply(1:nobs,function(x) rstan::extract(stapfit,pars=paste0("X_theta_",x))[[1]]))
     if(any_dnd(stap_data)){
-         X_tilde <- apply(x,1,function(x) x - t(object$subj_matrix) %*% ((object$subj_matrix %*% x) * object$subj_n) )
-         X_tilde <- array(X_tilde,dim(x))
+      X_bar <- sapply(1:(ncol(x)),function(z) t(object$subj_matrix) %*% ((object$subj_matrix %*% x[,z,drop=F]) * object$subj_n))
+      X_tilde <- x - X_bar
     }
-    else{
-        for(n_ix in 1:dim(x)[1]) X_tilde[n_ix,,] <- as.matrix(scale(x[n_ix,,]))
-    }
-        colnames(stanmat) <- c(colnames(object$z),
+    else
+      X_tilde <- x
+    
+    
+    colnames(stanmat) <- c(colnames(object$z),
                            coef_names(stap_data),
                            if(mer) colnames(object$w))
                            
@@ -56,6 +54,7 @@ stapreg <- function(object){
     if(mer){
         mark <- sum(sapply(object$stapfit@par_dims[c("alpha","delta",
                                                      "beta",
+                                                     if(any_bar(stap_data)) "beta_bar",
                                                      "theta_s",
                                                      "theta_t")],prod))
         stanmat <- stanmat[,1:mark, drop = F]
@@ -63,10 +62,16 @@ stapreg <- function(object){
     covmat <- cov(stanmat)
     check_rhats(stap_summary[,"Rhat"])
     delta_beta <- coefs[grep("_scale",names(coefs),invert= TRUE)]
+    
 
 
    #linear predictor, fitted values 
-    design_mat <- if(mer) cbind(Z,apply(X_tilde,c(2,3),median),object$w) else cbind(Z,apply(X_tilde,c(2,3),median))
+    design_mat <- cbind(Z,apply(X_tilde,1,median))
+    if(any_bar(stap_data))
+      design_mat <- cbind(design_mat,apply(X_bar,1,median))
+    if(mer)
+      design_mat <- cbind(design_mat,object$w)
+
     eta <- linear_predictor(delta_beta, design_mat,object$offset)
     mu <- family$linkinv(eta)
 
