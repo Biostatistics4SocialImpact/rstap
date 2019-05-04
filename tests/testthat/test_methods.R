@@ -111,7 +111,7 @@ test_that("stapreg extractor methods work properly", {
 test_that("posterior_interval returns correct structure",{
     expect_silent(ci <- posterior_interval(stap_glm1, prob = 0.5))
     expect_silent(ci2 <- posterior_interval(stap_glm1, prob = 0.95, regex_pars = "sex"))
-    expect_identical(rownames(ci),c("(Intercept)","sexF","Fast_Food","Fast_Food_spatial_scale","sigma"))
+    expect_identical(rownames(ci),c("(Intercept)","sexF","Fast_Food","Fast_Food_spatial_scale","sigma",paste0("X_theta_",1:nrow(homog_subject_data))))
     expect_identical(rownames(ci2),c("sexF"))
     
     expect_silent(ci3 <- posterior_interval(stap_glmer1, prob = .95, regex_pars = "sex"))
@@ -197,10 +197,10 @@ test_that("as.matrix, as.data.frame, as.array methods work for MCMC", {
     arr <- as.array(stap_glm1)
     expect_identical(df, as.data.frame(mat))
     expect_identical(mat[1:2, 1], arr[1:2, 1, 1])
-    expect_equal(dim(mat), c(floor(ITER/2) * CHAINS, 5L))
-    expect_equal(dim(arr), c(floor(ITER/2), CHAINS, 5L))
-    expect_identical(last_dimnames(mat), c("(Intercept)", "sexF", "Fast_Food", "Fast_Food_spatial_scale",
-                                           "sigma"))
+    expect_equal(dim(mat), c(floor(ITER/2) * CHAINS, 555L))
+    expect_equal(dim(arr), c(floor(ITER/2), CHAINS, 555L))
+    expect_identical(last_dimnames(mat), c("(Intercept)","sexF","Fast_Food","Fast_Food_spatial_scale","sigma",
+                                           paste0("X_theta_",1:550)))
     expect_identical(last_dimnames(arr), last_dimnames(mat))
     
     # selecting only 1 parameter

@@ -276,7 +276,7 @@ pp_eta <- function(object, data, draws = NULL) {
   stanmat <- if (is.null(data$w)) 
       as.matrix.stapreg(object) else as.matrix(object$stapfit)
   delta_sel <- seq_len(ncol(z)) 
-  delta <- cbind(stanmat[, delta_sel , drop = FALSE],1)
+  delta <- stanmat[, delta_sel , drop = FALSE]
   stap_coefs_nms <- grep("_scale", coef_names(object$stap_data), 
                           invert = T, value = T)
 
@@ -285,16 +285,16 @@ pp_eta <- function(object, data, draws = NULL) {
   if (some_draws){
     delta <- delta[samp, , drop = FALSE]
     beta <- beta[samp,,drop=F] 
-    x <- x[samp,,,drop=F]
+    x <- x[,samp,drop=F]
   }
   num_draws <- if(some_draws) draws else S
   if(object$stap_data$Q == 1)
-      x_beta <- sapply(1:length(num_draws), function(i) x[i,,] * beta[i,])
+      x_beta <-  x %*% diag(as.vector(beta)) 
   else
       x_beta <- sapply(1:length(num_draws), function(i) x[i,,] %*% t(beta[i,,drop=F]))
    
 
-  eta <- linear_predictor(delta, cbind(z,x_beta), data$offset)
+  eta <- linear_predictor(cbind(delta,matrix(1,ncol=num_draws,nrow=nrow(delta))), cbind(z,x), data$offset)
   if (!is.null(data$w)) {
     b_sel <- grepl("^b\\[", colnames(stanmat)) 
     b <- stanmat[, b_sel, drop = FALSE]
