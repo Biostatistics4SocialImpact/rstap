@@ -92,6 +92,8 @@ stap_glm <- function(formula,
                      adapt_delta = NULL){
 
     stap_data <- extract_stap_data(formula)
+    if(any_bar(stap_data) || any_dnd(stap_data))
+        stop("Cannot use bar or dnd terms in stap_glm, try stapdnd_glm")
     crs_data <- extract_crs_data(stap_data,
                                  subject_data,
                                  distance_data,

@@ -153,6 +153,8 @@ stap_glmer <-
   group <- glmod$reTrms
   group$decov <- prior_covariance
   stap_data <- extract_stap_data(formula)
+  if(any_bar(stap_data) || any_dnd(stap_data))
+      stop("Cannot use bar or dnd terms in stap_glmer, try stapdnd_glmer")
   crs_data <- extract_crs_data(stap_data,
                                subject_data,
                                distance_data,
@@ -164,9 +166,9 @@ stap_glmer <-
       subj_matrix <- as.matrix(Matrix::fac2sparse(glmod$reTrms$flist[[subject_ID]]))
       subj_n_vec <- 1/table(glmod$reTrms$flist[[subject_ID]])
       if(num_dnd(stap_data) > 1)
-          subj_n_mat <- Reduce(cbind,lapply(1:(sum(stap_data$dnd_code)),function(x) x))
+          subj_n <- Reduce(cbind,lapply(1:(sum(stap_data$dnd_code)),function(x) x))
       else
-          subj_n_mat <- matrix(subj_n_vec,ncol=1)
+          subj_n <- matrix(subj_n_vec,ncol=1)
       stapfit <- stapdnd_glm.fit(y = y, z = Z,subject_n = subj_n_mat,
                                   subject_matrix = subj_matrix,
                                   dists_crs = crs_data$d_mat,
@@ -215,6 +217,8 @@ stap_glmer <-
                stap_data = stap_data,
                subject_data,
                distance_data,
+               subj_matrix = subject_matrix,
+               subj_n = subj_n,
                time_data,
                dists_crs = crs_data$d_mat,
                times_crs = crs_data$t_mat,
