@@ -17,6 +17,7 @@
 #'@template args-adapt_delta
 #'@param y n length vector or n x 2 matrix of outcomes
 #'@param z n x p design matrix of subject specific covariates
+#'@param w n x k design matrix of random effects
 #'@param dists_crs (q_s+q_st) x M matrix of distances between outcome 
 #'observations and built environment features with a hypothesized spatial scale
 #'@param u_s n x (q *2) matrix of compressed row storage array indices for dists_crs

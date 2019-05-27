@@ -25,6 +25,7 @@
 #' @method print stapreg
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
+#' @param include_X logical for whether or not to include estimated latent exposure covariate
 #' @param digits Number of digits to use for formatting numbers.
 #' @param ... Ignored.
 #' @return Returns \code{x}, invisibly.
@@ -169,6 +170,7 @@ print.stapreg <- function(x, digits = 1, include_X = FALSE, ...) {
 #' @param probs For models fit using MCMC, 
 #'   an optional numeric vector of probabilities passed to 
 #'   \code{\link[stats]{quantile}}.
+#' @param include_X logical for whether or not estimated latent STAP exposure should be included in summary defaults to FALSE
 #' @param digits Number of digits to use for formatting numbers when printing. 
 #'   When calling \code{summary}, the value of digits is stored as the 
 #'   \code{"print.digits"} attribute of the returned object.

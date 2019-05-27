@@ -6,9 +6,11 @@
 \alias{as.data.frame.stapreg}
 \title{Extract the posterior sample via matrix}
 \usage{
-\method{as.matrix}{stapreg}(x, ..., pars = NULL, regex_pars = NULL)
+\method{as.matrix}{stapreg}(x, ..., pars = NULL, regex_pars = NULL,
+  include_X = FALSE)
 
-\method{as.array}{stapreg}(x, ..., pars = NULL, regex_pars = NULL)
+\method{as.array}{stapreg}(x, ..., pars = NULL, regex_pars = NULL,
+  include_X = FALSE)
 
 \method{as.data.frame}{stapreg}(x, ..., pars = NULL, regex_pars = NULL)
 }
@@ -25,6 +27,8 @@ expressions} to use for parameter selection. \code{regex_pars} can be used
 in place of \code{pars} or in addition to \code{pars}. Currently, all
 functions that accept a \code{regex_pars} argument ignore it for models fit
 using optimization.}
+
+\item{include_X}{logical to include latent exposure covariate in samples}
 }
 \value{
 A matrix, data.frame, or array, the dimensions of which depend on

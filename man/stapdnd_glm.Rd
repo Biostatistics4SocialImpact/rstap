@@ -2,11 +2,20 @@
 % Please edit documentation in R/stapdnd_glm.R
 \name{stapdnd_glm}
 \alias{stapdnd_glm}
+\alias{stapdnd_lm}
 \title{Bayesian generalized spatial-temporal aggregated predictor(STAP) models via Stan}
 \usage{
 stapdnd_glm(formula, family = gaussian(), subject_data = NULL,
   distance_data = NULL, time_data = NULL, subject_ID = NULL,
   group_ID = NULL, subject_matrix, subject_n, max_distance = NULL,
+  max_time = NULL, weights, offset = NULL, model = TRUE, y = TRUE,
+  contrasts = NULL, ..., prior = normal(),
+  prior_intercept = normal(), prior_stap = normal(),
+  prior_theta = log_normal(location = 1L, scale = 1L),
+  prior_aux = exponential(), adapt_delta = NULL)
+
+stapdnd_lm(formula, subject_data = NULL, distance_data = NULL,
+  time_data = NULL, subject_ID = NULL, max_distance = NULL,
   max_time = NULL, weights, offset = NULL, model = TRUE, y = TRUE,
   contrasts = NULL, ..., prior = normal(),
   prior_intercept = normal(), prior_stap = normal(),
@@ -25,6 +34,12 @@ stapdnd_glm(formula, family = gaussian(), subject_data = NULL,
 \item{time_data}{same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance}
 
 \item{subject_ID}{name of column(s) to join on between subject_data and bef_data}
+
+\item{group_ID}{name of column(s0 to join on between subject_data and bef_data that indicate clustered or repeated measures}
+
+\item{subject_matrix}{binary matrix used to group patient observations}
+
+\item{subject_n}{matrix of the inverse of the number of observations each subject has}
 
 \item{max_distance}{the inclusion distance; upper bound for all elements of dists_crs}
 

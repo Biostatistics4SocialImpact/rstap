@@ -41,6 +41,9 @@
 #' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.
 #' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
 #' @param subject_ID  name of column(s) to join on between subject_data and bef_data
+#' @param group_ID name of column(s0 to join on between subject_data and bef_data that indicate clustered or repeated measures
+#' @param subject_matrix binary matrix used to group patient observations
+#' @param subject_n  matrix of the inverse of the number of observations each subject has
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
 #' @param max_time inclusion time; upper bound for all elements of times_crs
 #' @param model  logical denoting whether or not to return the fixed covariates model frame object in the fitted object
@@ -167,10 +170,10 @@ stapdnd_glm <- function(formula,
     return(out)
 }
 
+#' @rdname stapdnd_glm
 #' @export
 stapdnd_lm <- 
   function(formula,
-           family = gaussian(),
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,

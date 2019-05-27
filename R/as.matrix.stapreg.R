@@ -28,6 +28,7 @@
 #' @template args-stapreg-object
 #' @template args-pars
 #' @template args-regex-pars
+#' @param include_X logical to include latent exposure covariate in samples
 #' @param ... Ignored.
 #'   
 #' @return A matrix, data.frame, or array, the dimensions of which depend on
@@ -73,7 +74,7 @@ as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL,include_X =
 #' @rdname as.matrix.stapreg
 #' @method as.array stapreg
 #' @export
-as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
+as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL, include_X = FALSE) {
   pars <- collect_pars(x, pars, regex_pars)
 
   arr <- as.array(x$stapfit)
@@ -85,6 +86,9 @@ as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
   } else {
     pars <- exclude_lp_and_ppd(last_dimnames(arr))
   }
+  if(!include_X)
+    pars <- pars[grep("X_theta_*",pars,invert=T)]
+
   arr <- arr[, , pars, drop = FALSE]
   
   if (!is.mer(x))

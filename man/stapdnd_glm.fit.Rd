@@ -18,6 +18,8 @@ stapdnd_glm.fit(y, z, w, dists_crs, u_s, times_crs, u_t, subject_matrix,
 
 \item{z}{n x p design matrix of subject specific covariates}
 
+\item{w}{n x k design matrix of random effects}
+
 \item{dists_crs}{(q_s+q_st) x M matrix of distances between outcome 
 observations and built environment features with a hypothesized spatial scale}
 
