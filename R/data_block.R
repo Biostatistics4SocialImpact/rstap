@@ -271,6 +271,7 @@ get_stap_name <- function(code)
 
 
 get_weight_code <- function(all_names, stap_covs, stap_code){
+
     w <- matrix(0,nrow = length(stap_covs),ncol=2)
     w_codes <- list("erf"=1,"cerf"=2,"exp"=3,"cexp"=4,"wei"=5,"cwei"=6)
     for(ix in 1:length(stap_covs)){
@@ -308,6 +309,7 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
 # @return vector of length equal to number of staps + saps + taps
 # with the appropriate coding for each appropriate predictor
 get_stap_code <- function(all_names,stap_covs){
+
     staps <- c("sap"=0,"tap"=1,"stap"=2,
                 "sap_log" = 0, "tap_log" = 1, "stap_log" = 2,
                 "sap_dnd" = 0, "tap_dnd" = 1, "stap_dnd" = 2,
@@ -329,7 +331,6 @@ get_stap_code <- function(all_names,stap_covs){
 # @return a list of the crs data for the spatial and/or temporal data as appropriate 
 extract_crs_data <- function(stap_data, subject_data, distance_data, 
                              time_data, id_key, max_distance, max_time){
-
     
     dcol_ix <- validate_distancedata(distance_data,max_distance)
     tcol_ix <- validate_timedata(time_data)
@@ -355,9 +356,9 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
                     max_distance = max_distance,
                     max_time = max_time))
      }else if(stap_data$d_only){
-         stap_covs <- stap_data$covariates
-         d_col_ics <- unlist(apply(distance_data, 1, function(x) which(x %in% stap_covs)))
-         .check_bef_data(d_col_ics)
+        stap_covs <- stap_data$covariates
+        d_col_ics <- unlist(apply(distance_data, 1, function(x) which(x %in% stap_covs)))
+        .check_bef_data(d_col_ics)
         stap_var <- colnames(distance_data)[d_col_ics[1]]
         dist_var <- colnames(distance_data)[dcol_ix]
         ddata <- purrr::map(stap_covs,function(x) dplyr::filter(distance_data,!!dplyr::sym(stap_var) == x,!!dplyr::sym(dist_var) <=max_distance))
@@ -365,6 +366,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
         M <- max(purrr::map_dbl(mddata, nrow))
         d_mat <- .get_crs_mat(mddata, dist_var, M,stap_data$Q, stap_covs)
         u_s <- .get_crs_u(mddata, subject_data, id_key, stap_var, stap_covs)
+
         return(list(d_mat = d_mat, t_mat = NA,  u_s = u_s, u_t = NA,
                     max_distance = max_distance,
                     max_time = max_time))
@@ -375,7 +377,6 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
         stap_covs <- stap_covs(stap_data)
         sap_stap <- union(sap_covs,stap_covs)
         tap_stap <- union(tap_covs,stap_covs)
-        
         d_col_ics <- unlist(apply(distance_data, 1,
                                   function(x) which(x %in% sap_stap)))
         t_col_ics <- unlist(apply(time_data, 1,
@@ -383,33 +384,23 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
         if(!all(d_col_ics) && !all(t_col_ics) && !all(d_col_ics) && !all(t_col_ics))
             stop("Stap covariates - of any kind - must all be in (only) one column
                  of the distance dataframe as a character or factor variable. See '?stap_glm'",.call=F)
-        
         .check_bef_data(d_col_ics)
         .check_bef_data(t_col_ics,F)
         stap_dvar <- colnames(distance_data)[d_col_ics[1]]
         stap_tvar <- colnames(time_data)[t_col_ics[1]]
         dist_var <- colnames(distance_data)[dcol_ix]
         time_var <- colnames(time_data)[tcol_ix]
-
-        ddata <- purrr::map(sap_stap,function(x) dplyr::filter(distance_data,!!dplyr::sym(stap_dvar) == x,
-                                                                !!dplyr::sym(dist_var) <= max_distance))
+        ddata <- purrr::map(sap_stap,function(x) dplyr::filter(distance_data,!!dplyr::sym(stap_dvar) == x,!!dplyr::sym(dist_var) <=max_distance))
         mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by=id_key))
-        
         tdata <- purrr::map(tap_stap,function(x) dplyr::filter(time_data,!!dplyr::sym(stap_tvar) == x,
                                                                 !!dplyr::sym(time_var) <= max_time))
-
         mtdata <- purrr::map(tdata, function(y) dplyr::left_join(subject_data,y,by=id_key))
         mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by=id_key))
-        
         M <- max(purrr::map_dbl(mddata, nrow))
         if(M != max(sapply(mtdata,nrow)))
             stop("Something wrong please report bug")
-        
         t_mat <-  .get_crs_mat(mtdata, time_var, M, stap_data$Q_t + stap_data$Q_st, tap_stap)
         u_t <- .get_crs_u(mtdata, subject_data, id_key, stap_tvar, tap_stap)
-
-        
-        
         d_mat <- .get_crs_mat(mddata, dist_var, M,stap_data$Q, stap_covs)
         u_s  <- .get_crs_u(mddata,subject_data,id_key,stap_dvar,sap_stap)
 

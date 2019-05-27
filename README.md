@@ -8,10 +8,9 @@
 
 ## Spatial-Temporal Aggregated Predictor Models Implemented in R
 
-This is an R package that fits spatial temporal aggregated predictor models   
-using [Stan](http://mc-stan.org) (via the **rstan** package) for the back-end
+This is an R package that fits spatial temporal aggregated predictor models using [Stan](http://mc-stan.org) (via the **rstan** package) for the back-end
 estimation. The primary target audience is researchers interested in the effect of built environment features (BEFs) on human health, though other
-applications are possible. See the package's [website](https://biostatistics4socialimpact.github.io/rstap) for an [introduction](https://biostatistics4socialimpact.github.io/rstap/articles/Introduction.html).
+applications are possible. See the package's [website](https://biostatistics4socialimpact.github.io/rstap) for an [introduction](https://biostatistics4socialimpact.github.io/rstap/articles/Introduction.html). Currently count, binomial, and continuous outcomes are supported.
 
 
 ### Installation

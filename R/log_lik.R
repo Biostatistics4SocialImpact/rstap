@@ -147,8 +147,8 @@ ll_args.stapreg <- function(object,
     beta <- beta_names(object$stap_data)
     stap_exp <- matrix(NA,ncol(x),nrow(x))
     beta_samps <- stanmat[, beta, drop=F]
-    for(subj_ix in 1:ncol(x))
-        stap_exp[subj_ix,] <- x[,subj_ix,,drop=T] * beta_samps 
+    for(subj_ix in 1:nrow(x))
+        stap_exp[subj_ix,] <- x[subj_ix,,drop=T] * beta_samps 
     colnames(stap_exp) <- paste0("stap_exp_",1:ncol(stap_exp))
   }
   

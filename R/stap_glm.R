@@ -176,7 +176,6 @@ stap_glm <- function(formula,
 #' @export
 stap_lm <- 
   function(formula,
-           family = gaussian(),
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,

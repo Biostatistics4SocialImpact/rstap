@@ -17,7 +17,7 @@
 #' Create a stapreg object
 #'
 #' @param object A list provided by one of the \code{stap_*} modeling functions.
-#' @return A stanreg object
+#' @return A stapreg object
 #'
 stapreg <- function(object){
 

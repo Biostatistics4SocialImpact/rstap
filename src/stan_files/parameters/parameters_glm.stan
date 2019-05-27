@@ -1,4 +1,3 @@
-
   vector[prior_dist == 7 ? sum(num_normals) : K] z_delta;
   vector<lower=0>[K] mix[prior_dist == 5 || prior_dist == 6];
   vector<lower=0>[prior_dist_for_stap == 7 ? sum(num_normals) : Q] z_beta;

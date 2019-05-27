@@ -36,7 +36,7 @@ transformed data {
 }
 parameters{
     real<lower=make_lower(family,link),upper=make_upper(family,link)> gamma[has_intercept];
-  // declares z_beta,z_
+  // declares z_beta,z_b, etc.
 #include /parameters/parameters_glm.stan
   real<lower=0> aux_unscaled; // interpretation depends on family!
 }

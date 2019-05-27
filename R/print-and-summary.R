@@ -190,15 +190,19 @@ print.stapreg <- function(x, digits = 1, include_X = FALSE, ...) {
 #' 
 #' @importMethodsFrom rstan summary
 summary.stapreg <- function(object, pars = NULL, regex_pars = NULL, 
-                            probs = NULL, waic = F, ... , digits = 1) {
+                            probs = NULL, waic = F, include_X = FALSE,... , digits = 1) {
   
-  pars <- collect_pars(object, pars, regex_pars)
+    pars <- collect_pars(object, pars, regex_pars)
+    
+
   
     args <- list(object = object$stapfit)
     if (!is.null(probs)) 
       args$probs <- probs
 
     out <- do.call("summary", args)$summary
+    if(!include_X)
+      out <- out[grep("X_theta_*",rownames(out),invert=T),]
     
     if (!is.null(pars)) {
       pars <- allow_special_parnames(object, pars)

@@ -52,13 +52,15 @@
 #' draws_array <- as.array(example_model)
 #' print(dim(draws_array)) # iterations x chains x parameters
 #'}
-as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
+as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL,include_X = FALSE) {
   pars <- collect_pars(x, pars, regex_pars)
   user_pars <- !is.null(pars)
   
   mat <- as.matrix(x$stapfit)
-    if (!user_pars)
+  if (!user_pars)
       pars <- exclude_lp_and_ppd(colnames(mat))
+  if(!include_X)
+    pars <- pars[grep("X_theta_*",pars,invert=T)]
   if (user_pars)
     check_missing_pars(mat, pars)
   
