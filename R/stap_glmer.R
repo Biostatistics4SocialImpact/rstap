@@ -185,7 +185,7 @@ stap_glmer <-
                                   prior_aux = prior_aux, 
                                   prior_theta = prior_theta,
                                   adapt_delta = adapt_delta,
-                                  group = group)
+                                  group = group,...)
   }else{
     stapfit <- stap_glm.fit(y = y,z = Z, 
                           dists_crs = crs_data$d_mat,
