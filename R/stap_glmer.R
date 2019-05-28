@@ -216,7 +216,7 @@ stap_glmer <-
                stap_data = stap_data,
                subject_data,
                distance_data,
-               subj_matrix = subject_matrix,
+               subj_matrix = subj_matrix,
                subj_n = subj_n,
                time_data,
                dists_crs = crs_data$d_mat,
