@@ -106,6 +106,12 @@ num_dnd <- function(object)
 num_bar <- function(x)
     UseMethod("num_dnd")
 
+num_s_wei <- function(x)
+    UseMethod("num_s_wei")
+
+num_t_wei <- function(x)
+    UseMethod("num_t_wei")
+
 any_sbar <- function(x)
     UseMethod("any_sbar")
 
@@ -137,6 +143,16 @@ num_norm.stap_data <- function(object){
     num_dnd <- num_dnd(object)
     return(object$Q - (num_bar + num_dnd - length(intersect(bar_array,dnd_array)) ))
     
+}
+
+num_s_wei.stap_data <- function(object){
+
+    sum(object$weight_mats[,1] == 5)
+}
+
+num_t_wei.stap_data <- function(object){
+
+    sum(object$weight_mats[,2] == 6)
 }
     
 any_dnd.stap_data <- function(object)
@@ -180,32 +196,72 @@ any_tbar.stap_data <- function(object){
 }
 
 coef_names.stap_data <- function(object){
-    get_name <- function(x,y,z){
-        if(z==0)
-            return(switch(x+1,
-                   c(y,paste0(y,"_spatial_scale")),
-                   c(y,paste0(y,"_temporal_scale")),
-                   c(y,paste0(y,"_spatial_scale"),
-                     paste0(y,"_temporal_scale"))))
-        if(z==1)
-            return(switch(x+1,
-                   c(y,paste0(y,"_bar"),paste0(y,"_spatial_scale")),
-                   c(y,paste0(y,"_bar"),paste0(y,"_temporal_scale")),
-                   c(y,paste0(y,"_bar"),paste0(y,"_spatial_scale"),
-                     paste0(y,"_temporal_scale"))))
+    get_name <- function(a,d,b,x,y){
+        space_shape <- a[1] >4
+        time_shape <- a[2] > 4
+        space_time_shape <- space_shape && time_shape
+        dnd <- d > 0
+        bar <- b >0
+        if(dnd)
+            name <- paste0(y,"_dnd")
+        if(bar)
+            name <- paste0(y,"_bar")
+        else
+            name <- y
+        if(space_shape)
+            name <- c(name,switch(x+1,
+                              paste0(y,c("_spatial_scale","_spatial_shape")),
+                              paste0(y,"_temporal_scale"),
+                              c(paste0(y,c("_spatial_scale","_spatial_shape")),
+                                paste0(y,"_temporal_scale"))))
+        else if(time_shape)
+            name <- c(name,switch(x+1,
+                                  paste0(y,c("_spatial_scale")),
+                                  paste0(y,c("_temporal_scale","_temporal_shape")),
+                                  c(paste0(y,"_spatial_scale"),
+                                    paste0(y,c("_temporal_scale","_temporal_shape")) ) ))
+        else if(space_time_shape)
+            name <- c(name,switch(x+1,
+                                  paste0(y,c("_spatial_scale","_spatial_shape")),
+                                  paste0(y,c("_temporal_scale","_temporal_shape")),
+                                  c(paste0(y,"_spatial_scale","_spatial_shape"),
+                                    paste0(y,c("_temporal_scale","_temporal_shape")) ) ))
+        else
+            name <- c(name,switch(x+1,
+                                  paste0(y,c("_spatial_scale")),
+                                  paste0(y,c("_spatial_scale")),
+                                  paste0(y,c("_spatial_scale","temporal_scale"))))
+        
+        
+        return(name)
+            
     }
-    out <- as.vector(sapply(1:object$Q,function(z) get_name(object$stap_code[z],object$covariates[z],object$bar_code[z])))
+    out <- as.vector(sapply(1:object$Q,function(z) get_name(object$weight_mat[z,],
+                                                            object$bar_code[z],
+                                                            object$dnd_code[z],
+                                                            object$stap_code[z],
+                                                            object$covariates[z]
+                                                            )))
+    out <- unlist(out)
+    scales <- out[grep("_scale",out)]
+    shapes <- out[grep("_shape",out)]
+    out <- out[grep("_scale|_shape",out,invert=T)]
+    out <- c(out,scales,shapes)
+    
+    return(unlist(out))
 }
 
 beta_names.stap_data <- function(object){
     nms <- coef_names(object)
-    bt_nms <- grep("_scale",nms,invert=T,value=T)
+    bt_nms <- nms[grep("_scale",nms,invert=T,value=T)]
+    bt_nms <- bt_nms[grep("_shape",bt_nms,invert=T,value=T)]
     return(bt_nms)
 }
 
 theta_names.stap_data <- function(object){
     nms <- coef_names(object)
-    th_nms <- grep("_scale",nms,value=T)
+    th_nms <- nms[grep("_scale",nms,value=T)]
+    th_nms <- th_nms[grep("shape",th_nms,value=T)]
     return(th_nms)
 }
 

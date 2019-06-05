@@ -252,6 +252,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         has_weights = length(weights) > 0,
         has_offset = length(offset) > 0,
         has_intercept,
+        num_s_wei = num_s_wei(stap_data),
+        num_t_wei = num_t_wei(stap_data),
         prior_dist,
         prior_mean,
         prior_scale,
@@ -283,7 +285,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_mean_for_theta_t <- array(prior_theta$theta_t_mean)
             standata$prior_df_for_theta_t <- array(prior_theta$theta_t_df)
         } else if(stap_data$Q_s>0){
-            standata$prior_dist_for_theta_s <- array(prior_theta$theta_s_dist)
+            standata$prior_dist_for_theta_s <- array(prior_theta$theta_s_dist,stap_data$Q_s)
             standata$prior_scale_for_theta_s <- array(prior_theta$theta_s_scale)
             standata$prior_df_for_theta_s <- array(prior_theta$theta_s_df)
             standata$prior_mean_for_theta_s <- array(prior_theta$theta_s_mean)
@@ -324,7 +326,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_scale_for_theta_s <- double()
             standata$prior_df_for_theta_s <- double()
         } else if(stap_data$Q_s>0){
-            standata$prior_dist_for_theta_s <- array(as.integer(prior_dist_for_theta))
+            standata$prior_dist_for_theta_s <- array(rep(as.integer(prior_dist_for_theta),stap_data$Q_s))
             standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
             standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
             standata$prior_mean_for_theta_s <-  array(prior_mean_for_theta)
@@ -515,7 +517,9 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
               "delta",
               "adj_beta",
               if(stap_data$Q_s + stap_data$Q_st>0) "theta_s",
+              if(num_s_wei(stap_data)>0) "shape_s",
               if(stap_data$Q_t + stap_data$Q_st >0) "theta_t",
+              if(num_t_wei(stap_data)>0) "shape_t",
               if(length(group)) "b",
               if(standata$len_theta_L) "theta_L",
               if (is_continuous | is_nb) "aux",
@@ -565,17 +569,14 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     }
     new_names <- c(if (has_intercept) "(Intercept)",
                    colnames(ztemp),
-                   if((stap_data$Q_s + stap_data$Q_st)>0) rownames(dists_crs),
-                   if((stap_data$Q_t)>0) rownames(times_crs), ## only count Q_st once
-                   if((stap_data$Q_s + stap_data$Q_st)>0) paste0(rownames(dists_crs),'_spatial_scale'),
-                   if((stap_data$Q_t + stap_data$Q_st)>0) paste0(rownames(times_crs),'_temporal_scale'),
+                   coef_names(stap_data),
                    if(length(group) && length(group$flist)) c (paste0("b[", b_nms, "]")),
                    if(standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                    if (is_gaussian) "sigma",
                    if (is_gamma) "shape",
                    if (is_ig) "lambda",
                    if (is_nb) "reciprocal_dispersion",
-                   paste0("X_theta_",1:nrow(ztemp)),
+                   as.vector(sapply(1:nrow(ztemp),function(x) paste0("X",x,"_theta_",1:stap_data$Q))),
                    "mean_PPD",
                    "log-posterior")
     stapfit@sim$fnames_oi <- new_names

@@ -93,7 +93,7 @@
 #'                   chains = 4, refresh = -1, verbose = FALSE, 
 #'                   iter = 1E3, cores = 1)
 #'}
-stap_glmer <- 
+stapdnd_glmer <- 
   function(formula,
            family = gaussian(),
            subject_data = NULL,
@@ -114,6 +114,7 @@ stap_glmer <-
            prior_aux = exponential(),
            prior_covariance = decov(),
            adapt_delta = NULL) {
+
   original_formula <- formula
   stapless_formula <- get_stapless_formula(formula)
   call <- match.call(expand.dots = TRUE)
@@ -160,6 +161,33 @@ stap_glmer <-
                                id_key = c(subject_ID,group_ID),
                                max_distance,
                                max_time)
+  if(any_dnd(stap_data) || any_bar(stap_data)){
+      subj_matrix <- as.matrix(Matrix::fac2sparse(glmod$reTrms$flist[[subject_ID]]))
+      subj_n_vec <- 1/table(glmod$reTrms$flist[[subject_ID]])
+      if(num_dnd(stap_data) > 1)
+          subj_n <- Reduce(cbind,lapply(1:(sum(stap_data$dnd_code)),function(x) x))
+      else
+          subj_n <- matrix(subj_n_vec,ncol=1)
+      stapfit <- stapdnd_glm.fit(y = y, z = Z,
+                                 subject_n = subj_n,
+                                  subject_matrix = subj_matrix,
+                                  dists_crs = crs_data$d_mat,
+                                  u_s = crs_data$u_s,
+                                  times_crs = crs_data$t_mat,
+                                  u_t = crs_data$u_t,
+                                  stap_data = stap_data,
+                                  max_distance = crs_data$max_distance,
+                                  max_time =crs_data$max_time,
+                                  weights = weights,
+                                  offset = offset, family = family,
+                                  prior = prior,
+                                  prior_intercept = prior_intercept,
+                                  prior_stap = prior_stap,
+                                  prior_aux = prior_aux, 
+                                  prior_theta = prior_theta,
+                                  adapt_delta = adapt_delta,
+                                  group = group,...)
+  }else{
     stapfit <- stap_glm.fit(y = y,z = Z, 
                           dists_crs = crs_data$d_mat,
                           u_s = crs_data$u_s,
@@ -177,6 +205,7 @@ stap_glmer <-
                           prior_theta = prior_theta,
                           adapt_delta = adapt_delta,
                           group = group,  ...)
+  }
   sel <- apply(Z, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
   Z <- Z[ , !sel, drop = FALSE]
   W <- pad_reTrms(Ztlist = group$Ztlist, cnms = group$cnms, 
@@ -188,6 +217,8 @@ stap_glmer <-
                stap_data = stap_data,
                subject_data,
                distance_data,
+               subj_matrix = subj_matrix,
+               subj_n = subj_n,
                time_data,
                dists_crs = crs_data$d_mat,
                times_crs = crs_data$t_mat,
@@ -202,6 +233,10 @@ stap_glmer <-
                model = NULL,
                contrasts, glmod, 
                stan_function = "stap_glmer")
+  if(any_dnd(stap_data) || any_bar(stap_data)) {
+      fit$subj_matrix <- subj_matrix
+      fit$subj_n <- subj_n
+  }
   out <- stapreg(fit)
   class(out) <- c(class(out), "lmerMod")
   
@@ -211,7 +246,7 @@ stap_glmer <-
 
 #' @rdname stap_glmer
 #' @export
-stap_lmer <- 
+stapdnd_lmer <- 
   function(formula,
            subject_data = NULL,
            distance_data = NULL,
@@ -234,17 +269,17 @@ stap_lmer <-
   if ("family" %in% names(list(...))) {
     stop(
       "'family' should not be specified. ", 
-      "To specify a family use stap_glmer instead of stap_lmer."
+      "To specify a family use stapdnd_glmer instead of stapdnd_lmer."
     )
   }
   mc <- call <- match.call(expand.dots = TRUE)
   if (!"formula" %in% names(call))
     names(call)[2L] <- "formula"
-  mc[[1L]] <- quote(stap_glmer)
+  mc[[1L]] <- quote(stapdnd_glmer)
   mc$REML <- NULL
   mc$family <- "gaussian"
   out <- eval(mc, parent.frame())
   out$call <- call
-  out$stan_function <- "stap_lmer"
+  out$stan_function <- "stapdnd_lmer"
   return(out)
 }

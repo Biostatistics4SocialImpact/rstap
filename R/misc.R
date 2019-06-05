@@ -225,6 +225,8 @@ validate_distancedata <- function(distance_data, max_distance ) {
     if(num_dbl!=1)
         stop("distance_data should be a data frame with only one numeric column - see `?stap_glm`")
     dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x,drop=T])))*x))
+    if(is.null(max_distance))
+        stop("Must enter max distance")
     if(sum(distance_data[,dcol_ix]<=max_distance)==0) 
         stop("exclusion distance results in no BEFs included in the model")
     return(dcol_ix)
@@ -762,12 +764,12 @@ paste_scale <- function(names)
     paste0(names,"_scale")
 
 get_weight_function <- function(weight_code){
-    switch(weight_code,function(x,y) { pracma::erf(x/y)} ,
+    switch(weight_code,function(x,y,z) { pracma::erf(x/y)} ,
            function(x,y){ pracma::erfc(x/y)},
            function(x,y){ exp(-x/y)}, 
            function(x,y){1- exp(-x/y)},
-           function(x,y){exp(- (x/y)^y)},
-           function(x,y){1 - exp(-(x/y)^y)})
+           function(x,y,z){exp(- (x/y)^z)},
+           function(x,y,z){1 - exp(-(x/y)^z)})
 }
 
 paste_bars <- function(bar_element){
@@ -825,7 +827,7 @@ get_time_constraint <- function(stap_data, quantile = 0.975){
 check_IDS <- function(sid, gids,sdf,ddf,need_gid = F){
     if(is.null(sid))
         stop("Subject ID must be provided for all stap_ functions")
-    if(is.null(gid) && need_gid)
+    if(is.null(gids) && need_gid)
         stop("Group ID must be provided for stap_ functions involving dnd components or any stap_glmer functions")
 
 }

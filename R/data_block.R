@@ -451,6 +451,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
 .get_crs_u <- function(list_data,subject_data,id_key,stap_col,stap_covs){
 
     args <- dplyr::syms(id_key)
+    n <- NULL ## R CMD CHECK
     id_data <- subject_data %>% dplyr::distinct(!!! args)
     ldata <- purrr::map(list_data,function(df){
         u_s <- df %>% dplyr::group_by(!!! args ) %>% 

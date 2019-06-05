@@ -336,7 +336,7 @@
     * @param w integer coding the appropriate weight function
     * @return  exposure evaluated with the corresponding weight function
     */ 
-    vector get_weights(vector exposure, int w, real theta){
+    vector get_weights(vector exposure, int w, real[] shape, int cnt_shape){
         if(w == 1)
             return(erf(exposure));
         else if(w == 2)
@@ -346,9 +346,9 @@
         else if(w == 4)
             return(1-exp(-exposure));
         else if(w == 5)
-            return( exp(- expo_vec(exposure,theta) ));
+            return( exp(- expo_vec(exposure,shape[cnt_shape]) ));
         else 
-            return(1-exp(- expo_vec(exposure,theta) ));
+            return(1-exp(- expo_vec(exposure,shape[cnt_shape]) ));
             
     }
 
@@ -360,13 +360,13 @@
    * @param stap_code 0-2 code indicating what kind of spatial-temporal exposure to aggregate
    * @param w weight function array
    */ 
-  real assign_exposure(int log_switch, int w, int[,] u, vector time_dists, real theta, int q, int n){
+  real assign_exposure(int log_switch, int w, int[,] u, vector time_dists, real theta, real[] shape, int cnt_shape, int q, int n){
 
       real out;
       if(u[n,(q*2)-1] > u[n,(q*2)])
           return(0);
       else
-          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta), w, theta));
+          out = sum(get_weights(time_dists[u[n,(q*2)-1] :  u[n,(q*2)]] * inv(theta), w, shape,cnt_shape));
       if(log_switch == 1)
         return(log(out));
       else
@@ -381,14 +381,14 @@
    * @param stap_code 0-2 code indicating what kind of spatial-temporal exposure to aggregate
    * @param w weight function array
    */ 
-  real assign_st_exposure(int log_switch, int w_s,int w_t, int[,] u_s, int[,] u_t, vector dists, vector time, real theta_s, real theta_t, int q, int n){
+  real assign_st_exposure(int log_switch, int w_s,int w_t, int[,] u_s, int[,] u_t, vector dists, vector time, real theta_s, real theta_t,real[] shape_s, real[] shape_t, int cnt_shape_s, int cnt_shape_t, int q, int n){
 
       real out;
       if(u_s[n,(q*2)-1] > u_s[n,(q*2)])
           return(0);
       else
-          out = sum(get_weights(dists[u_s[n,(q*2)-1] :  u_s[n,(q*2)]] * inv(theta_s), w_s, theta_s) .*
-          get_weights(time[u_t[n,(q*2)-1] : u_t[n,(q*2)]] * inv(theta_t), w_t, theta_t));
+          out = sum(get_weights(dists[u_s[n,(q*2)-1] :  u_s[n,(q*2)]] * inv(theta_s), w_s, shape_s, cnt_shape_s ) .*
+          get_weights(time[u_t[n,(q*2)-1] : u_t[n,(q*2)]] * inv(theta_t), w_t, shape_t,cnt_shape_t));
       if(log_switch == 1)
         return(log(out));
       else

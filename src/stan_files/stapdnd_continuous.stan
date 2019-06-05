@@ -67,7 +67,12 @@ model {
 
 #include /model/make_dnd_eta.stan
   if( t > 0){
-  #include /model/eta_add_Wb.stan
+      if(special_case){
+        for(i in 1:t)
+            eta += b[V[i]];
+      }
+      else
+        eta += csr_matrix_times_vector(N,q,w,v,u,b);
   }
   if (has_intercept == 1) {
     if ((family == 1 || link == 2) || (family == 4 && link != 5)) eta = eta + gamma[1];

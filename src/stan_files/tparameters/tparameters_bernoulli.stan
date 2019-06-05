@@ -9,19 +9,25 @@
   {
       int cnt_s = 1;
       int cnt_t = 1;
+      int cnt_shape_s = 1;
+      int cnt_shape_t = 1;
       for(q_ix in 1:Q){
           for(n in 1:NN){
             if(stap_code[q_ix] == 0)
-                X[n,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,1], u_s, dists_crs[cnt_s], theta_s[cnt_s], q_ix, n);
+                X[n,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,1], u_s, dists_crs[cnt_s], theta_s[cnt_s], shape_s, cnt_shape_s, q_ix, n);
             else if(stap_code[q_ix] == 1)
-                X[n,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,2], u_t, times_crs[cnt_t], theta_t[cnt_t], q_ix, n);
+                X[n,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,2], u_t, times_crs[cnt_t], theta_t[cnt_t], shape_t, cnt_shape_t, q_ix, n);
             else
-                X[n,q_ix] = assign_st_exposure(log_ar[q_ix], weight_mat[q_ix,1], weight_mat[q_ix,2], u_s, u_t, dists_crs[cnt_s], times_crs[cnt_t], theta_s[cnt_s], theta_t[cnt_t], q_ix, n);
+                X[n,q_ix] = assign_st_exposure(log_ar[q_ix], weight_mat[q_ix,1], weight_mat[q_ix,2], u_s, u_t, dists_crs[cnt_s], times_crs[cnt_t], theta_s[cnt_s], theta_t[cnt_t], shape_s, shape_t, cnt_shape_s, cnt_shape_t, q_ix, n);
         }
-            if(stap_code[q_ix] == 0 || stap_code[q_ix] == 2)
+            if(stap_code[q_ix] == 0 || stap_code[q_ix] == 2){
                 cnt_s = cnt_s + 1;
-            if(stap_code[q_ix] == 1 || stap_code[q_ix] == 2)
+                cnt_shape_s += weight_mat[q_ix,1] == 5 ? 1 : 0 ;
+            }
+            if(stap_code[q_ix] == 1 || stap_code[q_ix] == 2){
                 cnt_t = cnt_t + 1;
+                cnt_shape_t += weight_mat[q_ix,2] == 6 ? 1 : 0 ; 
+            }
       }
   }
 

@@ -9,6 +9,8 @@
   int<lower=0,upper=2> stap_code[Q]; // 0 = sap ; 1 = tap ; 2 = stap
   int<lower=0> Q_t; // number of taps
   int<lower=0> Q_s; // number of saps
+  int<lower=0> num_s_wei; // number of weibull s(t)aps
+  int<lower=0> num_t_wei; // number of weibull (s)taps
   int<lower=0,upper=Q-Q_t-Q_s> Q_st; // number of staps
   int<lower=0> M; // Max number of BEF's within inclusion distance
   

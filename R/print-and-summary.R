@@ -82,7 +82,7 @@ print.stapreg <- function(x, digits = 1, include_X = FALSE, ...) {
 
   aux_nms <- .aux_name(x)
   if(!include_X)
-    X_nms <- c(aux_nms,paste0("X_theta_",1:nobs(x)))
+    X_nms <- rownames(x$stap_summary)[grep("X.*_theta_.*",rownames(x$stap_summary))]
   else
     X_nms <- c()
   
@@ -204,7 +204,7 @@ summary.stapreg <- function(object, pars = NULL, regex_pars = NULL,
 
     out <- do.call("summary", args)$summary
     if(!include_X)
-      out <- out[grep("X_theta_*",rownames(out),invert=T),]
+      out <- out[grep("X.*_theta_.*",rownames(out),invert=T),]
     
     if (!is.null(pars)) {
       pars <- allow_special_parnames(object, pars)

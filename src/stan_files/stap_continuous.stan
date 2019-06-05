@@ -48,6 +48,15 @@ transformed parameters {
 
   // defines beta, delta, X, X_tilde
 #include /tparameters/tparameters_glm.stan
+
+  if (prior_dist_for_aux == 0) // none
+    aux = aux_unscaled;
+  else {
+    aux = prior_scale_for_aux * aux_unscaled;
+    if (prior_dist_for_aux <= 2) // normal or student_t
+      aux = aux + prior_mean_for_aux;
+  }
+
 if (t > 0) {
     if (special_case == 1) {
       int start = 1;
@@ -70,7 +79,12 @@ if (t > 0) {
 model {
 #include /model/make_eta.stan
   if( t > 0){
-  #include /model/eta_add_Wb.stan
+      if(special_case){
+        for(i in 1:t)
+            eta += b[V[i]];
+      }
+      else
+        eta += csr_matrix_times_vector(N,q,w,v,u,b);
   }
   if (has_intercept == 1) {
     if ((family == 1 || link == 2) || (family == 4 && link != 5)) eta = eta + gamma[1];
@@ -115,7 +129,8 @@ model {
     }
 
 #include /model/priors_glm.stan
-  if(t>0)  decov_lp (z_b, z_T, rho, zeta, tau, regularization, del, shape, t, p);
+  if(t>0)  decov_lp (z_b, z_T, rho, zeta, tau, 
+                     regularization, del, shape, t, p);
 }
 generated quantities {
   real alpha[has_intercept];

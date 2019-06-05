@@ -27,7 +27,8 @@ stapreg <- function(object){
     family <- object$family
     y <- object$y
     Z <- object$z
-    nvars <- ncol(Z) + stap_data$Q_s*2 + stap_data $Q_t*2 +stap_data$Q_st*3  + num_bar(stap_data)
+    nvars <- ncol(Z) + stap_data$Q_s*2 + stap_data $Q_t*2 + stap_data$Q_st*3  + 
+      num_bar(stap_data) + num_s_wei(stap_data) + num_t_wei(stap_data)
     if(mer){
         nvars <- nvars + ncol(object$w)
     }
@@ -37,7 +38,8 @@ stapreg <- function(object){
     coefs <- stap_summary[1:nvars, "50%"]
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
     
-    x <- t(sapply(1:nobs,function(x) rstan::extract(stapfit,pars=paste0("X_theta_",x))[[1]]))
+    x <- array(rstan::extract(stapfit)$X,dim = c(nrow(stanmat),length(y),stap_data$Q))
+    
     if(any_dnd(stap_data)){
       X_bar <- sapply(1:(ncol(x)),function(z) t(object$subj_matrix) %*% ((object$subj_matrix %*% x[,z,drop=F]) * object$subj_n))
       X_tilde <- x - X_bar
@@ -62,11 +64,13 @@ stapreg <- function(object){
     covmat <- cov(stanmat)
     check_rhats(stap_summary[,"Rhat"])
     delta_beta <- coefs[grep("_scale",names(coefs),invert= TRUE)]
+    if(num_s_wei(stap_data)>0 || num_t_wei(stap_data)>0)
+      delta_beta <- delta_beta[grep("_shape",names(delta_beta),invert= TRUE)]
     
 
 
    #linear predictor, fitted values 
-    design_mat <- cbind(Z,apply(X_tilde,1,median))
+    design_mat <- cbind(Z,apply(X_tilde,c(2,3),median))
     if(any_bar(stap_data))
       design_mat <- cbind(design_mat,apply(X_bar,1,median))
     if(mer)
