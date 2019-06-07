@@ -230,7 +230,7 @@ coef_names.stap_data <- function(object){
             name <- c(name,switch(x+1,
                                   paste0(y,c("_spatial_scale")),
                                   paste0(y,c("_spatial_scale")),
-                                  paste0(y,c("_spatial_scale","temporal_scale"))))
+                                  paste0(y,c("_spatial_scale","_temporal_scale"))))
         
         
         return(name)
@@ -260,8 +260,7 @@ beta_names.stap_data <- function(object){
 
 theta_names.stap_data <- function(object){
     nms <- coef_names(object)
-    th_nms <- nms[grep("_scale",nms,value=T)]
-    th_nms <- th_nms[grep("shape",th_nms,value=T)]
+    th_nms <- grep("_scale",nms,value=T)
     return(th_nms)
 }
 

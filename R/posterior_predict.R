@@ -285,16 +285,16 @@ pp_eta <- function(object, data, draws = NULL) {
   if (some_draws){
     delta <- delta[samp, , drop = FALSE]
     beta <- beta[samp,,drop=F] 
-    x <- x[,samp,drop=F]
+    x <- x[samp,,,drop=F]
   }
   num_draws <- if(some_draws) draws else S
   if(object$stap_data$Q == 1)
-      x_beta <-  x %*% diag(as.vector(beta)) 
+      x_beta <- x[,,1] * as.vector(beta)
   else
-      x_beta <- sapply(1:length(num_draws), function(i) x[i,,] %*% t(beta[i,,drop=F]))
+      x_beta <- sapply(1:num_draws, function(i) beta[i,,drop=F] %*% x[i,,drop=F] )
    
 
-  eta <- linear_predictor(cbind(delta,matrix(1,ncol=num_draws,nrow=nrow(delta))), cbind(z,x), data$offset)
+  eta <- linear_predictor(delta,z,x_beta, data$offset)
   if (!is.null(data$w)) {
     b_sel <- grepl("^b\\[", colnames(stanmat)) 
     b <- stanmat[, b_sel, drop = FALSE]

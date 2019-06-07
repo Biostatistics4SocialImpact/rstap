@@ -64,7 +64,7 @@ render." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.1.3</span>
       </span>
     </div>
 
@@ -88,12 +88,6 @@ render." />
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/Introduction.html">STAP Introduction</a>
-    </li>
-    <li>
-      <a href="../articles/Longitudinal.html">STAP in a Longitudinal Data Setting</a>
-    </li>
-    <li>
-      <a href="../articles/WeightFunctions.html">Mis-Specified Weight Function</a>
     </li>
   </ul>
 </li>
@@ -120,7 +114,7 @@ render." />
 
     <div class="ref-description">
     
-    <p>Interface to <span class="pkg">bayesplot</span>'s <code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code> function 
+    <p>Interface to <span class="pkg">bayesplot</span>'s <code><a href='https://mc-stan.org/bayesplot/reference/MCMC-scatterplots.html'>mcmc_pairs</a></code> function 
 for use with <span class="pkg">rstap</span> models. Be careful not to specify too
 many parameters to include or the plot will be both hard to read and slow to
 render.</p>
@@ -157,7 +151,7 @@ using optimization.</p></td>
     <tr>
       <th>condition</th>
       <td><p>Same as the <code>condition</code> argument to 
-<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code> except the <em>default is different</em>
+<code><a href='https://mc-stan.org/bayesplot/reference/MCMC-scatterplots.html'>mcmc_pairs</a></code> except the <em>default is different</em>
 for <span class="pkg">rstap</span> models. By default, the <code>mcmc_pairs</code> function in
 the <span class="pkg">bayesplot</span> package plots some of the Markov chains (half, in the
 case of an even number of chains) in the panels above the diagonal and the
@@ -169,11 +163,11 @@ diagonal will contain realizations that are below the median
 <code>accept_stat__</code> and the plots above the diagonal will contain 
 realizations that are above the median <code>accept_stat__</code>. To change this
 behavior see the documentation of the <code>condition</code> argument at 
-<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code>.</p></td>
+<code><a href='https://mc-stan.org/bayesplot/reference/MCMC-scatterplots.html'>mcmc_pairs</a></code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Optional arguments passed to <code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code>. 
+      <td><p>Optional arguments passed to <code><a href='https://mc-stan.org/bayesplot/reference/MCMC-scatterplots.html'>mcmc_pairs</a></code>. 
 The <code>np</code>, <code>lp</code>, and <code>max_treedepth</code> arguments to 
 <code>mcmc_pairs</code> are handled automatically by <span class="pkg">rstap</span> and do not 
 need to be specified by the user in <code>...</code>. The arguments that can be 
@@ -181,7 +175,7 @@ specified in <code>...</code> include <code>transformations</code>, <code>diag_f
 <code>off_diag_fun</code>, <code>diag_args</code>, <code>off_diag_args</code>,
 and <code>np_style</code>. These arguments are
 documented thoroughly on the help page for
-<code><a href='http://www.rdocumentation.org/packages/bayesplot/topics/MCMC-scatterplots'>mcmc_pairs</a></code>.</p></td>
+<code><a href='https://mc-stan.org/bayesplot/reference/MCMC-scatterplots.html'>mcmc_pairs</a></code>.</p></td>
     </tr>
     </table>
     

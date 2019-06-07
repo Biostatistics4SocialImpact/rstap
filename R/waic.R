@@ -6,6 +6,7 @@
 #'
 #'
 waic.stapreg <- function(x) {
+    stop("waic is currently in development. This should be functioning in a future release.")
 
     args <- ll_args(x)
     out <- .waic(ll_fun(x), data = args$data,

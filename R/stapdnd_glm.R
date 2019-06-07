@@ -42,8 +42,8 @@
 #' @param time_data same as distance_data except with time that the subject has been exposed to the built environment feature, instead of distance 
 #' @param subject_ID  name of column(s) to join on between subject_data and bef_data
 #' @param group_ID name of column(s0 to join on between subject_data and bef_data that indicate clustered or repeated measures
-#' @param subject_matrix binary matrix used to group patient observations
-#' @param subject_n  matrix of the inverse of the number of observations each subject has
+#' @param subject_matrix num_subj X num_observation binary matrix used to group patient observations across observations.
+#' @param subject_n  matrix of the inverse of the number of observations associated with each subject.
 #' @param max_distance the inclusion distance; upper bound for all elements of dists_crs
 #' @param max_time inclusion time; upper bound for all elements of times_crs
 #' @param model  logical denoting whether or not to return the fixed covariates model frame object in the fitted object

@@ -5,11 +5,11 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spatiotemporal Aggregated Predictor Models via stan  • rstap</title>
+<title>Spatial Temporal Aggregated Predictor Models via 'stan'  • rstap</title>
 <!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Spatiotemporal Aggregated Predictor Models via stan ">
+<script src="pkgdown.js"></script><meta property="og:title" content="Spatial Temporal Aggregated Predictor Models via 'stan' ">
 <meta property="og:description" content="Estimates previously compiled stap regression models using the 'rstan' package. Users specify models via a custom R syntax with a formula and data.frame plus additional arguments for priors.">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!--[if lt IE 9]>
@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">rstap</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.1.3</span>
       </span>
     </div>
 
@@ -54,12 +54,6 @@
 <li>
       <a href="articles/Introduction.html">STAP Introduction</a>
     </li>
-    <li>
-      <a href="articles/Longitudinal.html">STAP in a Longitudinal Data Setting</a>
-    </li>
-    <li>
-      <a href="articles/WeightFunctions.html">Mis-Specified Weight Function</a>
-    </li>
   </ul>
 </li>
       </ul>
@@ -76,35 +70,50 @@
   <div class="contents col-md-9">
     
 
-<div id="rstap" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#rstap" class="anchor"></a>rstap</h1></div>
-<p><a href="https://travis-ci.org/Biostatistics4SocialImpact/rstap"><img src="https://travis-ci.org/Biostatistics4SocialImpact/rstap.svg?branch=master" alt="Build Status"></a> <a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg" alt="License: GPL v3"></a></p>
-<div id="spatial-temporal-aggregated-predictor-models-implemented-in-r" class="section level2">
+<div id="rstap-spatial-temporal-aggregated-predictor-models-implemented-in-r" class="section level2">
 <h2 class="hasAnchor">
-<a href="#spatial-temporal-aggregated-predictor-models-implemented-in-r" class="anchor"></a>Spatial Temporal Aggregated Predictor Models Implemented in R</h2>
-<p>This is an R package that fits spatial temporal aggregated predictor models<br>
-using <a href="http://mc-stan.org">Stan</a> (via the <strong>rstan</strong> package) for the back-end estimation. The primary target audience is researchers interested in the effect of built environment features (BEFs) on human health, though other applications are possible. See the package’s <a href="https://biostastics4socialimpact.github.io/rstap">website</a> for an <a href="https://biostatistics4socialimpact.github.io/rstap/articles/Introduction.html">introduction</a>.</p>
-<div id="installation" class="section level3">
-<h3 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h3>
+<a href="#rstap-spatial-temporal-aggregated-predictor-models-implemented-in-r" class="anchor"></a><code>rstap</code>: Spatial-Temporal Aggregated Predictor Models Implemented in R</h2>
+<!---
+[![Build Status](https://travis-ci.org/Biostatistics4SocialImpact/rstap.svg?branch=master)](https://travis-ci.org/Biostatistics4SocialImpact/rstap)
+-->
+<p><a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg" alt="License: GPL v3"></a> <a href="http://cran.r-project.org/package=rstap"><img src="http://www.r-pkg.org/badges/version/rstap?color=green" alt="CRAN_Status_Badge"></a></p>
+</div>
+<div id="about" class="section level2">
+<h2 class="hasAnchor">
+<a href="#about" class="anchor"></a>About</h2>
+<p>This is an R package that fits spatial temporal aggregated predictor models using <a href="http://mc-stan.org">Stan</a> (via the <strong>rstan</strong> package) for the back-end estimation. The primary target audience is researchers interested in the effect of built environment features (BEFs) on human health, though other applications are possible. See the package’s <a href="https://biostatistics4socialimpact.github.io/rstap">website</a> for an <a href="https://biostatistics4socialimpact.github.io/rstap/articles/Introduction.html">introduction</a>. Currently count, binomial, and continuous outcomes are supported.</p>
+</div>
+<div id="installation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installation" class="anchor"></a>Installation</h2>
 <div id="development-version" class="section level4">
 <h4 class="hasAnchor">
 <a href="#development-version" class="anchor"></a>Development Version</h4>
-<p>The current development version can be installed</p>
-<p>To install from GitHub, first make sure that you can install the <strong>rstan</strong> package and C++ toolchain by following these <a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">instructions</a>.</p>
-<p>Once <strong>rstan</strong> is successfully installed, you can install <strong>rstanarm</strong> from GitHub using the <strong>devtools</strong> package by executing the following in R:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(devtools)) {
-  <span class="kw">install.packages</span>(<span class="st">"devtools"</span>)
-  <span class="kw">library</span>(devtools)
-}
-<span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/reexports">install_github</a></span>(<span class="st">"biostatistics4socialimpact/rstap"</span>, <span class="dt">build_vignettes =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p>You can switch <code>build_vignettes</code> to <code>TRUE</code> but it takes a lot longer to install and the vignettes are already separately available from the <a href="https://biostatistics4socialimpact.github.io/rstap">stap website</a>.</p>
-<p>If installation fails, please let us know by <a href="https://github.com/biostatistics4socialimpact/rstap/issues">filing an issue</a>.</p>
-<p><strong>Please Note</strong> This package is still in development. Download and use with caution.</p>
+<p>To install the current development version from GitHub, first make sure that you can install the <strong>rstan</strong> package and C++ toolchain by following these <a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">instructions</a>.</p>
+<p>Once <strong>rstan</strong> is successfully installed, you can install <strong>rstap</strong> from GitHub using the <strong>devtools</strong> package by executing the following in R:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(devtools)) {</a>
+<a class="sourceLine" id="cb1-2" data-line-number="2">  <span class="kw">install.packages</span>(<span class="st">"devtools"</span>)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">  <span class="kw">library</span>(devtools)</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4">}</a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/reexports">install_github</a></span>(<span class="st">"biostatistics4socialimpact/rstap"</span>)</a></code></pre></div>
+<p>Note that vignettes for this package are separately available from the <a href="https://biostatistics4socialimpact.github.io/rstap">rstap website</a>.</p>
+<p>If installation fails, or you encounter other problems, please let us know by <a href="https://github.com/biostatistics4socialimpact/rstap/issues">filing an issue</a>.</p>
 </div>
 </div>
+<div id="contributing" class="section level2">
+<h2 class="hasAnchor">
+<a href="#contributing" class="anchor"></a>Contributing</h2>
+<p>Both examples and base code are welcome. Whether you’re commiting a case study or a helping me flesh out further functionality of the package. Contact me via atpvyc at umich dot edu if interested.</p>
 </div>
+<div id="how-to-cite-this-package" class="section level2">
+<h2 class="hasAnchor">
+<a href="#how-to-cite-this-package" class="anchor"></a>How to cite this package</h2>
+<p>Please use the citation associated with the arxiv <a href="https://arxiv.org/abs/1812.10208">preprint</a>.</p>
+</div>
+<div id="acknowledgments" class="section level2">
+<h2 class="hasAnchor">
+<a href="#acknowledgments" class="anchor"></a>Acknowledgments</h2>
+<p>This work was developed with support from NIH grant R01-HL131610 (PI: Sanchez).</p>
 </div>
 
   </div>
@@ -113,6 +122,8 @@ using <a href="http://mc-stan.org">Stan</a> (via the <strong>rstan</strong> pack
     <div class="links">
 <h2>Links</h2>
 <ul class="list-unstyled">
+<li>Download from CRAN at <br><a href="https://cloud.r-project.org/package=rstap">https://​cloud.r-project.org/​package=rstap</a>
+</li>
 <li>Report a bug at <br><a href="https://github.com/biostatistics4socialimpact/rstap/issues">https://​github.com/​biostatistics4socialimpact/​rstap/​issues</a>
 </li>
 </ul>
@@ -120,7 +131,8 @@ using <a href="http://mc-stan.org">Stan</a> (via the <strong>rstan</strong> pack
 <div class="license">
 <h2>License</h2>
 <ul class="list-unstyled">
-<li>GPL (&gt;=3)</li>
+<li><a href="LICENSE.html">Full license</a></li>
+<li><small>GPL(&gt;=3)</small></li>
 </ul>
 </div>
 <div class="developers">

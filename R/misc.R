@@ -659,20 +659,21 @@ check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
 # @param x Predictor matrix.
 # @param offset Optional offset vector.
 # @return A vector or matrix.
-linear_predictor <- function(delta_beta, x, offset = NULL) {
+linear_predictor <- function(delta_beta,z,x, offset = NULL) {
   UseMethod("linear_predictor")
 }
-linear_predictor.default <- function(delta_beta, x, offset = NULL) {
+
+linear_predictor.default <- function(delta_beta,z, x, offset = NULL) {
   eta <- as.vector(if (NCOL(x) == 1L) x * delta_beta else x %*% delta_beta)
   if (length(offset))
     eta <- eta + offset
 
   return(eta)
 }
-linear_predictor.matrix <- function(delta_beta, x, offset = NULL) {
-  if (NCOL(delta_beta) == 1L)
-    delta_beta <- as.matrix(delta_beta)
-  eta <- delta_beta %*% t(x)
+linear_predictor.matrix <- function(delta,z, x_beta, offset = NULL) {
+  if (NCOL(delta) == 1L)
+    delta <- as.matrix(delta)
+  eta <- delta %*% t(z) + x_beta
   if (length(offset))
     eta <- sweep(eta, 2L, offset, `+`)
 
@@ -768,7 +769,7 @@ get_weight_function <- function(weight_code){
            function(x,y){ pracma::erfc(x/y)},
            function(x,y){ exp(-x/y)}, 
            function(x,y){1- exp(-x/y)},
-           function(x,y,z){exp(- (x/y)^z)},
+           function(x,y,z){ exp(- (x/y)^z)},
            function(x,y,z){1 - exp(-(x/y)^z)})
 }
 

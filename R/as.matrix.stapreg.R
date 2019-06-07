@@ -61,7 +61,7 @@ as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL,include_X =
   if (!user_pars)
       pars <- exclude_lp_and_ppd(colnames(mat))
   if(!include_X)
-    pars <- pars[grep("X_theta_*",pars,invert=T)]
+    pars <- pars[grep("X.*_theta_.*",pars,invert=T)]
   if (user_pars)
     check_missing_pars(mat, pars)
   
@@ -87,7 +87,7 @@ as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL, include_X =
     pars <- exclude_lp_and_ppd(last_dimnames(arr))
   }
   if(!include_X)
-    pars <- pars[grep("X_theta_*",pars,invert=T)]
+    pars <- pars[grep("X.*_theta_.*",pars,invert=T)]
 
   arr <- arr[, , pars, drop = FALSE]
   

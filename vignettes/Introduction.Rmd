@@ -1,0 +1,491 @@
+---
+title: "STAP Introduction"
+author: "Adam Peterson"
+date: ""
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{STAP_I}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE,echo=F}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = T
+)
+```
+
+# Motivation
+The purpose of this document is to show how to use the `rstap` package including the modeling assumptions and the kind of data it uses.
+We'll begin by loading in the appropriate libraries which include `dplyr` and `tidyr` for data manipulation, `ggplot2` for plotting and `rstap` for model fitting.
+
+```{r libraries, message=F,warning=F}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(tidyr)
+library(rstap)
+```
+
+A typical data structure will involve subjects and features at different locations and/or times. For purposes of this example,
+we simulate 550 subjects and 55 features uniformly in a 1x2 and 3x3 grid, respectively. We'll assume we're modeling the BMI of the subjects 
+as a function of Fast Food Restaurants (FF) in their surrounding area.
+
+```{r initialize_data}
+set.seed(1214)
+num_subj <- 2.5E2
+num_bef <- 55
+sub_df <- data_frame(x = runif(n = num_subj, min = 0, max = 1.0),
+                     y = runif(n = num_subj, min = 0, max = 1.0),
+                     class = "Subject")
+bef_df <- data_frame(x = runif(n = num_bef, min = 0, max = 1.0),
+                     y = runif(n = num_bef, min = 0, max = 1.0),
+                     class = "BEF")
+rbind(sub_df,bef_df) %>% ggplot(aes(x = x, y = y, color = class )) +
+    geom_point() + theme_bw() + ggtitle("Independence Configuration") + 
+    scale_colour_grey() + theme(legend.title = element_blank(),
+                                text = element_text(size = 22))
+```
+
+`rstap` models data assuming the relationship between the mean and the covariates is the following:
+
+$$
+E[BMI_i] = \alpha + Sex_i \delta + FF_i(\theta)\beta\\
+X_i(\theta) = \sum_{d \in \mathcal{D}_i} \mathcal{K}_s(\frac{d}{\theta})
+$$
+Where $\mathcal{K}_s$ is a real-valued function such that $\mathcal{K}_s:[0.\infty] \to [0,1]$. Furthermore, we have $\mathcal{K}_s$ either monotonically decreasing or increasing depending on whether one is modeling a spatial or temporal relationship between the features
+and subjects, respectively. The default weight function for a spatial decay function in the `rstap` package is the [complementary error function](https://en.wikipedia.org/wiki/Error_function),
+though others are available. For examples of others in use in the `rstap` package see the [Mis-Specified Weight Function](https://biostatistics4socialimpact.github.io/rstap/articles/misspecified-weightfunction.html) vignette.
+
+For this example we use the following fixed parameters to simulate our dataset:
+
+```{r true_pars}
+alpha <- 22.5 ## Average BMI for men with no FF exposure
+Z <- rbinom(n = num_subj, prob = .45, size = 1) ## sex in this setting
+delta <- -.8 ## Sex effect
+theta <- .3 ## Spatial scale
+theta_2 <- 3 ## for later
+beta <- 1.2 ## Fast Food Effect
+sigma <- 2.3 ## Residual Noise
+```
+
+supposing we use **all** the features simulated in the space, then 
+this results in the following dataset, with the following marginal distribution of the outcome, $y$.
+
+```{r dists_df_1}
+dists <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(bef_df[,1:2]))
+X <- apply(dists,1,function(x) sum(pracma::erfc(x/theta)))
+BMI <- alpha + Z*delta + X*beta + rnorm(n = num_subj, mean = 0, sd = sigma)
+data_frame(BMI = BMI) %>% ggplot(aes(x=BMI)) + geom_density() + theme_bw() +
+    ggtitle("Marginal Distribution of Outcome") + theme(text = element_text(size = 22))
+```
+
+The exposure decay function and histogram of the **standardized** exposure is as follows
+```{r exposure_1}
+d <- seq(from = 0, to = max(dists), by = 0.01)
+X_theta_one <- pracma::erfc(d/theta)
+p1 <- tibble(Distance = d,
+       Exposure = X_theta_one) %>% ggplot(aes(x=Distance,y=Exposure)) + geom_line() + 
+    theme_bw() + scale_colour_grey() + ggtitle("Simulated Spatial Distance Decay") + 
+    xlab("Distance") + theme(text = element_text(size=22))
+p2 <- tibble(Exposure =  X) %>% ggplot(aes(x=Exposure)) + geom_histogram() + 
+    theme_bw() + scale_colour_grey() + xlab("Aggregated Exposure") + 
+    ggtitle("Spatial Aggregated Exposure Distribution") + 
+    theme(text = element_text(size=22))
+grid.arrange(p1,p2,nrow=1)
+```
+
+
+
+We then set-up the two dataframes needed for stap to model these data. The first
+is a fairly typical data frame with the outcome, covariates and subject ID.
+This is the same kind of dataset that could be used with a function like `lm()`
+```{r subject_data}
+subject_data <- data_frame(subj_id = 1:num_subj,
+                           BMI = BMI,
+                           sex = factor(Z,labels=c("M","F")))
+subject_data %>% head() %>% knitr::kable()
+```
+
+The distance dataframe contains the corresponding subject id to pair with 
+each built environment feature in the chosen space along with their associated distance.
+Note that the Built Environment Features are labeled as "Fast_Food" for this example - this will be important syntactically for the `stap_glm()` function.
+```{r datasets}
+distance_data <- dists %>% as_tibble() %>%
+    mutate(subj_id = 1:num_subj) %>% 
+    gather(contains("V"),key = 'BEF',value = 'Distance') %>% 
+    mutate(BEF = 'Fast_Food')
+
+distance_data %>% head() %>% knitr::kable()
+```
+
+These data are then modeled with rstap in the following manner - note the placement of "Fast_Food" and `sap()`,
+designating the rows labeled as Fast_Food in the distance_data as the appropriate ones to model as **Spatial** Aggregated Predictor with these data. Note that we sample the posterior with 4 chains for 2000 iterations here. This is very conservative and fewer samples/chains could be used when first fitting a model to make sure the sampler is functioning appropriately.
+```{r sampling_1, cache=T,results=F}
+fit <- stap_lm(formula = BMI ~ sex + sap(Fast_Food),
+                subject_data = subject_data,
+                distance_data = distance_data,
+                subject_ID = 'subj_id',
+                prior = normal(location = 0, scale = 5,autoscale = F),
+                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                prior_theta = log_normal(location = 1, scale = 1), 
+                prior_aux = cauchy(location = 0,scale = 5),
+                max_distance = max(dists), 
+                chains = 4, iter = 2E3, cores = 4) ## include all data
+```
+
+We'll first look at the quick summary contained in the model's print-out
+```{r}
+fit
+```
+
+Further model details, including diagnostics concerning convergence properties can be found by using the ```summary``` function:
+```{r}
+summary(fit, waic = F)
+```
+
+Checking our estimates, the model captures the true values very well.
+```{r results_1,echo=F}
+fd_df <- cbind(posterior_interval(fit)[1:4,1],coef(fit),posterior_interval(fit)[1:4,2],
+      c(alpha,delta,beta,theta)) %>% 
+    as_tibble() %>% transmute(lower= V1, 
+                                  mid = V2, 
+                                  upper = V3,
+                                  Truth = V4,
+                                  model = "Full Data") %>%
+    mutate(parameter = c("alpha","sex","Fast_Food","Fast_Food_spatial_scale"),
+           is_alpha = factor((parameter=="alpha"),labels = c("Effects","Intercept")) )
+fd_df %>% 
+    ggplot(aes(x=parameter,y=mid)) + geom_point() + 
+    theme_bw() + 
+    geom_linerange(aes(ymin=lower,ymax=upper)) + 
+    geom_hline(aes(yintercept = Truth),linetype = 2) + coord_flip()  + 
+    facet_wrap(~is_alpha,scales = "free") + 
+    theme( strip.background = element_blank(),
+           strip.text.x = element_blank()) +  
+    xlab("") + ylab("Estimate")
+```
+
+One typical way to check for model goodness-of-fit is via posterior predictive checks. These are available here via the `posterior_predict` function
+and the `ppc_dens_overlay` function from the `bayesplot` package.
+
+```{r ppc}
+pps <- posterior_predict(fit,draws = 50,seed = 34234)
+
+bayesplot::ppc_dens_overlay(y = subject_data$BMI,
+                            yrep = pps) + ggtitle("Posterior Predictive Samples")
+```
+
+
+We'll take this as sufficient evidence (for this vignette) that the model works. 
+Further model evaluation can be found in a different vignette, to be added later.
+Let's now examine the case when we mis-specify the inclusion distance or 
+superflous data is included.
+
+
+## Mis-Specified Inclusion Distance
+
+While there are tools, such as the [dlm](https://github.com/Biostatistics4SocialImpact/dlm) package, that can
+provide an investigator with a sense of what appropriate inclusiong distance to set, it is still worth considering what may
+occur if the inclusion distance is mis-specified. The following section considers this in two cases of data exclusion: non-informative, and informative.
+
+
+### Non-Informative data excluded
+Note that the histogram of distances include many over 1 unit - which
+from the above graph we know only add "negligible" information. 
+```{r dists_hist}
+hist(dists)
+```
+
+Keeping this in mind - let's see what happens to our estimates
+when we set the exclusion distance to be 1.25 miles.
+
+
+```{r sampling_2,cache=T}
+fit_125 <- stap_lm(BMI ~ sex + sap(Fast_Food), 
+                    subject_data = subject_data,
+                distance_data = distance_data,
+                subject_ID = 'subj_id',
+                prior = normal(location = 0,scale = 5,autoscale = F),
+                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                prior_theta = log_normal(location = 1, scale = 1), 
+                prior_aux = cauchy(location = 0,scale = 5),
+                max_distance = 1.25, chains = 4, iter = 2E3, cores = 4)
+```
+
+We excluded about half of the total data (not exactly even across individuals)
+```{r exlusion_data}
+sum(dists<=1.25)/sum(dists>=0) 
+```
+
+and yet the estimates are still very good
+```{r results_2,echo=F}
+d125 <- cbind(posterior_interval(fit_125)[1:4,1],coef(fit_125),posterior_interval(fit_125)[1:4,2],
+      c(alpha,delta,beta,theta)) %>% 
+    as_data_frame() %>% transmute(lower= V1, 
+                                  mid = V2, 
+                                  upper = V3,
+                                  Truth = V4,
+                                  model = "Non-Informative Exclusion") %>%
+    mutate(parameter = c("alpha","sex","Fast_Food","Fast_Food_spatial_scale"),
+           is_alpha = (parameter=="alpha") )
+
+d125 %>% rbind(.,fd_df) %>% 
+    ggplot() +
+    geom_pointrange(aes(x = parameter, ymin=lower,y = mid, ymax=upper, color = model),
+                    position = position_dodge(width = .2)) +
+    geom_hline(aes(yintercept = Truth),linetype = 2) + coord_flip() + theme_bw() + 
+    facet_wrap(~is_alpha,scales = "free") + 
+    theme( strip.background = element_blank(),
+           strip.text.x = element_blank()) + 
+    xlab("") + ylab("Estimate")
+```
+
+
+
+## Informative data excluded
+Now let's see what happens when we mis-specify the maximum distance
+and this results in a loss of "meaningful" Built Environment Features.
+```{r sampling_3,cache=T}
+fit_25 <- stap_glm(BMI ~ sex + sap(Fast_Food), subject_data = subject_data,
+                distance_data = distance_data,
+                family = gaussian(link = 'identity'),
+                subject_ID = 'subj_id',
+                prior = normal(location = 0,scale = 5,autoscale = F),
+                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                prior_theta = log_normal(location = 1, scale = 1), 
+                prior_aux = cauchy(location = 0,scale = 5),
+                max_distance = .25, chains = 1, iter = 6E2) 
+```
+
+We can now see that our spatial scale and the corresponding effect are biased
+```{r results_3,echo=F}
+d25 <- cbind(posterior_interval(fit_25)[1:4,1],coef(fit_25),posterior_interval(fit_25)[1:4,2],
+      c(alpha,delta,beta,theta)) %>% 
+    as_data_frame() %>% transmute(lower= V1, 
+                                  mid = V2, 
+                                  upper = V3,
+                                  Truth = V4,
+                                  model = "Informative_Exlusion") %>%
+    mutate(parameter = c("alpha","sex","Fast_Food","Fast_Food_spatial_scale"),
+           is_alpha = (parameter=="alpha") )
+
+d25 %>% rbind(.,fd_df) %>% 
+    ggplot() +
+    geom_pointrange(aes(x = parameter, ymin=lower,y = mid, ymax=upper, color = model),
+                    position = position_dodge(width = .2)) +
+    geom_hline(aes(yintercept = Truth),linetype = 2) + coord_flip() + theme_bw() + 
+    facet_wrap(~is_alpha,scales = "free") + 
+    theme( strip.background = element_blank(),
+           strip.text.x = element_blank()) + 
+    xlab("") + ylab("Estimate")
+```
+
+
+The shift in estimate, in addition to increased noise, is to be expected since 
+we're increasingly missing informative data for our spatial parameter.
+
+
+## Extreme Missing data
+
+To show the consequences of using an extreme inclusion distance - extreme with respect 
+to the true terminal inclusion distance - we simulate the data under an alternate scale.
+Note that the following exposure curve does not even terminate at the maximum distance 
+between a "Fast Food" store and a subject.
+
+
+```{r}
+d <- seq(from = 0, to = max(dists), by = 0.01)
+X_theta_one <- pracma::erfc(d/theta_2)
+plot(d,X_theta_one,type='l',main = "Exposure Decay Function", xlab = "Distance",
+     ylab = "Exposure",ylim = c(0,1))
+```
+
+
+
+Fitting the model on a reduced domain of distances from the terminating distance,results in an highly inflated estimate of the spatial scale, as the posterior will attempt to approximate the second graph shown below - an exposure relationship that is approaching uniform on the domain of distances "observed".
+
+
+```{r}
+plot(d,X_theta_one,type='l',main = "Exposure Decay Function - reduced domain", xlab = "Distance",
+     ylab = "Exposure",ylim = c(0,1), xlim = c(0,.5))
+```
+
+
+Simulating a dataset under this model and fitting an rstap model to it with the restricted domain...
+
+```{r}
+dists <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(bef_df[,1:2]))
+X <- apply(dists,1,function(x) sum(pracma::erfc(x/theta_2)))
+## center and scale the exposure effect for ease of exposition/numerical stability
+X_tilde <- (X-mean(X))/sd(X) 
+BMI <- alpha + Z*delta + X_tilde*beta + rnorm(n = num_subj, mean = 0, sd = sigma)
+
+subject_data_unif <- data_frame(subj_id = 1:num_subj,
+                           BMI = BMI,
+                           sex = factor(Z,labels=c("M","F")))
+
+fit_unif <- stap_glm(y ~ sex + sap(Fast_Food), 
+                     subject_data = subject_data_unif,
+                     distance_data = distance_data,
+                     family = gaussian(link = 'identity'),
+                     subject_ID = 'subj_id',
+                     prior = normal(location = 0,scale = 5,autoscale = F),
+                     prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                     prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                     prior_theta = log_normal(location = 1, scale = 1), 
+                     prior_aux = cauchy(location = 0,scale = 5),
+                     max_distance = .25, chains = 4, iter = 2E3,cores = 4) 
+```
+
+
+We can see a much wider estimate of the scale parameter, as well as the corresponding effect.
+```{r unif_scale_estimates, echo=F}
+as_tibble(fit_unif) %>% 
+    gather(everything(),key= "parameter",value = "sample") %>% 
+    group_by(parameter) %>% 
+    summarise(lower = quantile(sample,0.025),
+              med  = median(sample),
+              upper = quantile(sample, 0.975)) %>% 
+    mutate(Truth = c(alpha,beta,theta_2,delta,sigma)) %>% 
+    filter(parameter!="(Intercept)") %>% 
+    ggplot() + geom_pointrange(aes(x=parameter,y=med,ymin=lower,ymax=upper)) +
+    geom_point(aes(x=parameter,y=Truth),color='red') +
+    coord_flip() + theme_bw()
+```
+
+Here is a plot of the estimate on the full domain of the data - we can see that the exposure function approximation
+becomes less accurate on the set of distances not included in the model.
+
+```{r unif_scale_full_domain, echo =F}
+scale_df <-  as.matrix(fit_unif) %>% as_data_frame() %>% 
+    gather(everything(), key = "parameter", value = "sample") %>% 
+    group_by(parameter) %>% 
+    summarise(lower = quantile(sample,0.025),
+              med = median(sample),
+              upper = quantile(sample, 0.975)) %>% 
+    filter(parameter=="Fast_Food_spatial_scale")
+
+data_frame(lower = pracma::erfc(d/scale_df$lower),
+           median = pracma::erfc(d/scale_df$med),
+           upper = pracma::erfc(d/scale_df$upper),
+           truth = X_theta_one,
+           distance = d) %>% 
+    ggplot(aes(x=distance,y=median)) + geom_line(linetype = 2) +
+    geom_ribbon(aes(ymin=lower,ymax=upper),alpha=.3) +
+    geom_line(aes(x=distance,y=truth),color='red') + 
+    theme_bw() + ggtitle("Extreme Missing Information")
+```
+
+As can be seen below, the approximation is quite good on the reduced domain, but the reduced number of distances
+results in a wider uncertainty interval, and the constrained domain results in an inflated estimate.
+
+```{r unif_scale_red_domain,echo=F}
+data_frame(lower = pracma::erfc(d/scale_df$lower),
+           median = pracma::erfc(d/scale_df$med),
+           upper = pracma::erfc(d/scale_df$upper),
+           truth = X_theta_one,
+           distance = d) %>% 
+    ggplot(aes(x=distance,y=median)) + geom_line(linetype = 2) +
+    geom_ribbon(aes(ymin=lower,ymax=upper),alpha=.3) +
+    geom_line(aes(x=distance,y=truth),color='red') + xlim(0,.5) + 
+    theme_bw() + ggtitle("Extreme Missing Information")
+
+```
+
+
+
+## Inclusion of superflous data
+
+If additional fast food restaurants were included, beyond that which were truly "needed"", what would happen to our model estimates?
+Is this equivalent to the non-informative data exclusion?
+
+```{r extra_befs,echo=F}
+extra_befs <- data_frame(x = c(runif(min = -1, max = 0, n = 20),
+                               runif(min = 0, max = 4, n = 20),
+                               runif(min = 3, max = 4, n = 20),
+                               runif(min = -1, max = 4, n = 20)),
+                         y = c(runif(min = -1, max = 4, n = 20),
+                               runif(min = -1, max = 0, n =20 ),
+                               runif(min = -1, max = 4, n = 20),
+                               runif(min = 3, max = 4, n = 20)),
+                         class = 'extra_BEFs')
+rbind(sub_df,bef_df,extra_befs) %>% ggplot(aes(x=x,y=y,colour = class)) + 
+    geom_point() + theme_bw() + ggtitle("Independence Configuration - Extra BEFs")
+```
+
+
+```{r sampling_4,cache=T}
+dists <- fields::rdist(as.matrix(sub_df[,1:2]),
+                       as.matrix(rbind(bef_df[,1:2],extra_befs[,1:2])))
+
+distance_data <- dists %>% as_tibble() %>%
+    mutate(subj_id = 1:num_subj) %>% 
+    tidyr::gather(contains("V"),key = 'BEF',value = 'Distance') %>% 
+    mutate(BEF = 'Fast_Food')
+
+
+fit <- stap_lm(formula = BMI ~ sex + sap(Fast_Food),
+                subject_data = subject_data,
+                distance_data = distance_data,
+                subject_ID = 'subj_id',
+                prior = normal(location = 0, scale = 5,autoscale = F),
+                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
+                prior_stap = normal(location = 0, scale = 3, autoscale = F),
+                prior_theta = log_normal(location = 0, scale = 1), 
+                prior_aux = cauchy(location = 0,scale = 5),
+                max_distance = max(dists),
+               chains = 4, cores = 4, iter = 2E3)  ## including unneccessary data
+```
+
+
+```{r results_4,echo=F}
+edf <- cbind(posterior_interval(fit)[1:4,1],coef(fit),posterior_interval(fit)[1:4,2],
+      c(alpha,delta,beta,theta)) %>% 
+    as_tibble() %>% transmute(lower= V1, 
+                                  mid = V2, 
+                                  upper = V3,
+                                  Truth = V4,
+                                  model = "Extra data") %>%
+    mutate(parameter = c("alpha","sex","Fast_Food","Fast_Food_spatial_scale"),
+           is_alpha = (parameter=="alpha") )
+
+edf %>% rbind(.,fd_df) %>% 
+    ggplot() +
+    geom_pointrange(aes(x = parameter, ymin=lower,y = mid, ymax=upper, color = model),
+                    position = position_dodge(width = .2)) +
+    geom_hline(aes(yintercept = Truth),linetype = 2) + coord_flip() + theme_bw() + 
+    facet_wrap(~is_alpha,scales = "free") + 
+    theme( strip.background = element_blank(),
+           strip.text.x = element_blank()) + 
+    xlab("") + ylab("Estimate")
+```
+
+
+Our model is still able to recover the estimates correctly - about as well as it did 
+in the typical model setting! This is because the additional parameters only
+contribute an increasingly small amount of information as a function of distance, 
+reasonable *a priori* choices of the $\theta$ spatial scale. 
+
+## Caveats
+
+It is important to note the limitations of these simulations. To begin with,
+the exposure covariate $\tilde{X}$ is an **unknown** function of the 
+distances between the subjects and the businesses and the spatial scale. 
+Thus these simulations do not represent the probably more realistic scenarios in which:  
+
+1.  The decay function is mis-specified or  
+
+2.  Multiple built-environment features are of interest.
+
+
+These will be the subject of future vignettes.
+ 
+

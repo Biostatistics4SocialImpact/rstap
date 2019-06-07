@@ -76,7 +76,7 @@ stapreg <- function(object){
     if(mer)
       design_mat <- cbind(design_mat,object$w)
 
-    eta <- linear_predictor(delta_beta, design_mat,object$offset)
+    eta <- linear_predictor(delta_beta, NULL,design_mat,object$offset)
     mu <- family$linkinv(eta)
 
 
@@ -186,6 +186,8 @@ assign_st_weight <- function(u_s, u_t, crs_dist, crs_time, scales_s, scales_t, l
     
     w_s <- get_weight_function(weight_s)
     w_t <- get_weight_function(weight_t)
+    if(w_s > 4 || w_t > 4)
+        stop("Weibull predictions not currently implemented")
     if(u_s[n,(q*2)-1]>u_s[n,(q*2)])
         return(0)
     else{

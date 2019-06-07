@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.1.3</span>
       </span>
     </div>
 
@@ -85,12 +85,6 @@
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/Introduction.html">STAP Introduction</a>
-    </li>
-    <li>
-      <a href="../articles/Longitudinal.html">STAP in a Longitudinal Data Setting</a>
-    </li>
-    <li>
-      <a href="../articles/WeightFunctions.html">Mis-Specified Weight Function</a>
     </li>
   </ul>
 </li>
@@ -122,11 +116,12 @@
     </div>
 
     <pre class="usage"><span class='fu'>stap_termination</span>(<span class='no'>object</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.05</span>,
-  <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+  <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for stapreg</span>
 <span class='fu'>stap_termination</span>(<span class='no'>object</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
-  <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>max_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -145,8 +140,10 @@ probability mass to include in the intervals. The default is to report
     </tr>
     <tr>
       <th>exposure_limit</th>
-      <td><p>A number \( \in (0,1)\) indicating the desired
-amount of exposure for which the function will return an estimate of distance/time</p></td>
+      <td><p>A number indicating the desired
+amount of exposure for which the function will return an estimate of
+ distance/time. 
+ Note that the exposure_limit corresponds to spatial exposure and 1-temporal exposure.</p></td>
     </tr>
     <tr>
       <th>pars</th>
@@ -159,6 +156,12 @@ expressions to use for parameter selection. <code>regex_pars</code> can be used
 in place of <code>pars</code> or in addition to <code>pars</code>. Currently, all
 functions that accept a <code>regex_pars</code> argument ignore it for models fit
 using optimization.</p></td>
+    </tr>
+    <tr>
+      <th>max_value</th>
+      <td><p>by defuault the max_distance and/or time from the model's original input
+will be used to calculate the upper bound of possible terminating 
+distances/times - the max_value can be used to specify a new value for this value.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -178,6 +181,39 @@ using optimization.</p></td>
   respectively.</p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>fit_glm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='stap_glm.html'>stap_glm</a></span>(<span class='kw'>formula</span> <span class='kw'>=</span> <span class='no'>y</span> ~ <span class='no'>sex</span> + <span class='fu'>sap</span>(<span class='no'>Fast_Food</span>),
+                   <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='no'>homog_subject_data</span>,
+                     <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='no'>homog_distance_data</span>,
+                     <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'>gaussian</span>(<span class='kw'>link</span> <span class='kw'>=</span> <span class='st'>'identity'</span>),
+                     <span class='kw'>subject_ID</span> <span class='kw'>=</span> <span class='st'>'subj_id'</span>,
+                     <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='no'>F</span>),
+                     <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>25</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='no'>F</span>),
+                     <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='no'>F</span>),
+                     <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>log_normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>),
+                     <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>cauchy</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>,<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>),
+                     <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='no'>homog_distance_data</span>$<span class='no'>Distance</span>),
+                     <span class='kw'>chains</span> <span class='kw'>=</span> <span class='no'>CHAINS</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='no'>ITER</span>,
+                     <span class='kw'>refresh</span> <span class='kw'>=</span> -<span class='fl'>1</span>,<span class='kw'>verbose</span> <span class='kw'>=</span> <span class='no'>F</span>)
+<span class='no'>terminal_points</span> <span class='kw'>&lt;-</span> <span class='fu'>stap_termination</span>(<span class='no'>fit_glm</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>.9</span>, <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.01</span>)
+<span class='co'># }</span><span class='co'># NOT RUN {</span>
+<span class='no'>fit_glm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='stap_glm.html'>stap_glm</a></span>(<span class='kw'>formula</span> <span class='kw'>=</span> <span class='no'>y</span> ~ <span class='no'>sex</span> + <span class='fu'>sap</span>(<span class='no'>Fast_Food</span>),
+                   <span class='kw'>subject_data</span> <span class='kw'>=</span> <span class='no'>homog_subject_data</span>,
+                     <span class='kw'>distance_data</span> <span class='kw'>=</span> <span class='no'>homog_distance_data</span>,
+                     <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'>gaussian</span>(<span class='kw'>link</span> <span class='kw'>=</span> <span class='st'>'identity'</span>),
+                     <span class='kw'>subject_ID</span> <span class='kw'>=</span> <span class='st'>'subj_id'</span>,
+                     <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='no'>F</span>),
+                     <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>25</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='no'>F</span>),
+                     <span class='kw'>prior_stap</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='no'>F</span>),
+                     <span class='kw'>prior_theta</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>log_normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>),
+                     <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='fu'><a href='priors.html'>cauchy</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>,<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>),
+                     <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fu'>max</span>(<span class='no'>homog_distance_data</span>$<span class='no'>Distance</span>),
+                     <span class='kw'>chains</span> <span class='kw'>=</span> <span class='no'>CHAINS</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='no'>ITER</span>,
+                     <span class='kw'>refresh</span> <span class='kw'>=</span> -<span class='fl'>1</span>,<span class='kw'>verbose</span> <span class='kw'>=</span> <span class='no'>F</span>)
+<span class='no'>terminal_vals</span> <span class='kw'>&lt;-</span> <span class='fu'>stap_termination</span>(<span class='no'>fit_glm</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>.9</span>, <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.01</span>)
+<span class='co'># }</span><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -185,7 +221,9 @@ using optimization.</p></td>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

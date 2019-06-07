@@ -93,9 +93,6 @@ plot.stapreg <- function(x, plotfun = "intervals", pars = NULL,
   do.call(fun, args)
 }
 
-
-
-
 # internal for plot.stapreg ----------------------------------------------
 
 # Prepare argument list to pass to plotting function
@@ -304,7 +301,9 @@ pairs.stapreg <-
       ...
     )
     
-  }
+}
+
+
 
 # internal for pairs.stapreg ----------------------------------------------
 
