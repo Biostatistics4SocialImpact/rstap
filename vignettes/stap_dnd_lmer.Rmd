@@ -1,0 +1,187 @@
+---
+title: "STAP difference in difference"
+author: "Adam Peterson"
+date: "4/2/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Motivation
+
+Spatial-temporal aggregated predictor (STAP) models can be used in a longitudinal setting to model within and across subject differences by including subject specific means and subject differences from means. These "difference in differences" models can have a causal interpretation if certain assumptions are met. In a standard regression modeling framework, this would require a simple transformation of the time-varying confounders. For STAP models, since the variables being centered are random, they must be manipulated within each iteration of the sampler, requiring a different function and modeling syntax in ```rstap``` (as of v.1.1.0), which will be demonstrated in this vignette.  
+
+We'll begin by loading the neccessary libraries
+```{r libraries,warning=F,message=F,results='hide'}
+library(tidyverse)
+library(rstap)
+```
+
+The data generation is similar to standard longitudinal simulation so we will omit the code here. It can be found on the Github site in the vignettes folder. 
+
+Note that we'll generate the outcome under the difference in difference parameterization (see formula below) to make assessment of the parameters easy, and we'll only include a subject specific intercept and slope, which ```rstap``` is currently limited to. 
+
+```{r generate_data,echo=F,results=F}
+set.seed(24)
+num_subj <- 150
+num_bef <- 20
+Z <- sapply(1:num_subj, function(x) rep(rbinom(n = 1, size = 1, prob = .5),3))
+Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>% 
+    mutate(subj_id = 1:n()) %>% 
+    gather(contains("time"), key="time",value="Sex") %>% 
+    mutate(time = as.integer(stringr::str_replace(time,"time_","") ))
+delta <- -.5
+theta_s <- 0.5
+alpha <- 22
+beta <- 1.2
+beta_bar <- .7
+sigma <- 1  
+sigma_b <- 1
+dists_1 <- matrix(rexp(n = num_subj*num_bef,
+                       rate = 1),
+                  nrow = num_subj,
+                  ncol = num_bef)
+dists_2 <- matrix(rexp(n = num_subj*num_bef,
+                       rate = 1),
+                  nrow = num_subj,
+                  ncol = num_bef)
+dists_3 <- matrix(rexp(n= num_subj*num_bef,
+                       rate = .5),
+                  nrow = num_subj, ncol = num_bef)
+dists <- rbind(dists_1,dists_2,dists_3)
+colnames(dists) <- stringr::str_c("BEF_",1:ncol(dists))
+dists <- as_tibble(dists) 
+grd <- expand.grid(subj=1:num_subj,time = 1:3)
+dists <- dists %>% mutate(id= grd$subj,
+                         time = grd$time) %>%
+    gather(contains("BEF"),key = "BEF", value="Distance") %>% 
+    dplyr::filter(Distance<=5) %>% 
+    mutate(BEF = "Coffee_Shop")
+
+X <- dists %>% group_by(id,time) %>% 
+    summarise(Exposure = sum(exp(-1 * Distance / theta_s)))
+
+X_bar <- X %>% group_by(id) %>% summarise(MN_Exposure = mean(Exposure)) %>% 
+    mutate(subj_int = rnorm(n = num_subj,
+                            mean = 0,
+                            sd = sigma_b),
+           subj_slope = rnorm(n = num_subj,
+                              mean = 0,sd = sigma_b))
+
+X_diff <- X %>% left_join(X_bar,by='id') %>% 
+    mutate(X_diff = Exposure - MN_Exposure) %>% 
+    left_join(Z,by=c("id"="subj_id","time")) %>% 
+    arrange(id,time)
+
+epsilon_ij <- rnorm(n = num_subj * 3, mean = 0, sd = sigma)
+
+W <- cbind(rep(1,3*num_subj),rep(1:3,num_subj))
+eta <- alpha + X_diff$Sex * delta + beta*X_diff$X_diff + beta_bar*X_diff$MN_Exposure + rowSums(W * X_diff[,c("subj_int","subj_slope")])
+
+
+y <- eta + epsilon_ij 
+subj_mat1 <- as.matrix(Matrix::fac2sparse(as.factor(X_diff$id)))
+subj_n <- rep(1/3,num_subj)
+subj_df <- X_diff %>% ungroup() %>%  mutate(BMI=y)
+```
+
+
+# Simulating and Estimating a STAP model
+
+
+Consider the following model examining the average of some continuous outcome as a function of coffee shop exposure and confounders, conditional on latent subject covariates, $\bm{b}_i$
+
+$$
+E[Y_{ij}|b_i] = \alpha +  \Delta X_{ij}(\theta_s)\beta_{i,Coffee} + \bar{X}_{ij}(\theta_s)\bar{\beta}_{i,Coffee} +  + Z_{1}\delta_{i,sex}  + b_i + b_i*w_{ij}
+$$
+where
+$$
+\Delta X(\theta_s) = \overbrace{\sum_{d\in\mathcal{D}} w_d(\frac{d}{\theta_s}) }^{X_{ij}(\theta_s)}  - \underbrace{\sum_{j=1}^{n_i}\sum_{d\in\mathcal{D}} w_d(\frac{d}{\theta_s})}_{\bar{X}_{ij}(\theta_s)}
+$$
+
+The $\bar{X}_{ij}$ serves as an estimate of a given subject's average exposure to coffee shops across all measurements, so that $\Delta X_{ij}(\theta_s)$ represents the difference in "usual" exposure implying that $\beta_{i,Coffee}$ represents the within subject difference of increased Coffee exposure on the outcome, while $\bar{\beta}$ represents the difference across or between subjects for one unit increase in $\bar{X}_{ij}(\theta_s)$, the average subject exposure.
+
+We combine these two main effect estimates with standard, non time-varying confounders  - only sex is used here - as well as random intercepts and slopes for each subject to account for correlation within subjects across measurements. Although one will also have to include other built environment features that may be often colocated with one another to truly remove all sources of confounding, requiring a **lot** of data, this model represents the best attempt one can make at estimating the causal effect of a built environment feature.
+
+
+
+We'll fit the model with priors that reflect our relative uncertainty about the spatial and temporal scales and place a fairly uninformative prior on the subject-specific variance. For information on how priors are set on the subject specific covariance, see the ```rstanarm``` vignette's write up [here](http://mc-stan.org/rstanarm/articles/glmer.html). The functional form will be the same as the model under which it was simulated since this vignette is for exposition.
+```{r fit_model,results=F,warning=F,message=F}
+fit <- stapdnd_lmer(BMI ~ Sex + sap_dnd_bar(Coffee_Shop,exp) + (time|id),
+                  subject_data = subj_df, ## names of datasets 
+                  distance_data = dists,##  simulated above
+                  subject_ID = 'id',
+                  group_ID = "time",
+                  prior_intercept = normal(location = 25, scale = 4, autoscale = F),
+                  prior = normal(location = 0, scale = 3,autoscale=F),
+                  prior_stap = normal(location = 0, scale = 3),
+                  prior_theta = log_normal(location = 1,scale = 1),
+                  max_distance = max(dists$Distance),
+                  prior_covariance = decov(regularization = 1,concentration = 1,shape = 1,scale = 1),
+                  chains = 4,
+                  iter = 2E3,
+                  cores = 4)
+```
+
+
+We can now check our model estimates and see how they compare to the true values.
+
+```{r}
+fit
+```
+
+
+```{r parplot,echo=F}
+as_tibble(as.matrix(fit))  %>% 
+  select(Sex,contains("BEF_1"),contains("Sigma")) %>% 
+    gather(everything(),key="Parameter",value="Sample") %>% 
+    group_by(Parameter) %>% 
+    summarise_all(list(lower = ~quantile(.,0.05),
+                       median = ~median(.),
+                       upper = ~quantile(.,0.95))) %>% 
+    mutate(Truth = (Parameter=="(Intercept)")*alpha +
+               (Parameter=="BEF_1_dnd")*beta + 
+               (Parameter=="BEF_1_spatial_scale")*theta_s + 
+               (Parameter=="Sex")*delta+
+               (Parameter=="BEF_1_bar")*beta_bar+
+               (Parameter=="sigma")*sigma + 
+               (Parameter=="Sigma[id:(Intercept),(Intercept)]")*sigma_b +
+             (Parameter=="Sigma[id:time,time]")*sigma_b +
+             (Parameter=="Sigma[id:time,(Intercept)]")*0,
+           ranef = grepl("Sigma",Parameter)) %>% 
+    ggplot(aes(x=Parameter,y=median),alpha=.5) + 
+  geom_point(aes(x=Parameter,y=Truth),color='red',size=2.5)+ 
+    geom_pointrange(aes(ymin=lower,ymax=upper),size=.25) + 
+    coord_flip() + ggthemes::theme_hc()  + facet_wrap(~ranef,scales="free_y") +
+    ggtitle("Parameter Estimates") + 
+  theme(strip.background = element_blank(), strip.text = element_blank()) + 
+  xlab("Estimate")
+```
+
+
+```{r ranef_parplot,echo=F}
+as_tibble(as.matrix(fit))  %>% 
+  select(contains("b[")) %>% 
+    gather(everything(),key="Parameter",value="Sample") %>% 
+    group_by(Parameter) %>% 
+    summarise_all(list(lower = ~quantile(.,0.025),
+                       med = ~ median(.),
+                       upper = ~ quantile(.,0.975))) %>% 
+  mutate(id = stringr::str_split(Parameter,"id:"),
+         id = map_int(id,function(x) as.integer(stringr::str_replace(x[2],"]","") ) ) ) %>% 
+  arrange(id) %>% left_join(X_bar,by=c("id")) %>% 
+  gather(subj_int,subj_slope,key="Term",value="Truth") %>% 
+  ggplot(aes(x=med,y=Truth)) + geom_point() + facet_wrap(~Term) + 
+  ggthemes::theme_hc() + theme(strip.background = element_blank()) + 
+  geom_abline(aes(intercept = 0, slope = 1)) + labs(x= "Median",title = "Random Effect Estimates")
+```
+
+
+## References
+More information on the parameterization of this model from an academic and technical perspective can be found in:  
+
+1.  S. L. Morgan.Handbook of causal analysis for social research.  Springer, 2013
+
+while the underlying fundamentals of the difference in differences model and its causal interpretation can be found in more lay-accessible book, "Mastering 'Metrics", whose citation is below.  
+
+2. Angrist, Joshua D, and Jörn-Steffen Pischke. Mastering 'metrics: The Path from Cause to Effect. 2015. Print.

@@ -18,11 +18,11 @@
       for(q_ix in 1:Q){
           for(n_ix in 1:N){
             if(stap_code[q_ix] == 0)
-                X[n,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,1], u_s, dists_crs[cnt_s], theta_s[cnt_s], shape_s, cnt_shape_s, q_ix, n);
+                X[n_ix,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,1], u_s, dists_crs[cnt_s], theta_s[cnt_s], shape_s, cnt_shape_s, q_ix, n_ix);
             else if(stap_code[q_ix] == 1)
-                X[n,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,2], u_t, times_crs[cnt_t], theta_t[cnt_t], shape_t, cnt_shape_t, q_ix, n);
+                X[n_ix,q_ix] = assign_exposure(log_ar[q_ix], weight_mat[q_ix,2], u_t, times_crs[cnt_t], theta_t[cnt_t], shape_t, cnt_shape_t, q_ix, n_ix);
             else
-                X[n,q_ix] = assign_st_exposure(log_ar[q_ix], weight_mat[q_ix,1], weight_mat[q_ix,2], u_s, u_t, dists_crs[cnt_s], times_crs[cnt_t], theta_s[cnt_s], theta_t[cnt_t], shape_s, shape_t, cnt_shape_s, cnt_shape_t, q_ix, n);
+                X[n_ix,q_ix] = assign_st_exposure(log_ar[q_ix], weight_mat[q_ix,1], weight_mat[q_ix,2], u_s, u_t, dists_crs[cnt_s], times_crs[cnt_t], theta_s[cnt_s], theta_t[cnt_t], shape_s, shape_t, cnt_shape_s, cnt_shape_t, q_ix, n_ix);
         }
             if(stap_code[q_ix] == 0 || stap_code[q_ix] == 2){
                 cnt_s = cnt_s + 1;

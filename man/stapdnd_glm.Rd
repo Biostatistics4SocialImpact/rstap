@@ -37,9 +37,9 @@ stapdnd_lm(formula, subject_data = NULL, distance_data = NULL,
 
 \item{group_ID}{name of column(s0 to join on between subject_data and bef_data that indicate clustered or repeated measures}
 
-\item{subject_matrix}{binary matrix used to group patient observations}
+\item{subject_matrix}{num_subj X num_observation binary matrix used to group patient observations across observations.}
 
-\item{subject_n}{matrix of the inverse of the number of observations each subject has}
+\item{subject_n}{matrix of the inverse of the number of observations associated with each subject.}
 
 \item{max_distance}{the inclusion distance; upper bound for all elements of dists_crs}
 

@@ -41,7 +41,10 @@ stapreg <- function(object){
     x <- array(rstan::extract(stapfit)$X,dim = c(nrow(stanmat),length(y),stap_data$Q))
     
     if(any_dnd(stap_data)){
-      X_bar <- sapply(1:(ncol(x)),function(z) t(object$subj_matrix) %*% ((object$subj_matrix %*% x[,z,drop=F]) * object$subj_n))
+      subj_n_diag <- diag(as.vector(object$subj_n))
+      X_bar <- array(dim=dim(x))
+      for(i in 1:object$stap_data$Q)
+        X_bar[,,i] <- t(t(object$subj_matrix) %*% (subj_n_diag %*% (object$subj_matrix %*% t(x[,,i]) )))
       X_tilde <- x - X_bar
     }
     else
@@ -72,7 +75,7 @@ stapreg <- function(object){
    #linear predictor, fitted values 
     design_mat <- cbind(Z,apply(X_tilde,c(2,3),median))
     if(any_bar(stap_data))
-      design_mat <- cbind(design_mat,apply(X_bar,1,median))
+      design_mat <- cbind(design_mat,apply(X_bar,c(2,3),median))
     if(mer)
       design_mat <- cbind(design_mat,object$w)
 

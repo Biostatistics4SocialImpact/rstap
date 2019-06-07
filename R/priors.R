@@ -23,7 +23,7 @@
 #' intended to be \emph{weakly informative} in that they provide moderate
 #' regularlization and help stabilize computation. For many applications the
 #' defaults will perform well, but prudent use of more informative priors is
-#' encouraged. All of the priors here are informed by the priors in \pkg{rstanarm}, though it should be noted that the heirarchical shape priors are not included.
+#' encouraged. All of the priors here are informed by the priors in \pkg{rstanarm}, though it should be noted that the heirarchical shape and lkj priors are not included.
 #' 
 #' @name priors
 #' @param location Prior location. In most cases, this is the prior mean, but
@@ -145,7 +145,7 @@
 #' @return A named list to be used internally by the \pkg{rstap} model
 #'   fitting functions.
 #' @seealso The various vignettes for the \pkg{rstanarm} and \pkg{rstap} packages also discuss 
-#'   and demonstrate the use of some of the supported prior distributions.
+#'   and demonstrate the use of the supported prior distributions.
 #' 
 #' #' 
 #' @references
@@ -226,7 +226,7 @@ log_normal <- function(location = 0, scale = 1){
 #' @rdname priors
 #' @export
 #' @param regularization Exponent for an LKJ prior on the correlation matrix in
-#'   the \code{decov} or \code{lkj} prior. The default is \eqn{1}, implying a 
+#'   the \code{decov}  prior. The default is \eqn{1}, implying a 
 #'   joint uniform prior.
 #' @param concentration Concentration parameter for a symmetric Dirichlet 
 #'   distribution. The default is \eqn{1}, implying a joint uniform prior.
@@ -243,14 +243,6 @@ decov <- function(regularization = 1, concentration = 1,
   nlist(dist = "decov", regularization, concentration, shape, scale)
 }
 
-#' @rdname priors
-#' @export
-lkj <- function(regularization = 1, scale = 10, df = 1, autoscale = TRUE) {
-  validate_parameter_value(regularization)
-  validate_parameter_value(scale)
-  validate_parameter_value(df)
-  nlist(dist = "lkj", regularization, scale, df, autoscale)
-}
 
 # internal ------------------------------------------------------------------------
 

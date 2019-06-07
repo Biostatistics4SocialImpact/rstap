@@ -1,7 +1,6 @@
 #' WAIC
 #'
 #' @rdname waic
-#' @export
 #' @param x a stapreg object
 #'
 #'

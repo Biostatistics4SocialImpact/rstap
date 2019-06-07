@@ -1,6 +1,6 @@
 Package: rstap
 Type: Package
-Version: 1.1.3
+Version: 1.1.0
 Title: Spatial Temporal Aggregated Predictor Models via 'stan' 
 Description: Estimates previously compiled stap regression models using the 'rstan' package. Users specify models via a custom R syntax with a formula and data.frame plus additional arguments for priors.
 License: GPL(>=3)
@@ -30,7 +30,7 @@ Imports:
 LinkingTo: StanHeaders (>= 2.18.0), rstan (>= 2.18.1), BH (>= 1.66.0-1), Rcpp (>= 0.12.16), RcppEigen(>= 0.3.3.3.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Suggests:
     testthat,
     digest,

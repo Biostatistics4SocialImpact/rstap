@@ -202,10 +202,11 @@ coef_names.stap_data <- function(object){
         space_time_shape <- space_shape && time_shape
         dnd <- d > 0
         bar <- b >0
+        name <- c()
         if(dnd)
             name <- paste0(y,"_dnd")
         if(bar)
-            name <- paste0(y,"_bar")
+            name <- c(name,paste0(y,"_bar"))
         else
             name <- y
         if(space_shape)
