@@ -38,7 +38,7 @@ The default priors used in the various rstap modeling functions are
 intended to be weakly informative in that they provide moderate
 regularlization and help stabilize computation. For many applications the
 defaults will perform well, but prudent use of more informative priors is
-encouraged. All of the priors here are informed by the priors in rstanarm, though it should be noted that the heirarchical shape priors are not included." />
+encouraged. All of the priors here are informed by the priors in rstanarm, though it should be noted that the heirarchical shape and lkj priors are not included." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -69,7 +69,7 @@ encouraged. All of the priors here are informed by the priors in rstanarm, thoug
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
       </span>
     </div>
 
@@ -93,6 +93,9 @@ encouraged. All of the priors here are informed by the priors in rstanarm, thoug
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/Introduction.html">STAP Introduction</a>
+    </li>
+    <li>
+      <a href="../articles/stap_dnd_lmer.html">STAP difference in difference</a>
     </li>
   </ul>
 </li>
@@ -125,7 +128,7 @@ The default priors used in the various <span class="pkg">rstap</span> modeling f
 intended to be <em>weakly informative</em> in that they provide moderate
 regularlization and help stabilize computation. For many applications the
 defaults will perform well, but prudent use of more informative priors is
-encouraged. All of the priors here are informed by the priors in <span class="pkg">rstanarm</span>, though it should be noted that the heirarchical shape priors are not included.</p>
+encouraged. All of the priors here are informed by the priors in <span class="pkg">rstanarm</span>, though it should be noted that the heirarchical shape and lkj priors are not included.</p>
     
     </div>
 
@@ -145,9 +148,7 @@ encouraged. All of the priors here are informed by the priors in <span class="pk
 
 <span class='fu'>log_normal</span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
-<span class='fu'>decov</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>concentration</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)
-
-<span class='fu'>lkj</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+<span class='fu'>decov</span>(<span class='kw'>regularization</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>concentration</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -195,7 +196,7 @@ parameter must be an integer (vector) that is  at least \(2\) (the default).</p>
     <tr>
       <th>regularization</th>
       <td><p>Exponent for an LKJ prior on the correlation matrix in
-the <code>decov</code> or <code>lkj</code> prior. The default is \(1\), implying a 
+the <code>decov</code>  prior. The default is \(1\), implying a 
 joint uniform prior.</p></td>
     </tr>
     <tr>
@@ -312,7 +313,7 @@ N05 &lt;- normal(0, 5)</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>The various vignettes for the <span class="pkg">rstanarm</span> and <span class="pkg">rstap</span> packages also discuss 
-  and demonstrate the use of some of the supported prior distributions.</p>
+  and demonstrate the use of the supported prior distributions.</p>
 <p>#'</p></div>
     
 

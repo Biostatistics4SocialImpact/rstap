@@ -143,12 +143,11 @@ ll_args.stapreg <- function(object,
     z <- get_z(object)
     x <- get_x(object)
     y <- get_y(object)
-    scales_ix <- grep("_scale",names(coef(object)))
     beta <- beta_names(object$stap_data)
-    stap_exp <- matrix(NA,ncol(x),nrow(x))
+    stap_exp <- matrix(NA,dim(x)[2],dim(x)[1]) # num_obs x num_samps
     beta_samps <- stanmat[, beta, drop=F]
-    for(subj_ix in 1:nrow(x))
-        stap_exp[subj_ix,] <- x[subj_ix,,drop=T] * beta_samps 
+    for(subj_ix in 1:dim(x)[2])
+        stap_exp[subj_ix,] <- rowSums(as.matrix(x[,subj_ix,]) * beta_samps)
     colnames(stap_exp) <- paste0("stap_exp_",1:ncol(stap_exp))
   }
   
@@ -232,7 +231,7 @@ ll_args.stapreg <- function(object,
 }
 
 .mu <- function(data, draws) {
-  eta <- as.vector(linear_predictor(draws$delta, .xdata(data), data$offset))
+  eta <- as.vector(linear_predictor(draws$delta,.xdata(data), data$offset))
   stap_exp <- as.vector(as.numeric(.stap_samples(data)))
   draws$f$linkinv(eta + stap_exp)
 }

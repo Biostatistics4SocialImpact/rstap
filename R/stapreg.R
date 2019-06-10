@@ -132,32 +132,41 @@ stapreg <- function(object){
 
 }
 
-.calculate_stap_X <- function(dists_crs, times_crs, u_s, u_t, scales, stap_data){
+.calculate_stap_X <- function(dists_crs, times_crs, u_s, u_t, scales,shapes = NULL, stap_data){
 
     n <- nrow(u_s)
     q <- stap_data$Q
     X <- array(NA,dim=c(nrow(scales), n, q))
     stap_code <- stap_data$stap_code
+    sweight_code <- stap_data$weight_mats[,1]
+    tweight_code <- stap_data$weight_mats[,2]
     
 
     cnt_s <- 1
     cnt_t <- 1
+    cnt_shape <- 1
     scl_ix <- 1
+    shapes_ <- if(is.null(shapes)) NULL else shapes[,cnt_shape]
+    shapes__ <- if(!is.null(shapes) && dim(shapes)[2]>1) shapes[,cnt_shape+1] else NULL;
     for(q_ix in 1:q){
         for(n_ix in 1:n){
             if(stap_code[q_ix] == 0)
-                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s,], scales[,scl_ix], stap_data$log_switch[q_ix], 
-                                               stap_data$weight_mats[q_ix,1],n_ix,cnt_s)
+                X[,n_ix,q_ix] <- assign_weight(u_s, dists_crs[cnt_s,], scales[,scl_ix],shapes_ , stap_data$log_switch[q_ix], 
+                                               sweight_code[q_ix],n_ix,cnt_s)
             else if(stap_code[q_ix] == 1)
-                X[,n_ix,q_ix] <- assign_weight(u_t, times_crs[cnt_t,], scales[,scl_ix], stap_data$log_switch[q_ix], 
-                                               stap_data$weight_mats[q_ix,2],n_ix,cnt_t)
+                X[,n_ix,q_ix] <- assign_weight(u_t, times_crs[cnt_t,], scales[,scl_ix],shapes_, stap_data$log_switch[q_ix], 
+                                               tweight_code[q_ix],n_ix,cnt_t)
             else{
-                X[,n_ix,q_ix] <- assign_st_weight(u_s, u_t, dists_crs[cnt_s,], times_crs,
-                                                  scales[,scl_ix], scales[,scl_ix+1],
+                X[,n_ix,q_ix] <- assign_st_weight(u_s, u_t, dists_crs[cnt_s,], 
+                                                  times_crs[cnt_t],
+                                                  scales[,scl_ix],
+                                                  shapes_,
+                                                  scales[,scl_ix+1],
+                                                  shapes__,
                                                   stap_data$log_switch[q_ix],
-                                               stap_data$weight_mats[q_ix,1],
-                                               stap_data$weight_mats[q_ix,2],
-                                               n_ix,cnt_s)
+                                                  sweight_code[q_ix],
+                                                  tweight_code[q_ix],
+                                                  n_ix,cnt_s)
             }
         }
         if(stap_code[q_ix] == 2)
@@ -166,18 +175,34 @@ stapreg <- function(object){
             cnt_s <- cnt_s + 1
         else if(stap_code[q_ix] == 1 || stap_code[q_ix] == 2)
             cnt_t <- cnt_t + 1
+        if(q_ix+1 < q){
+            if(sweight_code[q_ix+1]>4 || tweight_code[q_ix+1]>4){
+                cnt_shape <- cnt_shape + 1
+                shapes_ <- shapes[,cnt_shape]
+            }
+            if(stap_code[q_ix+1]>1)
+                shapes__ <- shapes[,cnt_shape+1]
+        }
    }
    return(X) 
 }
 
 
-assign_weight <- function(u, crs_data, scales, log_code, weight_code,n,q){
+assign_weight <- function(u, crs_data, scales, shapes = NULL, log_code, weight_code,n,q){
 
     w <- get_weight_function(weight_code)
+    if(!is.null(shapes)){
+        if(weight_code == 5)
+            w <- function(x,y,z) { exp(-(x/y)^z)}
+        else
+            w <- function(x,y,z){ 1 - exp(-(x/y)^z)}
+        out <- purrr::map2_dbl(scales,shapes, function(a,b) sum(w(crs_data[u[n,(q*2)-1]:u[n,(q*2)]],a,b)))
+    }
+
     if(u[n,(q*2)-1]>u[n,(q *2)])
         return(0)
     else
-        out <- sapply(scales, function(z) sum(w(crs_data[u[n,(q*2)-1]:u[n,(q*2)]],z)))
+        out <- sapply(scales, function(z) sum(w(crs_data[u[n,(q*2)-1]:u[n,(q*2)]],z )))
     if(log_code)
         return(log(out))
     else
@@ -185,18 +210,43 @@ assign_weight <- function(u, crs_data, scales, log_code, weight_code,n,q){
 }
 
 
-assign_st_weight <- function(u_s, u_t, crs_dist, crs_time, scales_s, scales_t, log_code, weight_s, weight_t, n,q){
-    
-    w_s <- get_weight_function(weight_s)
-    w_t <- get_weight_function(weight_t)
-    if(w_s > 4 || w_t > 4)
-        stop("Weibull predictions not currently implemented")
+assign_st_weight <- function(u_s, u_t, crs_dist, crs_time, scales_s,
+                             shapes_s = NULL, scales_t, shapes_t = NULL,
+                             log_code, weight_s, weight_t, n,q){
+
     if(u_s[n,(q*2)-1]>u_s[n,(q*2)])
         return(0)
-    else{
-        out <- mapply(function(z,w) sum(w_s(crs_dist[u_s[n,(q*2)-1]:u_s[n,(q*2)] ],z)*
-                                                               w_t(crs_time[u_t[n,(q*2)-1]:u_t[n,(q*2)]],w)), scales_s,scales_t)
-    }
+    
+    if(is.null(shapes_s))
+        w_s <- function(x,y,z) { exp(-(x/y)^z)}
+    else
+        w_s <- get_weight_function(weight_s)
+    if(is.null(shapes_t))
+        w_t <- get_weight_function(weight_t)
+    else
+        w_t <- get_weight_function(weight_t)
+
+    if(is.null(shapes_s) & is.null(shapes_t))
+        out <- purrr::pmap_dbl(list(scales_s,scales_t,rep(NA,length(scales_t))),
+                               function(z,w,u) sum(w_s(crs_dist[u_s[n,(q*2)-1]:u_s[n,(q*2)] ],z,NULL)*
+                                                               w_t(crs_time[u_t[n,(q*2)-1]:u_t[n,(q*2)]],w,u)))
+    else if(is.null(shapes_s) & !is.null(shapes_t))
+        out <- purrr::pmap_dbl(list(scales_s,scales_t,shapes_t),
+                               function(z,w,v){
+                                   sum(w_s(crs_dist[u_s[n,(q*2)-1]:u_s[n,(q*2)] ],z,NULL)*
+                                       w_t(crs_time[u_t[n,(q*2)-1]:u_t[n,(q*2)]],w,v))})
+    else if(!is.null(shapes_s) & is.null(shapes_t))
+        out <- purrr::pmap_dbl(list(scales_s,scales_t,shapes_s),
+                               function(z,w,v){
+                                   sum(w_s(crs_dist[u_s[n,(q*2)-1]:u_s[n,(q*2)] ],z,v)*
+                                       w_t(crs_time[u_t[n,(q*2)-1]:u_t[n,(q*2)]],w,NULL))})
+    else
+        out <- purrr::pmap_dbl(list(scales_s,shapes_s,scales_t,shapes_t),
+                               function(z,u,w,v){
+                                   sum(w_s(crs_dist[u_s[n,(q*2)-1]:u_s[n,(q*2)] ],z,u)*
+                                       w_t(crs_time[u_t[n,(q*2)-1]:u_t[n,(q*2)]],w,v))})
+
+    
     if(log_code)
         return(log(out))
     else

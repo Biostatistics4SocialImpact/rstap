@@ -6,11 +6,10 @@
 \title{Spatial-Temporal Exposure Termination-Maximization Estimates}
 \usage{
 stap_termination(object, prob = 0.9, exposure_limit = 0.05,
-  pars = NULL, regex_pars = NULL, max_value = NULL, ...)
+  pars = NULL, max_value = NULL, ...)
 
 \method{stap_termination}{stapreg}(object, prob = 0.9,
-  exposure_limit = 0.05, pars = NULL, regex_pars = NULL,
-  max_value = NULL, ...)
+  exposure_limit = 0.05, pars = NULL, max_value = NULL, ...)
 }
 \arguments{
 \item{object}{A fitted model object returned by one of the 
@@ -27,12 +26,6 @@ amount of exposure for which the function will return an estimate of
  Note that the exposure_limit corresponds to spatial exposure and 1-temporal exposure.}
 
 \item{pars}{An optional character vector of parameter names.}
-
-\item{regex_pars}{An optional character vector of \link[=grep]{regular 
-expressions} to use for parameter selection. \code{regex_pars} can be used
-in place of \code{pars} or in addition to \code{pars}. Currently, all
-functions that accept a \code{regex_pars} argument ignore it for models fit
-using optimization.}
 
 \item{max_value}{by defuault the max_distance and/or time from the model's original input
 will be used to calculate the upper bound of possible terminating 

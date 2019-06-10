@@ -67,6 +67,9 @@ beta_names <- function(x)
 theta_names <- function(x)
     UseMethod("theta_names")
 
+shape_names <- function(x)
+    UseMethod("shape_names")
+
 sap_covs <- function(x)
     UseMethod("sap_covs")
 
@@ -112,6 +115,9 @@ num_s_wei <- function(x)
 num_t_wei <- function(x)
     UseMethod("num_t_wei")
 
+any_wei <- function(x)
+    UseMethod("any_wei")
+
 any_sbar <- function(x)
     UseMethod("any_sbar")
 
@@ -135,6 +141,9 @@ dnd_ics <- function(object)
 
 any_norm <- function(object)
     return(num_norm(object)>0)
+
+any_wei <- function(object)
+    return((num_s_wei(object) +num_t_wei(object))>0)
 
 num_norm.stap_data <- function(object){
     bar_array <- which(object$bar_code==1)
@@ -254,8 +263,7 @@ coef_names.stap_data <- function(object){
 
 beta_names.stap_data <- function(object){
     nms <- coef_names(object)
-    bt_nms <- nms[grep("_scale",nms,invert=T,value=T)]
-    bt_nms <- bt_nms[grep("_shape",bt_nms,invert=T,value=T)]
+    bt_nms <- grep("_scale|shape",nms,invert=T,value=T)
     return(bt_nms)
 }
 
@@ -263,6 +271,12 @@ theta_names.stap_data <- function(object){
     nms <- coef_names(object)
     th_nms <- grep("_scale",nms,value=T)
     return(th_nms)
+}
+
+shape_names.stap_data <- function(object){
+    nms <- coef_names(object)
+    sh_nms <- grep("_shape",nms,value=T)
+    return(sh_nms)
 }
 
 check_dups.stap_data <- function(object){

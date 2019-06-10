@@ -673,7 +673,7 @@ linear_predictor.default <- function(delta_beta,z, x, offset = NULL) {
 linear_predictor.matrix <- function(delta,z, x_beta, offset = NULL) {
   if (NCOL(delta) == 1L)
     delta <- as.matrix(delta)
-  eta <- delta %*% t(z) + x_beta
+  eta <- if(!is.null(x_beta)) delta %*% t(z) + x_beta else delta %*% t(z)
   if (length(offset))
     eta <- sweep(eta, 2L, offset, `+`)
 
@@ -766,9 +766,9 @@ paste_scale <- function(names)
 
 get_weight_function <- function(weight_code){
     switch(weight_code,function(x,y,z) { pracma::erf(x/y)} ,
-           function(x,y){ pracma::erfc(x/y)},
-           function(x,y){ exp(-x/y)}, 
-           function(x,y){1- exp(-x/y)},
+           function(x,y,z){ pracma::erfc(x/y)},
+           function(x,y,z){ exp(-x/y)}, 
+           function(x,y,z){1- exp(-x/y)},
            function(x,y,z){ exp(- (x/y)^z)},
            function(x,y,z){1 - exp(-(x/y)^z)})
 }

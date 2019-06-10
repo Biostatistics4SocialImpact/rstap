@@ -41,7 +41,7 @@
 #'@param max_distance the upper bound on any and all distances included in the model 
 #'@param max_time the upper bound on any and all times included in the model
 #'@param family Same as for \code{\link[lme4]{glmer}} except limited to gaussian, binomial and poisson 
-#'@param prior_theta,prior_stap priors for the spatial scale and spatial effect parameters, respectively
+#'@param prior_theta,prior_stap priors for the spatial scale and spatial effect parameters, respectively. Same as in \code{\link[rstap]{stap_glm}}.
 #'@param weights,offset Same as \code{\link[stats]{glm}}.
 #'@param contrasts Same as \code{\link[stats]{glm}}, but rarely 
 #'   specified.

@@ -112,7 +112,7 @@ rather than \code{prior_intercept}. Regardless of how
 intercept always correspond to a parameterization without centered
 predictors (i.e., same as in \code{glm}).}
 
-\item{prior_theta, prior_stap}{priors for the spatial scale and spatial effect parameters, respectively}
+\item{prior_theta, prior_stap}{priors for the spatial scale and spatial effect parameters, respectively. Same as in \code{\link[rstap]{stap_glm}}.}
 
 \item{prior_aux}{The prior distribution for the "auxiliary" parameter (if
 applicable). The "auxiliary" parameter refers to a different parameter 

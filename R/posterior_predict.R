@@ -277,10 +277,9 @@ pp_eta <- function(object, data, draws = NULL) {
       as.matrix.stapreg(object) else as.matrix(object$stapfit)
   delta_sel <- seq_len(ncol(z)) 
   delta <- stanmat[, delta_sel , drop = FALSE]
-  stap_coefs_nms <- grep("_scale", coef_names(object$stap_data), 
-                          invert = T, value = T)
+  stap_coefs_nms <- beta_names 
 
-  beta <- stanmat[,stap_coefs_nms,drop =F]
+  beta <- stanmat[,beta_names(object$stap_data),drop =F]
 
   if (some_draws){
     delta <- delta[samp, , drop = FALSE]

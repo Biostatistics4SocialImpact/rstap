@@ -1,15 +1,27 @@
 ---
-title: "STAP difference in difference"
-author: "Adam Peterson"
-date: "4/2/2019"
+title: "Causal STAP Models"
+author: ""
+date: ""
 output:
   html_document: default
   pdf_document: default
+vignette: >
+  %\VignetteIndexEntry{Causal_Stap_Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
+```{r setup, include = FALSE,echo=F}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = F
+)
+```
 
 # Motivation
 
-Spatial-temporal aggregated predictor (STAP) models can be used in a longitudinal setting to model within and across subject differences by including subject specific means and subject differences from means. These "difference in differences" models can have a causal interpretation if certain assumptions are met. In a standard regression modeling framework, this would require a simple transformation of the time-varying confounders. For STAP models, since the variables being centered are random, they must be manipulated within each iteration of the sampler, requiring a different function and modeling syntax in ```rstap``` (as of v.1.1.0), which will be demonstrated in this vignette.  
+Spatial-temporal aggregated predictor (STAP) models can be used in a longitudinal setting to model within and across subject differences by including subject specific means and subject differences from means. These **difference in differences** models can have a causal interpretation if certain assumptions are met. In a standard regression modeling framework, this would require a simple transformation of the time-varying confounders. For STAP models, since the variables being centered are random, they must be manipulated within each iteration of the sampler, requiring a different function and modeling syntax in ```rstap``` (as of v.1.1.0), which will be demonstrated in this vignette.  
 
 We'll begin by loading the neccessary libraries
 ```{r libraries,warning=F,message=F,results='hide'}

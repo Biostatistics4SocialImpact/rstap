@@ -65,6 +65,7 @@ pp_data <-
                          times_crs = crs_data$t_mat,
                          u_s = crs_data$u_s, u_t = crs_data$u_t,
                          scales = stanmat[,theta_names(object$stap_data), drop = F],
+                         shapes = if(any_wei(object$stap_data)) stanmat[,shape_names(object$stap_data),drop=F],
                          stap_data = object$stap_data)
   
       
