@@ -35,7 +35,7 @@
 #' @template reference-gelman-hill
 #' @template reference-muth
 #'
-#' @param formula Same as for \code{\link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.
+#' @param formula Same as for \code{\link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "_scale" or "_shape" in their name are not advised as this text is parsed for in the final model fit.
 #' @param family Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson families.
 #' @param subject_data a data.frame that contains data specific to the subject or subjects on whom the outcome is measured. Must contain one column that has the subject_ID  on which to join the distance and time_data
 #' @param distance_data a (minimum) three column data.frame that contains (1) an id_key (2) The sap/tap/stap features and (3) the distances between subject with a given id and the built environment feature in column (2), the distance column must be the only column of type "double" and the sap/tap/stap features must be specified in the dataframe exactly as they are in the formula.
@@ -46,7 +46,7 @@
 #' @param model  logical denoting whether or not to return the fixed covariates model frame object in the fitted object
 #' @param y In \code{stap_glm}, logical scalar indicating whether to return the response vector. In \code{stan_glm.fit}, a response vector.
 #' @param prior_stap prior for spatial-temporal aggregated predictors. Note that prior is set on the standardized latent covariates.
-#' @param prior_theta prior for the spatial-temporal aggregated predictors' scale. Can either be a single prior or a prior nested within a list of lists.
+#' @param prior_theta prior for the spatial-temporal aggregated predictors' scale and shape if the weibull weight function is selected. Can either be a single prior or a prior nested within a list of lists for separate BEFs/space-time components.
 #' @details The \code{stap_glm} function is similar in syntax to
 #' \code{\link[rstanarm]{stan_glm}} except instead of performing full bayesian
 #' inference for a generalized linear model stap_glm incorporates spatial-temporal covariates
@@ -92,6 +92,8 @@ stap_glm <- function(formula,
                      adapt_delta = NULL){
 
     stap_data <- extract_stap_data(formula)
+    if(any_bar(stap_data) || any_dnd(stap_data))
+        stop("Cannot use bar or dnd terms in stap_glm, try stapdnd_glm")
     crs_data <- extract_crs_data(stap_data,
                                  subject_data,
                                  distance_data,
@@ -176,7 +178,6 @@ stap_glm <- function(formula,
 #' @export
 stap_lm <- 
   function(formula,
-           family = gaussian(),
            subject_data = NULL,
            distance_data = NULL,
            time_data = NULL,

@@ -10,7 +10,7 @@ stapreg(object)
 \item{object}{A list provided by one of the \code{stap_*} modeling functions.}
 }
 \value{
-A stanreg object
+A stapreg object
 }
 \description{
 Create a stapreg object

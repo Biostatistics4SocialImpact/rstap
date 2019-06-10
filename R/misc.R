@@ -225,6 +225,8 @@ validate_distancedata <- function(distance_data, max_distance ) {
     if(num_dbl!=1)
         stop("distance_data should be a data frame with only one numeric column - see `?stap_glm`")
     dcol_ix <- sum(sapply(1:ncol(distance_data), function(x) all(is.double(as.matrix(distance_data[,x,drop=T])))*x))
+    if(is.null(max_distance))
+        stop("Must enter max distance")
     if(sum(distance_data[,dcol_ix]<=max_distance)==0) 
         stop("exclusion distance results in no BEFs included in the model")
     return(dcol_ix)
@@ -251,45 +253,7 @@ validate_timedata <- function(time_data){
     return(tcol_ix)
 }
 
-#' get_stapless_formula
-#'
-#' Get formula for typical covariates
-#'
-#' @param f formula from stap_glm
-#' @return formula without ~ stap() components
-#'
-get_stapless_formula <- function(f){
-    
-    with_bars <- f
-    f <- lme4::nobars(f)
-    stap_ics <- which(all.names(f)%in% c("stap","stap_log"))
-    sap_ics <- which(all.names(f) %in% c("sap","sap_log"))
-    tap_ics <- which(all.names(f) %in% c("tap","tap_log"))
-    if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
-        stop("No covariates designated as 'stap','sap',or 'tap'  in formula", .call = F)
-    stap_nms <- all.names(f)[stap_ics + 1]
-    sap_nms <- all.names(f)[sap_ics + 1]
-    tap_nms <- all.names(f)[tap_ics + 1]
-    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf","wei","cwei") 
-    formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
-    bar_components <- sapply(lme4::findbars(with_bars),paste_bars)
-    formula_components <- c(formula_components,bar_components)
-    if(any(grepl("scale",formula_components)))
-        stop("Don't use variable names with the word `scale` in them - this will cause problems with rstap methods downstream", call.=F)
-    if(!attr(terms(f),"intercept"))
-        formula_components <- c(formula_components,"0")
-    if(grepl("cbind",all.names(f))[2]){
-        new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
-        ix <- 3
-    }
-    else{
-        new_f1 <- paste0(formula_components[1],' ~ ')
-        ix <- 2
-    }
-    new_f2 <- paste(formula_components[ix:length(formula_components)],collapse = "+")
-    new_f <- paste0(new_f1,new_f2)
-    return(as.formula(new_f, env = environment(f)))
-}
+
 
 # Throw a warning if 'data' argument to modeling function is missing
 stop_data_arg_missing <- function() {
@@ -695,20 +659,21 @@ check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
 # @param x Predictor matrix.
 # @param offset Optional offset vector.
 # @return A vector or matrix.
-linear_predictor <- function(delta_beta, x, offset = NULL) {
+linear_predictor <- function(delta_beta,z,x, offset = NULL) {
   UseMethod("linear_predictor")
 }
-linear_predictor.default <- function(delta_beta, x, offset = NULL) {
+
+linear_predictor.default <- function(delta_beta,z, x, offset = NULL) {
   eta <- as.vector(if (NCOL(x) == 1L) x * delta_beta else x %*% delta_beta)
   if (length(offset))
     eta <- eta + offset
 
   return(eta)
 }
-linear_predictor.matrix <- function(delta_beta, x, offset = NULL) {
-  if (NCOL(delta_beta) == 1L)
-    delta_beta <- as.matrix(delta_beta)
-  eta <- delta_beta %*% t(x)
+linear_predictor.matrix <- function(delta,z, x_beta, offset = NULL) {
+  if (NCOL(delta) == 1L)
+    delta <- as.matrix(delta)
+  eta <- if(!is.null(x_beta)) delta %*% t(z) + x_beta else delta %*% t(z)
   if (length(offset))
     eta <- sweep(eta, 2L, offset, `+`)
 
@@ -800,12 +765,12 @@ paste_scale <- function(names)
     paste0(names,"_scale")
 
 get_weight_function <- function(weight_code){
-    switch(weight_code,function(x,y) { pracma::erf(x/y)} ,
-           function(x,y){ pracma::erfc(x/y)},
-           function(x,y){ exp(-x/y)}, 
-           function(x,y){1- exp(-x/y)},
-           function(x,y){exp(- (x/y)^y)},
-           function(x,y){1 - exp(-(x/y)^y)})
+    switch(weight_code,function(x,y,z) { pracma::erf(x/y)} ,
+           function(x,y,z){ pracma::erfc(x/y)},
+           function(x,y,z){ exp(-x/y)}, 
+           function(x,y,z){1- exp(-x/y)},
+           function(x,y,z){ exp(- (x/y)^z)},
+           function(x,y,z){1 - exp(-(x/y)^z)})
 }
 
 paste_bars <- function(bar_element){
@@ -858,4 +823,12 @@ get_time_constraint <- function(stap_data, quantile = 0.975){
         out <- min(possible_scales)
 
     return(out)
+}
+
+check_IDS <- function(sid, gids,sdf,ddf,need_gid = F){
+    if(is.null(sid))
+        stop("Subject ID must be provided for all stap_ functions")
+    if(is.null(gids) && need_gid)
+        stop("Group ID must be provided for stap_ functions involving dnd components or any stap_glmer functions")
+
 }

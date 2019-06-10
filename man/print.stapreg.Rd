@@ -4,13 +4,15 @@
 \alias{print.stapreg}
 \title{Print method for stapreg objects}
 \usage{
-\method{print}{stapreg}(x, digits = 1, ...)
+\method{print}{stapreg}(x, digits = 1, include_X = FALSE, ...)
 }
 \arguments{
 \item{x}{A fitted model object returned by one of the 
 \pkg{rstap} modeling functions. See \code{\link{stapreg-objects}}.}
 
 \item{digits}{Number of digits to use for formatting numbers.}
+
+\item{include_X}{logical for whether or not to include estimated latent exposure covariate}
 
 \item{...}{Ignored.}
 }

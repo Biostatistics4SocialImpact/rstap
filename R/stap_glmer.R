@@ -1,5 +1,4 @@
 # Part of the rstap package for estimating model parameters
-# Copyright (c) 2018
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -42,7 +41,7 @@
 #'@param max_distance the upper bound on any and all distances included in the model 
 #'@param max_time the upper bound on any and all times included in the model
 #'@param family Same as for \code{\link[lme4]{glmer}} except limited to gaussian, binomial and poisson 
-#'@param prior_theta,prior_stap priors for the spatial scale and spatial effect parameters, respectively
+#'@param prior_theta,prior_stap priors for the spatial scale and spatial effect parameters, respectively. Same as in \code{\link[rstap]{stap_glm}}.
 #'@param weights,offset Same as \code{\link[stats]{glm}}.
 #'@param contrasts Same as \code{\link[stats]{glm}}, but rarely 
 #'   specified.
@@ -161,7 +160,7 @@ stap_glmer <-
                                id_key = c(subject_ID,group_ID),
                                max_distance,
                                max_time)
-  stapfit <- stap_glm.fit(y = y,z = Z, 
+    stapfit <- stap_glm.fit(y = y,z = Z, 
                           dists_crs = crs_data$d_mat,
                           u_s = crs_data$u_s,
                           times_crs = crs_data$t_mat,

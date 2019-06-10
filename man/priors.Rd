@@ -11,7 +11,6 @@
 \alias{exponential}
 \alias{log_normal}
 \alias{decov}
-\alias{lkj}
 \title{Prior distributions and options}
 \usage{
 normal(location = 0, scale = NULL, autoscale = TRUE)
@@ -31,8 +30,6 @@ exponential(rate = 1, autoscale = TRUE)
 log_normal(location = 0, scale = 1)
 
 decov(regularization = 1, concentration = 1, shape = 1, scale = 1)
-
-lkj(regularization = 1, scale = 10, df = 1, autoscale = TRUE)
 }
 \arguments{
 \item{location}{Prior location. In most cases, this is the prior mean, but
@@ -66,7 +63,7 @@ parameter must be an integer (vector) that is  at least \eqn{2} (the default).}
 \emph{reciprocal} of the mean.}
 
 \item{regularization}{Exponent for an LKJ prior on the correlation matrix in
-the \code{decov} or \code{lkj} prior. The default is \eqn{1}, implying a 
+the \code{decov}  prior. The default is \eqn{1}, implying a 
 joint uniform prior.}
 
 \item{concentration}{Concentration parameter for a symmetric Dirichlet 
@@ -88,7 +85,7 @@ The default priors used in the various \pkg{rstap} modeling functions are
 intended to be \emph{weakly informative} in that they provide moderate
 regularlization and help stabilize computation. For many applications the
 defaults will perform well, but prudent use of more informative priors is
-encouraged. All of the priors here are informed by the priors in \pkg{rstanarm}, though it should be noted that the heirarchical shape priors are not included.
+encouraged. All of the priors here are informed by the priors in \pkg{rstanarm}, though it should be noted that the heirarchical shape and lkj priors are not included.
 }
 \details{
 The details depend on the family of the prior being used:
@@ -195,7 +192,7 @@ N05 <- normal(0, 5)
 }
 \seealso{
 The various vignettes for the \pkg{rstanarm} and \pkg{rstap} packages also discuss 
-  and demonstrate the use of some of the supported prior distributions.
+  and demonstrate the use of the supported prior distributions.
 
 #'
 }

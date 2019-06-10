@@ -25,6 +25,7 @@
 #' @method print stapreg
 #' @templateVar stapregArg x
 #' @template args-stapreg-object
+#' @param include_X logical for whether or not to include estimated latent exposure covariate
 #' @param digits Number of digits to use for formatting numbers.
 #' @param ... Ignored.
 #' @return Returns \code{x}, invisibly.
@@ -64,7 +65,7 @@
 #' 
 #' @seealso \code{\link{summary.stapreg}}, \code{\link{stapreg-methods}}
 #' 
-print.stapreg <- function(x, digits = 1, ...) {
+print.stapreg <- function(x, digits = 1, include_X = FALSE, ...) {
   cat(x$stan_function)
   cat("\n family:      ", family_plus_link(x))
   cat("\n formula:     ", formula_string(formula(x,printing=T)))
@@ -80,13 +81,17 @@ print.stapreg <- function(x, digits = 1, ...) {
   mer <- is.mer(x)
 
   aux_nms <- .aux_name(x)
+  if(!include_X)
+    X_nms <- rownames(x$stap_summary)[grep("X.*_theta_.*",rownames(x$stap_summary))]
+  else
+    X_nms <- c()
   
     
   if (isTRUE(x$stan_function %in% c("stan_lm", "stan_aov"))) {
       aux_nms <- c("R2", "log-fit_ratio", aux_nms)
    }
     mat <- as.matrix(x$stapfit) # don't used as.matrix.stapreg method b/c want access to mean_PPD
-    nms <- setdiff(rownames(x$stap_summary), c("log-posterior", aux_nms))
+    nms <- setdiff(rownames(x$stap_summary), c("log-posterior", aux_nms,X_nms))
 
     if(mer) 
         nms <- setdiff(nms, grep("b\\[", nms, value = TRUE))
@@ -165,6 +170,7 @@ print.stapreg <- function(x, digits = 1, ...) {
 #' @param probs For models fit using MCMC, 
 #'   an optional numeric vector of probabilities passed to 
 #'   \code{\link[stats]{quantile}}.
+#' @param include_X logical for whether or not estimated latent STAP exposure should be included in summary defaults to FALSE
 #' @param digits Number of digits to use for formatting numbers when printing. 
 #'   When calling \code{summary}, the value of digits is stored as the 
 #'   \code{"print.digits"} attribute of the returned object.
@@ -186,15 +192,19 @@ print.stapreg <- function(x, digits = 1, ...) {
 #' 
 #' @importMethodsFrom rstan summary
 summary.stapreg <- function(object, pars = NULL, regex_pars = NULL, 
-                            probs = NULL, waic = F, ... , digits = 1) {
+                            probs = NULL, waic = F, include_X = FALSE,... , digits = 1) {
   
-  pars <- collect_pars(object, pars, regex_pars)
+    pars <- collect_pars(object, pars, regex_pars)
+    
+
   
     args <- list(object = object$stapfit)
     if (!is.null(probs)) 
       args$probs <- probs
 
     out <- do.call("summary", args)$summary
+    if(!include_X)
+      out <- out[grep("X.*_theta_.*",rownames(out),invert=T),]
     
     if (!is.null(pars)) {
       pars <- allow_special_parnames(object, pars)

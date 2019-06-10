@@ -28,6 +28,7 @@
 #' @template args-stapreg-object
 #' @template args-pars
 #' @template args-regex-pars
+#' @param include_X logical to include latent exposure covariate in samples
 #' @param ... Ignored.
 #'   
 #' @return A matrix, data.frame, or array, the dimensions of which depend on
@@ -52,13 +53,15 @@
 #' draws_array <- as.array(example_model)
 #' print(dim(draws_array)) # iterations x chains x parameters
 #'}
-as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
+as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL,include_X = FALSE) {
   pars <- collect_pars(x, pars, regex_pars)
   user_pars <- !is.null(pars)
   
   mat <- as.matrix(x$stapfit)
-    if (!user_pars)
+  if (!user_pars)
       pars <- exclude_lp_and_ppd(colnames(mat))
+  if(!include_X)
+    pars <- pars[grep("X.*_theta_.*",pars,invert=T)]
   if (user_pars)
     check_missing_pars(mat, pars)
   
@@ -71,7 +74,7 @@ as.matrix.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
 #' @rdname as.matrix.stapreg
 #' @method as.array stapreg
 #' @export
-as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
+as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL, include_X = FALSE) {
   pars <- collect_pars(x, pars, regex_pars)
 
   arr <- as.array(x$stapfit)
@@ -83,6 +86,9 @@ as.array.stapreg <- function(x, ..., pars = NULL, regex_pars = NULL) {
   } else {
     pars <- exclude_lp_and_ppd(last_dimnames(arr))
   }
+  if(!include_X)
+    pars <- pars[grep("X.*_theta_.*",pars,invert=T)]
+
   arr <- arr[, , pars, drop = FALSE]
   
   if (!is.mer(x))

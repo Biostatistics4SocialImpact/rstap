@@ -7,7 +7,7 @@
 \title{Summary method for stapreg objects}
 \usage{
 \method{summary}{stapreg}(object, pars = NULL, regex_pars = NULL,
-  probs = NULL, waic = F, ..., digits = 1)
+  probs = NULL, waic = F, include_X = FALSE, ..., digits = 1)
 
 \method{print}{summary.stapreg}(x, digits = max(1, attr(x,
   "print.digits")), ...)
@@ -55,6 +55,8 @@ an optional numeric vector of probabilities passed to
 \code{\link[stats]{quantile}}.}
 
 \item{waic}{logical to determine whether waic should be calculated and printed with the summary object}
+
+\item{include_X}{logical for whether or not estimated latent STAP exposure should be included in summary defaults to FALSE}
 
 \item{...}{Currently ignored.}
 

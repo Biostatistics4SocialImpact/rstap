@@ -13,16 +13,16 @@ stap_glm(formula, family = gaussian(), subject_data = NULL,
   prior_theta = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), adapt_delta = NULL)
 
-stap_lm(formula, family = gaussian(), subject_data = NULL,
-  distance_data = NULL, time_data = NULL, subject_ID = NULL,
-  max_distance = NULL, max_time = NULL, weights, offset = NULL,
-  model = TRUE, y = TRUE, contrasts = NULL, ..., prior = normal(),
+stap_lm(formula, subject_data = NULL, distance_data = NULL,
+  time_data = NULL, subject_ID = NULL, max_distance = NULL,
+  max_time = NULL, weights, offset = NULL, model = TRUE, y = TRUE,
+  contrasts = NULL, ..., prior = normal(),
   prior_intercept = normal(), prior_stap = normal(),
   prior_theta = log_normal(location = 1L, scale = 1L),
   prior_aux = exponential(), adapt_delta = NULL)
 }
 \arguments{
-\item{formula}{Same as for \code{\link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}
+\item{formula}{Same as for \code{\link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "_scale" or "_shape" in their name are not advised as this text is parsed for in the final model fit.}
 
 \item{family}{Same as \code{\link[stats]{glm}} for gaussian, binomial, and poisson families.}
 
@@ -100,7 +100,7 @@ predictors (i.e., same as in \code{glm}).}
 
 \item{prior_stap}{prior for spatial-temporal aggregated predictors. Note that prior is set on the standardized latent covariates.}
 
-\item{prior_theta}{prior for the spatial-temporal aggregated predictors' scale. Can either be a single prior or a prior nested within a list of lists.}
+\item{prior_theta}{prior for the spatial-temporal aggregated predictors' scale and shape if the weibull weight function is selected. Can either be a single prior or a prior nested within a list of lists for separate BEFs/space-time components.}
 
 \item{prior_aux}{The prior distribution for the "auxiliary" parameter (if
 applicable). The "auxiliary" parameter refers to a different parameter 

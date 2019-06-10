@@ -276,11 +276,10 @@ pp_eta <- function(object, data, draws = NULL) {
   stanmat <- if (is.null(data$w)) 
       as.matrix.stapreg(object) else as.matrix(object$stapfit)
   delta_sel <- seq_len(ncol(z)) 
-  delta <- cbind(stanmat[, delta_sel , drop = FALSE],1)
-  stap_coefs_nms <- grep("_scale", coef_names(object$stap_data), 
-                          invert = T, value = T)
+  delta <- stanmat[, delta_sel , drop = FALSE]
+  stap_coefs_nms <- beta_names 
 
-  beta <- stanmat[,stap_coefs_nms,drop =F]
+  beta <- stanmat[,beta_names(object$stap_data),drop =F]
 
   if (some_draws){
     delta <- delta[samp, , drop = FALSE]
@@ -289,12 +288,12 @@ pp_eta <- function(object, data, draws = NULL) {
   }
   num_draws <- if(some_draws) draws else S
   if(object$stap_data$Q == 1)
-      x_beta <- sapply(1:length(num_draws), function(i) x[i,,] * beta[i,])
+      x_beta <- x[,,1] * as.vector(beta)
   else
-      x_beta <- sapply(1:length(num_draws), function(i) x[i,,] %*% t(beta[i,,drop=F]))
+      x_beta <- sapply(1:num_draws, function(i) beta[i,,drop=F] %*% x[i,,drop=F] )
    
 
-  eta <- linear_predictor(delta, cbind(z,x_beta), data$offset)
+  eta <- linear_predictor(delta,z,x_beta, data$offset)
   if (!is.null(data$w)) {
     b_sel <- grepl("^b\\[", colnames(stanmat)) 
     b <- stanmat[, b_sel, drop = FALSE]

@@ -199,8 +199,7 @@ test_that("as.matrix, as.data.frame, as.array methods work for MCMC", {
     expect_identical(mat[1:2, 1], arr[1:2, 1, 1])
     expect_equal(dim(mat), c(floor(ITER/2) * CHAINS, 5L))
     expect_equal(dim(arr), c(floor(ITER/2), CHAINS, 5L))
-    expect_identical(last_dimnames(mat), c("(Intercept)", "sexF", "Fast_Food", "Fast_Food_spatial_scale",
-                                           "sigma"))
+    expect_identical(last_dimnames(mat), c("(Intercept)","sexF","Fast_Food","Fast_Food_spatial_scale","sigma"))
     expect_identical(last_dimnames(arr), last_dimnames(mat))
     
     # selecting only 1 parameter

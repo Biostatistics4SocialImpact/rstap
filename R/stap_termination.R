@@ -25,7 +25,6 @@
 #' @template args-stapreg-object
 #' @template args-dots-ignored
 #' @template args-pars
-#' @template args-regex-pars
 #' @param prob A number \eqn{p \in (0,1)}{p (0 < p < 1)} indicating the desired
 #'   probability mass to include in the intervals. The default is to report
 #'   \eqn{90}\% intervals (\code{prob=0.9}) rather than the traditionally used
@@ -84,7 +83,6 @@ stap_termination <- function(object,
                              prob = .9,
                              exposure_limit= 0.05,
                              pars = NULL,
-                             regex_pars = NULL,
                              max_value = NULL,
                              ...
                              )
@@ -96,44 +94,58 @@ stap_termination.stapreg <- function(object,
                                      prob = .9,
                                      exposure_limit = 0.05,
                                      pars = NULL,
-                                     regex_pars = NULL,
                                      max_value = NULL,
                                      ...){
 
     stap_data <- object$stap_data
     scls <- theta_names(stap_data)
+    shps <- shape_names(stap_data)
     interval <- posterior_interval(object,prob = prob)
     scls <- intersect(rownames(interval),scls)
-    interval <- interval[scls,,drop=F]
-    low <- interval[,1, drop=T]
-    up <- interval[,2, drop = T]
+    shps <- intersect(rownames(interval),shps)
+    scl_interval <- interval[scls,,drop=F]
+    shp_interval <- interval[shps,,drop=F]
+    low <- scl_interval[,1, drop=T]
+    shp_low <- shp_interval[,1,drop=T]
+    up <- scl_interval[,2, drop = T]
+    shp_up <- shp_interval[,2,drop=T]
     med <- apply(as.matrix(object)[,scls,drop=F],2,median)
+    shp_med <- apply(as.matrix(object)[,shps,drop=F],2,median)
     lower <- median <- upper <- rep(0,length(med))
     scl_ix <- 1 
+    shp_ix <- 1
     max_distance <- if(!is.null(max_value)) max_value else object$max_distance
     max_time <- if(!is.null(max_value)) max_value else object$max_time
     for(ix in 1:stap_data$Q){
+        shape_s <- (stap_data$weight_mats[ix,1]==5)
+        shape_t <- (stap_data$weight_mats[ix,2]==6)
         if(stap_data$stap_code[ix] %in% c(0,2)){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix]) - exposure_limit}, c(0,max_distance))
-            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix]) - exposure_limit}, c(0,max_distance))
-            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix]) - exposure_limit},  c(0,max_distance))
+            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix],shp_low[shp_ix]) - exposure_limit}, c(0,max_distance))
+            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix],shp_med[shp_ix]) - exposure_limit}, c(0,max_distance))
+            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix],shp_up[shp_ix]) - exposure_limit},  c(0,max_distance))
+            if(shape_s)
+                shp_ix <- shp_ix + 1
             if(stap_data$stap_code[ix] == 2)
                 scl_ix <- scl_ix + 1
         }
-        if(stap_data$stap_code[ix] %in% c(1,2)){
+        if(stap_data$stap_code[ix] %in% c(1,2) ){
             f <- get_weight_function(stap_data$weight_mats[ix,2])
-            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix]) - (1-exposure_limit)}, c(0,max_time))
-            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix]) - (1-exposure_limit)}, c(0,max_time))
-            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix]) - (1-exposure_limit)},  c(0,max_time)) 
+            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix],shp_low[shp_ix]) - (1-exposure_limit)}, c(0,max_time))
+            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix],shp_med[shp_ix]) - (1-exposure_limit)}, c(0,max_time))
+            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix],shp_up[shp_ix]) - (1-exposure_limit)},  c(0,max_time)) 
+            if(shape_t)
+                shp_ix <- shp_ix + 1
         }
         scl_ix <- scl_ix + 1
     }
-    out <- cbind(lower,median,upper)
-    rownames(out) <- scls
-    sel <- intersect(scls,rownames(posterior_interval(object,pars=pars,regex_pars=regex_pars)))
-    out <- out[sel,,drop=F]
-    return(out)
+    out <- matrix(apply(cbind(lower,median,upper),1,sort),ncol=3)
+    rownames(out) <- beta_names(stap_data)
+    colnames(out) <- c(paste0((.5-prob/2),"%"),"median",paste0((.5+prob/2),"%"))
+    if(!is.null(pars))
+        return(out[pars,,drop=F])
+    else
+        return(out)
 }
 
 .find_root <- function(f, interval)

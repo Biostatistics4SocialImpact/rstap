@@ -234,23 +234,27 @@ check_theta_priors <- function(prior_list,stap_code,coef_names){
 #
 extract_stap_data <- function(formula){
 
-
-   
     all_names <- all.names(formula)
-    staps <- c("sap","tap","stap","sap_log","tap_log","stap_log")
+    staps <- c("sap","tap","stap")
+    staps <- c(staps,paste0(staps,"_log"),paste0(staps,"_dnd"),paste0(staps,"_bar"),
+               paste0(staps,"_dnd_bar"),paste0(staps,"_bar_dnd"))
     stap_covs <- all_names[which(all_names%in% staps) +1]
     if(length(stap_covs)==0)
         stop("No stap covariates specified")
     stap_code <- get_stap_code(all_names,stap_covs)
+    dnd_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_dnd",x))*1
+    bar_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_bar",x))*1
     weight_code <- get_weight_code(all_names,stap_covs,stap_code)
     log_code <- sapply(all_names[which(all_names %in% staps)], function(x) grepl("_log",x))*1
-    out <- lapply(1:length(stap_covs),function(x) list(covariate = stap_covs[x],
+    out <- lapply(1:length(stap_covs),function(x){ list(covariate = stap_covs[x],
                                                     stap_type = get_stap_name(stap_code[x]),
                                                     stap_code = stap_code[x],
+                                                    dnd_code = dnd_code[x],
+                                                    bar_code = bar_code[x],
                                                     weight_function = get_weight_name(weight_code[x,]),
                                                     weight_code = weight_code[x,],
-                                                    log_switch = log_code[x]))
-    stap_data(out)
+                                                    log_switch = log_code[x])} )
+    return(stap_data(out))
 }
 
 get_weight_name <- function(code){
@@ -267,6 +271,7 @@ get_stap_name <- function(code)
 
 
 get_weight_code <- function(all_names, stap_covs, stap_code){
+
     w <- matrix(0,nrow = length(stap_covs),ncol=2)
     w_codes <- list("erf"=1,"cerf"=2,"exp"=3,"cexp"=4,"wei"=5,"cwei"=6)
     for(ix in 1:length(stap_covs)){
@@ -304,9 +309,14 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
 # @return vector of length equal to number of staps + saps + taps
 # with the appropriate coding for each appropriate predictor
 get_stap_code <- function(all_names,stap_covs){
-    staps <- list("sap"=0,"tap"=1,"stap"=2,
-                  "sap_log" = 0, "tap_log" = 1, "stap_log" = 2)
-    sapply(stap_covs,function(x) as.vector(staps[[all_names[which(all_names == x)-1]]]))
+
+    staps <- c("sap"=0,"tap"=1,"stap"=2,
+                "sap_log" = 0, "tap_log" = 1, "stap_log" = 2,
+                "sap_dnd" = 0, "tap_dnd" = 1, "stap_dnd" = 2,
+                "sap_bar" = 0, "tap_bar" = 1, "stap_bar" = 2,
+                "sap_dnd_bar" = 0, "tap_dnd_bar"=1,"stap_dnd_bar" =2,
+               "sap_bar_dnd" = 0, "tap_bar_dnd"=1,"stap_dnd_bar" =2)
+    sapply(unique(stap_covs),function(x) as.vector(staps[all_names[which(all_names == x)-1]]))
 }
 
 # extract crs data
@@ -319,8 +329,8 @@ get_stap_code <- function(all_names,stap_covs){
 # @param max_distance  the maximum distance in distance_data
 # @param max_time  the maximum distance in time_data 
 # @return a list of the crs data for the spatial and/or temporal data as appropriate 
-extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, id_key, max_distance, max_time){
-
+extract_crs_data <- function(stap_data, subject_data, distance_data, 
+                             time_data, id_key, max_distance, max_time){
     
     dcol_ix <- validate_distancedata(distance_data,max_distance)
     tcol_ix <- validate_timedata(time_data)
@@ -330,47 +340,43 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
     if(is.null(max_time) & !is.null(time_data)) max_time <- max(time_data[,tcol_ix])
 
     if(stap_data$t_only){
-        stap_covs <- stap_data$covariates
-        t_col_ics <- unlist(apply(time_data, 1, function(x) which( x %in% stap_covs)))
+        stap_covs <- stap_data$covariates 
+        t_col_ics <- unlist(apply(time_data, 1, function(x) which( x %in% stap_covs))) ## get column index for 
         .check_bef_data(t_col_ics,F)
-        stap_col <- colnames(time_data)[t_col_ics[1]]
-        tcol <- colnames(time_data)[tcol_ix]
-        tdata <- lapply(stap_covs, function(x) time_data[which(time_data[,stap_col] == x), ])
-        tdata <- .handle_missing_stap(tdata,stap_covs)
-        mtdata <- .merge_data(tdata, subject_data,id_key)
-        M <- max(sapply(mtdata,nrow))
-        t_mat <- .get_crs_mat(mtdata,tcol,M,stap_data$Q, stap_covs) 
-        u_t <- .get_crs_u(mtdata,id_key,stap_col,stap_covs)
+        stap_var <- colnames(time_data)[t_col_ics[1]]
+        time_var <- colnames(time_data)[tcol_ix]
+        tdata <- purrr::map(stap_covs,function(x) dplyr::filter(time_data,!!dplyr::sym(stap_var) == x,
+                                                                !!dplyr::sym(time_var) <= max_time))        
+        mtdata <- purrr::map(tdata, function(y) dplyr::left_join(subject_data,y,by=id_key))
+        M <- max(purrr::map_dbl(mtdata, nrow))
+        t_mat <- .get_crs_mat(mtdata,time_var,M,stap_data$Q, stap_covs) 
+        u_t <- .get_crs_u(mtdata,subject_data,id_key,stap_var,stap_covs)
 
         return(list(d_mat = NA, t_mat = t_mat, u_s = NA, u_t = u_t,
                     max_distance = max_distance,
                     max_time = max_time))
      }else if(stap_data$d_only){
-         stap_covs <- stap_data$covariates
-         d_col_ics <- unlist(apply(distance_data, 1, function(x) which(x %in% stap_covs)))
-        if(!all(d_col_ics)) stop("Stap - of any kind - covariates must all be in (only) one column
-                                 of the distance dataframe as a character or factor variable.
-                                 See '?stap_glm'")
-         .check_bef_data(d_col_ics)
-        stap_col <- colnames(distance_data)[d_col_ics[1]]
-        dcol <- colnames(distance_data)[dcol_ix]
-        ddata <- lapply(stap_covs, function(x) distance_data[which((distance_data[,stap_col]==x &
-                                                                       distance_data[,dcol]<= max_distance)),])
-        ddata <- .handle_missing_stap(ddata,stap_covs,"distance")
-        mddata <- .merge_data(ddata,subject_data,id_key)
-        M <- max(sapply(mddata, nrow))
-        d_mat <- .get_crs_mat(mddata, dcol, M,stap_data$Q, stap_covs)
-        u_s <- .get_crs_u(mddata, id_key, stap_col, stap_covs)
+        stap_covs <- stap_data$covariates
+        d_col_ics <- unlist(apply(distance_data, 1, function(x) which(x %in% stap_covs)))
+        .check_bef_data(d_col_ics)
+        stap_var <- colnames(distance_data)[d_col_ics[1]]
+        dist_var <- colnames(distance_data)[dcol_ix]
+        ddata <- purrr::map(stap_covs,function(x) dplyr::filter(distance_data,!!dplyr::sym(stap_var) == x,!!dplyr::sym(dist_var) <=max_distance))
+        mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by=id_key))
+        M <- max(purrr::map_dbl(mddata, nrow))
+        d_mat <- .get_crs_mat(mddata, dist_var, M,stap_data$Q, stap_covs)
+        u_s <- .get_crs_u(mddata, subject_data, id_key, stap_var, stap_covs)
+
         return(list(d_mat = d_mat, t_mat = NA,  u_s = u_s, u_t = NA,
                     max_distance = max_distance,
                     max_time = max_time))
-    } else{
+    } 
+    else{
         sap_covs <- sap_covs(stap_data) 
         tap_covs <- tap_covs(stap_data)
         stap_covs <- stap_covs(stap_data)
         sap_stap <- union(sap_covs,stap_covs)
         tap_stap <- union(tap_covs,stap_covs)
-        
         d_col_ics <- unlist(apply(distance_data, 1,
                                   function(x) which(x %in% sap_stap)))
         t_col_ics <- unlist(apply(time_data, 1,
@@ -378,38 +384,25 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         if(!all(d_col_ics) && !all(t_col_ics) && !all(d_col_ics) && !all(t_col_ics))
             stop("Stap covariates - of any kind - must all be in (only) one column
                  of the distance dataframe as a character or factor variable. See '?stap_glm'",.call=F)
-        
         .check_bef_data(d_col_ics)
         .check_bef_data(t_col_ics,F)
-        stap_dcol <- colnames(distance_data)[d_col_ics[1]]
-        stap_tcol <- colnames(time_data)[t_col_ics[1]]
-        dcol <- colnames(distance_data)[dcol_ix]
-        tcol <- colnames(time_data)[tcol_ix]
-
-        ##ensure subjects that have zero exposure are included
-        ddata <- lapply(sap_stap, function(x) distance_data[which((distance_data[,stap_dcol] == x &
-                                                                                           distance_data[,dcol] <= max_distance)),])
-        ddata <- .handle_missing_stap(ddata,sap_stap, "distance")
-
-        tdata <- lapply(tap_stap, function(x) time_data[which(time_data[,stap_tcol] == x),])
-        tdata <- .handle_missing_stap(tdata, tap_stap)
-
-        
-
-        mtdata <- .merge_data(tdata, subject_data, id_key)
-        mddata <- .merge_data(ddata, subject_data,id_key) 
-        
-        M <-  max(sapply(mtdata,nrow))
-        if(M != max(sapply(mddata,nrow)))
+        stap_dvar <- colnames(distance_data)[d_col_ics[1]]
+        stap_tvar <- colnames(time_data)[t_col_ics[1]]
+        dist_var <- colnames(distance_data)[dcol_ix]
+        time_var <- colnames(time_data)[tcol_ix]
+        ddata <- purrr::map(sap_stap,function(x) dplyr::filter(distance_data,!!dplyr::sym(stap_dvar) == x,!!dplyr::sym(dist_var) <=max_distance))
+        mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by=id_key))
+        tdata <- purrr::map(tap_stap,function(x) dplyr::filter(time_data,!!dplyr::sym(stap_tvar) == x,
+                                                                !!dplyr::sym(time_var) <= max_time))
+        mtdata <- purrr::map(tdata, function(y) dplyr::left_join(subject_data,y,by=id_key))
+        mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by=id_key))
+        M <- max(purrr::map_dbl(mddata, nrow))
+        if(M != max(sapply(mtdata,nrow)))
             stop("Something wrong please report bug")
-        
-        t_mat <-  .get_crs_mat(mtdata, tcol, M, stap_data$Q_t + stap_data$Q_st, tap_stap)
-        u_t <- .get_crs_u(mtdata, id_key, stap_tcol, tap_stap)
-
-        
-        
-        d_mat <- .get_crs_mat(mddata, dcol, M, stap_data$Q_s + stap_data$Q_st, sap_stap)
-        u_s  <- .get_crs_u(mddata,id_key,stap_dcol,sap_stap)
+        t_mat <-  .get_crs_mat(mtdata, time_var, M, stap_data$Q_t + stap_data$Q_st, tap_stap)
+        u_t <- .get_crs_u(mtdata, subject_data, id_key, stap_tvar, tap_stap)
+        d_mat <- .get_crs_mat(mddata, dist_var, M,stap_data$Q, stap_covs)
+        u_s  <- .get_crs_u(mddata,subject_data,id_key,stap_dvar,sap_stap)
 
         return(list(d_mat = d_mat, t_mat = t_mat, u_s = u_s, u_t = u_t, 
                     max_distance = max_distance, max_time = max_time))
@@ -427,9 +420,9 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         
 # handle missing stap
 .handle_missing_stap <- function(data,stap_covs,type_of_data = "time"){
-    if(!any(lapply(data,nrow)==0))
+    if(!any(purrr::map_int(data,nrow)==0))
         return(data)
-    else if(any(sapply(data, function(x) any(is.na(x)))))
+    else if(any(purrr::map_lgl(data, function(x) any(is.na(x)))))
         stop("No NA data values allowed in BEF time or distance data")
     else{
         missing <- stap_covs[which(sapply(data,nrow)==0)]
@@ -437,85 +430,87 @@ extract_crs_data <- function(stap_data, subject_data, distance_data, time_data, 
         warning(paste("The following stap covariates are not present in ", type_of_data, 
                       paste(missing, collapse = ", ")), 
                 "These will be ommitted from the analysis")
-        data <- lapply(data, function(x) if(nrow(x)!=0) x)
+        data <- purrr::map(data, function(x) if(nrow(x)!=0) x)
         data[sapply(data,is.null)] <- NULL
         return(data)
     }
 }
-        
 
-# Merge data with either subject id or subject and measure id
-.merge_data <- function(list_data, subject_data, id_key){
-
-    if(length(id_key)==2){
-        subj_id <- id_key[1]
-        m_id <- id_key[2]
-        merged_data <- lapply(list_data, function(y) 
-            as.data.frame(dplyr::left_join(subject_data[,c(subj_id,m_id), drop = F],
-                             y, by = c(eval(subj_id),eval(m_id)))))
-        merged_data <- lapply(merged_data, function(y)
-            y[order((y[,m_id]),
-                    (y[,subj_id])),])
-        return(merged_data)
-    }else
-        lapply(list_data, function(y) as.data.frame(dplyr::left_join(subject_data[,id_key, drop = F],
-                                                                   y, by = eval(id_key))))
-}
 
 
 # Get time or distance csr matrix from data
 .get_crs_mat <- function(list_data, col_name, M, Q,labels){
 
-    crs_mat <- lapply(list_data, function(x) x[!is.na(x[,col_name]),col_name])
+    crs_mat <- lapply(list_data, function(x) x[!is.na(x[,col_name]),col_name,drop=T])
     crs_mat <- matrix(Reduce(rbind, lapply(crs_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
-                        nrow = Q, ncol = M)
+                      nrow = Q, ncol = M)
     rownames(crs_mat) <- labels
     return(crs_mat)
 }
 
-.get_crs_u <- function(list_data,id_key,stap_col,stap_covs){
+.get_crs_u <- function(list_data,subject_data,id_key,stap_col,stap_covs){
 
-    if(length(id_key)==2){
-        id_data <- unique(list_data[[1]][,id_key])
-        form <- as.formula(paste("~",paste(id_key,collapse = "+"),"+",stap_col))
-        if(length(stap_covs)>1){
-        freq <- lapply(1:length(list_data), function(x) xtabs( form,
-                                                              data = list_data[[x]],
-                                                              addNA = TRUE)[,,stap_covs[x]])
-        } else{
-            freq <- lapply(1:length(list_data), function(x) xtabs(form,
-                                                                   data = list_data[[x]],
-                                                                   addNA = TRUE))
-            for(i in 1:length(list_data)){
-                freq[[i]] <- freq[[i]][,,which(dimnames(freq[[i]])[[3]] == stap_covs[i]),drop =F]
-                # if(length)
-            }
-        }
-        .merge_u_data <- function(id_data,freq_data,id_key){
-            freq_data <- data.frame(freq_data)
-            nms <- colnames(freq_data)[1:2]
-            out <- merge(id_data,freq_data,by.x=id_key,by.y = nms,all.x = T)
-            out <- out[order(out[,2],out[,1]),"Freq"]
-            return(out)
-        }
-        freq <- lapply(freq,function(x) .merge_u_data(id_data,x,id_key))
-        
-        u <- lapply(freq, function(x) cbind(
-                                            replace(dplyr::lag(cumsum(x)),
-                                            is.na(dplyr::lag(cumsum(x))),0) +1,
-                                            cumsum(x)))
-        u <- abind::abind(u)
-        dimnames(u) <- NULL
-        return(u)
-    }else{
-        freq <- lapply(1:length(list_data), function(x) xtabs( ~ get(id_key) + get(stap_col),
-                                                              data = list_data[[x]], addNA = TRUE)[,stap_covs[x]])
-        u <- lapply(freq, function(x) cbind(replace(dplyr::lag(cumsum(x)),
-                                            is.na(dplyr::lag(cumsum(x))),0) +1,
-                                            cumsum(x)))
-        u <- abind::abind(u)
-        dimnames(u) <- NULL
-        return(u)
+    args <- dplyr::syms(id_key)
+    n <- NULL ## R CMD CHECK
+    id_data <- subject_data %>% dplyr::distinct(!!! args)
+    ldata <- purrr::map(list_data,function(df){
+        u_s <- df %>% dplyr::group_by(!!! args ) %>% 
+        dplyr::count(!! dplyr::sym(stap_col)) %>% 
+            dplyr::right_join(id_data,by=id_key) %>% 
+            dplyr::arrange(!!! args) %>% 
+            dplyr::ungroup() %>% 
+            dplyr::select(n) %>%
+            dplyr::mutate(start = replace(dplyr::lag(cumsum(n)),
+                                          is.na(dplyr::lag(cumsum(n))),0) +1,
+                          end = cumsum(n)) %>%  
+            dplyr::select(-n) %>% as.matrix()
+        names(u_s) <- c("","")
+        return(u_s)
+    })
+    u_crs <- Reduce(cbind,ldata)
+    return(u_crs)
+}
+
+#' get_stapless_formula
+#'
+#' Get formula for typical covariates
+#'
+#' @param f formula from stap_glm
+#' @return formula without ~ stap() components
+#'
+get_stapless_formula <- function(f){
+    
+    with_bars <- f
+    f <- lme4::nobars(f)
+    stap_ics <- which(all.names(f)%in% c("stap","stap_log","stap_dnd_bar",
+                                         "stap_dnd","stap_bar_dnd"))
+    sap_ics <- which(all.names(f) %in% c("sap","sap_log","sap_dnd_bar",
+                                         "sap_dnd","sap_bar_dnd"))
+    tap_ics <- which(all.names(f) %in% c("tap","tap_log","sap_dnd_bar",
+                                         "sap_dnd","sap_bar_dnd"))
+    if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
+        stop("No covariates designated as 'stap','sap',or 'tap'  in formula", .call = F)
+    stap_nms <- all.names(f)[stap_ics + 1]
+    sap_nms <- all.names(f)[sap_ics + 1]
+    tap_nms <- all.names(f)[tap_ics + 1]
+    not_needed <- c(stap_nms,sap_nms,tap_nms,"cexp","exp","erf","cerf","wei","cwei") 
+    formula_components <- all.vars(f)[!(all.vars(f) %in% not_needed)]
+    bar_components <- sapply(lme4::findbars(with_bars),paste_bars)
+    formula_components <- c(formula_components,bar_components)
+    if(any(grepl("scale",formula_components)))
+        stop("Don't use variable names with the word `scale` in them - this will cause problems with rstap methods downstream", call.=F)
+    if(!attr(terms(f),"intercept"))
+        formula_components <- c(formula_components,"0")
+    if(grepl("cbind",all.names(f))[2]){
+        new_f1 <- paste0("cbind(",formula_components[1],", ",formula_components[2], ")", " ~ ")
+        ix <- 3
     }
+    else{
+        new_f1 <- paste0(formula_components[1],' ~ ')
+        ix <- 2
+    }
+    new_f2 <- paste(formula_components[ix:length(formula_components)],collapse = "+")
+    new_f <- paste0(new_f1,new_f2)
+    return(as.formula(new_f, env = environment(f)))
 }
 

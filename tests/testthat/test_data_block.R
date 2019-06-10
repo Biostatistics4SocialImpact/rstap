@@ -4,10 +4,12 @@ f1 <- y ~ sex + stap(Fast_Food)
 f2 <- y ~ Age + stap(Fast_Food) + sap(Coffee_Shops)
 f3 <- y ~ Age + stap(Fast_Food,cerf,exp) + sex + tap(Coffee_Shops)
 f4 <- y ~ Age + stap(Fast_Food) + sex + (1|ID)
+f5 <- y ~ Age + stap_dnd(Fast_Food) + sex
 m3 <- rbind(c(2,3),c(0,1))
 a1 <- c("Fast_Food"=2)
 a2 <- c(a1,"Coffee_Shops"=0)
 a3 <- c("Fast_Food"=2,"Coffee_Shops"=1)
+a5 <- c("")
 
 test_that("correctly assigns weights",{
     expect_equal(get_weight_code(all.names(f1),'Fast_Food',c(2)),
@@ -50,8 +52,10 @@ context("test stap data extraction functions")
 f1 <- BMI ~ Age +  sap(Coffee_Shops)
 f2 <- BMI ~ Age + tap(Coffee_Shops)
 f3 <- BMI ~ Age + sap(Fast_Food)
-f4 <- BMI ~ Age + stap(Coffee_Shops)
+f4 <- BMI ~ Age + stap_log(Coffee_Shops)
 f5 <- BMI ~ Age + stap(Coffee_Shops)
+f6 <- BMI ~ Age + sap_dnd_bar(Coffee_Shops)
+f7 <- BMI ~ Age + tap_bar(Coffee_Shops)
 distance_data <- data.frame(subj_id = c(1:10,1:10),
                             BEF = c(rep("Coffee_Shops",10),rep("Fast_Food",10)),
                             dist = rexp(20))
@@ -114,6 +118,8 @@ stap_data_2 <- extract_stap_data(f2)
 stap_data_3 <- extract_stap_data(f3)
 stap_data_4 <- extract_stap_data(f4)
 stap_data_5 <- extract_stap_data(f5)
+stap_data_6 <- extract_stap_data(f6)
+stap_data_7 <- extract_stap_data(f7)
 
 test_that("extract_crs_data correctly errors when no distance or time data are given",{
     expect_error(extract_crs_data(formula = y ~ X,
@@ -122,7 +128,7 @@ test_that("extract_crs_data correctly errors when no distance or time data are g
 })
 
 test_that("extract_crs_data correctly extracts data",{
-    expect_equal(extract_crs_data(stap_data_1,
+    expect_equivalent(extract_crs_data(stap_data_1,
                                   subject_data = subj_data,
                                   distance_data = distance_data,
                                   time_data = NULL,
@@ -130,28 +136,28 @@ test_that("extract_crs_data correctly extracts data",{
                                   max_distance = max(distance_data$dist),
                                   max_time = NULL),
                  a1)
-    expect_equal(extract_crs_data(stap_data_2,subj_data,
+    expect_equivalent(extract_crs_data(stap_data_2,subj_data,
                                   distance_data = NULL,
                                   time_data = time_data,
                                   id_key = 'subj_id',
                                   max_distance = NULL,
                                   max_time = max(time_data$time)),
                  a2)
-    expect_equal(extract_crs_data(stap_data_3,subj_data,
+    expect_equivalent(extract_crs_data(stap_data_3,subj_data,
                                   distance_data = distance_data,
                                   time_data = NULL,
                                   id_key = 'subj_id',
                                   max_distance = max(distance_data$dist),
                                   max_time = NULL),
                  a3)
-    expect_equal(extract_crs_data(stap_data_4,subject_data = subj_data,
+    expect_equivalent(extract_crs_data(stap_data_4,subject_data = subj_data,
                                   distance_data = distance_data,
                                   time_data = time_data,
                                   id_key ='subj_id',
                                   max_distance = max(distance_data$dist),
                                   max_time = max(time_data$time)),
                  a4)
-    expect_equal(extract_crs_data(stap_data_5,
+    expect_equivalent(extract_crs_data(stap_data_5,
                                   subject_data = subj_data_long,
                                   distance_data = dist_data_long,
                                   time_data = time_data_long,
