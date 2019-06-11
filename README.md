@@ -1,4 +1,4 @@
-![](docs/reference/figures/rstap_hex.png)
+<img src = "docs/reference/figures/rstap_hex.png" height = "42" width = "42"/>(https://biostatistics4socialimpact.github.io/rstap)![]()
 ## `rstap`: Spatial-Temporal Aggregated Predictor Models Implemented in R
 <!---
 [![Build Status](https://travis-ci.org/Biostatistics4SocialImpact/rstap.svg?branch=master)](https://travis-ci.org/Biostatistics4SocialImpact/rstap)
