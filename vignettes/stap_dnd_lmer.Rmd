@@ -35,7 +35,7 @@ Note that we'll generate the outcome under the difference in difference paramete
 
 ```{r generate_data,echo=F,results=F}
 set.seed(24)
-num_subj <- 150
+num_subj <- 50
 num_bef <- 20
 Z <- sapply(1:num_subj, function(x) rep(rbinom(n = 1, size = 1, prob = .5),3))
 Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>% 
@@ -44,6 +44,7 @@ Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>%
     mutate(time = as.integer(stringr::str_replace(time,"time_","") ))
 delta <- -.5
 theta_s <- 0.5
+shape <- 4
 alpha <- 22
 beta <- 1.2
 beta_bar <- .7
@@ -71,7 +72,7 @@ dists <- dists %>% mutate(id= grd$subj,
     mutate(BEF = "Coffee_Shop")
 
 X <- dists %>% group_by(id,time) %>% 
-    summarise(Exposure = sum(exp(-1 * Distance / theta_s)))
+    summarise(Exposure = sum(exp(- (Distance / theta_s)^shape )))
 
 X_bar <- X %>% group_by(id) %>% summarise(MN_Exposure = mean(Exposure)) %>% 
     mutate(subj_int = rnorm(n = num_subj,
@@ -101,7 +102,7 @@ subj_df <- X_diff %>% ungroup() %>%  mutate(BMI=y)
 # Simulating and Estimating a STAP model
 
 
-Consider the following model examining the average of some continuous outcome as a function of coffee shop exposure and confounders, conditional on latent subject covariates, $\bm{b}_i$
+Consider the following model examining the average of some continuous outcome as a function of coffee shop exposure and confounders, conditional on latent subject covariates, $b_i$
 
 $$
 E[Y_{ij}|b_i] = \alpha +  \Delta X_{ij}(\theta_s)\beta_{i,Coffee} + \bar{X}_{ij}(\theta_s)\bar{\beta}_{i,Coffee} +  + Z_{1}\delta_{i,sex}  + b_i + b_i*w_{ij}
@@ -119,7 +120,7 @@ We combine these two main effect estimates with standard, non time-varying confo
 
 We'll fit the model with priors that reflect our relative uncertainty about the spatial and temporal scales and place a fairly uninformative prior on the subject-specific variance. For information on how priors are set on the subject specific covariance, see the ```rstanarm``` vignette's write up [here](http://mc-stan.org/rstanarm/articles/glmer.html). The functional form will be the same as the model under which it was simulated since this vignette is for exposition.
 ```{r fit_model,results=F,warning=F,message=F}
-fit <- stapdnd_lmer(BMI ~ Sex + sap_dnd_bar(Coffee_Shop,exp) + (time|id),
+fit <- stapdnd_lmer(BMI ~ Sex + sap_dnd_bar(Coffee_Shop,wei) + (time|id),
                   subject_data = subj_df, ## names of datasets 
                   distance_data = dists,##  simulated above
                   subject_ID = 'id',
@@ -131,7 +132,7 @@ fit <- stapdnd_lmer(BMI ~ Sex + sap_dnd_bar(Coffee_Shop,exp) + (time|id),
                   max_distance = max(dists$Distance),
                   prior_covariance = decov(regularization = 1,concentration = 1,shape = 1,scale = 1),
                   chains = 4,
-                  iter = 2E3,
+                  iter = 2000,
                   cores = 4)
 ```
 

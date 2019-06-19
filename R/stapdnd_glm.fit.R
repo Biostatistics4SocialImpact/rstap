@@ -576,12 +576,7 @@ stapdnd_glm.fit <- function(y, z, w,
     }
     new_names <- c(if (has_intercept) "(Intercept)",
                    colnames(ztemp),
-                   paste0(rownames(dists_crs),"_dnd"),
-                   if(any_sbar(stap_data)) paste0(rownames(dists_crs),"_bar"),
-                   if((stap_data$Q_t)>0) paste0(rownames(times_crs), "_dnd"), ## only count Q_st once
-                   if(any_tbar(stap_data)) paste0(rownames(times_crs),"_bar"),
-                   if((stap_data$Q_s + stap_data$Q_st)>0) paste0(rownames(dists_crs),'_spatial_scale'),
-                   if((stap_data$Q_t + stap_data$Q_st)>0) paste0(rownames(times_crs),'_temporal_scale'),
+                   coef_names(stap_data),
                    if(length(group) && length(group$flist)) c (paste0("b[", b_nms, "]")),
                    if(standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                    if (is_gaussian) "sigma",
