@@ -61,14 +61,14 @@ stapreg <- function(object){
                                                      "beta",
                                                      if(any_bar(stap_data)) "beta_bar",
                                                      "theta_s",
-                                                     "theta_t")],prod))
+                                                     "shape_s",
+                                                     "theta_t",
+                                                     "shape_t")],prod))
         stanmat <- stanmat[,1:mark, drop = F]
     }
     covmat <- cov(stanmat)
     check_rhats(stap_summary[,"Rhat"])
-    delta_beta <- coefs[grep("_scale",names(coefs),invert= TRUE)]
-    if(num_s_wei(stap_data)>0 || num_t_wei(stap_data)>0)
-      delta_beta <- delta_beta[grep("_shape",names(delta_beta),invert= TRUE)]
+    delta_beta <- coefs[grep("_scale|_shape|Sigma",names(coefs),invert=T)]
     
 
 
