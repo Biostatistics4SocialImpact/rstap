@@ -64,7 +64,7 @@ prior distributions for the coefficients, intercept, spatial-temporal scales, an
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.1</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@ prior distributions for the coefficients, intercept, spatial-temporal scales, an
       <a href="../articles/Introduction.html">STAP Introduction</a>
     </li>
     <li>
-      <a href="../articles/stap_dnd_lmer.html">STAP difference in difference</a>
+      <a href="../articles/stap_dnd_lmer.html">Causal STAP Models</a>
     </li>
   </ul>
 </li>
@@ -143,7 +143,7 @@ prior distributions for the coefficients, intercept, spatial-temporal scales, an
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>formula</th>
-      <td><p>Same as for <code><a href='https://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.</p></td>
+      <td><p>Same as for <code><a href='https://www.rdocumentation.org/packages/stats/topics/glm'>glm</a></code>. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "_scale" or "_shape" in their name are not advised as this text is parsed for in the final model fit.</p></td>
     </tr>
     <tr>
       <th>family</th>
@@ -268,7 +268,7 @@ predictors (i.e., same as in <code>glm</code>).</p></td>
     </tr>
     <tr>
       <th>prior_theta</th>
-      <td><p>prior for the spatial-temporal aggregated predictors' scale. Can either be a single prior or a prior nested within a list of lists.</p></td>
+      <td><p>prior for the spatial-temporal aggregated predictors' scale and shape if the weibull weight function is selected. Can either be a single prior or a prior nested within a list of lists for separate BEFs/space-time components.</p></td>
     </tr>
     <tr>
       <th>prior_aux</th>
@@ -309,7 +309,7 @@ for <code>stap_glm</code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The <code>stap_glm</code> function is similar in syntax to
-<code>stan_glm</code> except instead of performing full bayesian
+<code><a href='https://www.rdocumentation.org/packages/rstanarm/topics/stan_glm'>stan_glm</a></code> except instead of performing full bayesian
 inference for a generalized linear model stap_glm incorporates spatial-temporal covariates</p>
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
@@ -345,15 +345,15 @@ User-friendly Bayesian regression modeling: A tutorial with rstanarm and shinyst
                      <span class='kw'>max_distance</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/Extremes'>max</a></span>(<span class='no'>homog_distance_data</span>$<span class='no'>Distance</span>),
                      <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>300</span>, <span class='co'># for speed of example only</span>
                      <span class='kw'>refresh</span> <span class='kw'>=</span> -<span class='fl'>1</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</div><div class='output co'>#&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 0.000628 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 6.28 seconds.
+#&gt; Chain 1: Gradient evaluation took 0.000551 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 5.51 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 2.72697 seconds (Warm-up)
-#&gt; Chain 1:                2.13831 seconds (Sampling)
-#&gt; Chain 1:                4.86529 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 2.85895 seconds (Warm-up)
+#&gt; Chain 1:                2.25744 seconds (Sampling)
+#&gt; Chain 1:                5.11638 seconds (Total)
 #&gt; Chain 1: </div><div class='input'>
 </div></pre>
   </div>

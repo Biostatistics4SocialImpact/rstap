@@ -1,4 +1,4 @@
-<img src = "docs/reference/figures/rstap_hex.png" height = "85" width = "85"/>
+<img src = "https://raw.githubusercontent.com/Biostatistics4SocialImpact/rstap/master/docs/reference/figures/rstap_hex.png" height = "85" width = "85"/>
 
 ## `rstap`: Spatial-Temporal Aggregated Predictor Models Implemented in R
 <!---

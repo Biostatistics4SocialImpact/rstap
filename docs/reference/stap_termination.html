@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rstap</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.1</span>
       </span>
     </div>
 
@@ -89,7 +89,7 @@
       <a href="../articles/Introduction.html">STAP Introduction</a>
     </li>
     <li>
-      <a href="../articles/stap_dnd_lmer.html">STAP difference in difference</a>
+      <a href="../articles/stap_dnd_lmer.html">Causal STAP Models</a>
     </li>
   </ul>
 </li>
@@ -121,12 +121,11 @@
     </div>
 
     <pre class="usage"><span class='fu'>stap_termination</span>(<span class='no'>object</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.05</span>,
-  <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+  <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for stapreg</span>
 <span class='fu'>stap_termination</span>(<span class='no'>object</span>, <span class='kw'>prob</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
-  <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>regex_pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>max_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>exposure_limit</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_value</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -153,14 +152,6 @@ amount of exposure for which the function will return an estimate of
     <tr>
       <th>pars</th>
       <td><p>An optional character vector of parameter names.</p></td>
-    </tr>
-    <tr>
-      <th>regex_pars</th>
-      <td><p>An optional character vector of <a href='https://www.rdocumentation.org/packages/base/topics/grep'>regular 
-expressions</a> to use for parameter selection. <code>regex_pars</code> can be used
-in place of <code>pars</code> or in addition to <code>pars</code>. Currently, all
-functions that accept a <code>regex_pars</code> argument ignore it for models fit
-using optimization.</p></td>
     </tr>
     <tr>
       <th>max_value</th>

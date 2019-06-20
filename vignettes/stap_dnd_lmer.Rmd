@@ -15,7 +15,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = F
+  eval = T
 )
 ```
 
@@ -35,7 +35,7 @@ Note that we'll generate the outcome under the difference in difference paramete
 
 ```{r generate_data,echo=F,results=F}
 set.seed(24)
-num_subj <- 50
+num_subj <- 80
 num_bef <- 20
 Z <- sapply(1:num_subj, function(x) rep(rbinom(n = 1, size = 1, prob = .5),3))
 Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>% 
@@ -131,9 +131,9 @@ fit <- stapdnd_lmer(BMI ~ Sex + sap_dnd_bar(Coffee_Shop,wei) + (time|id),
                   prior_theta = log_normal(location = 1,scale = 1),
                   max_distance = max(dists$Distance),
                   prior_covariance = decov(regularization = 1,concentration = 1,shape = 1,scale = 1),
-                  chains = 4,
-                  iter = 2000,
-                  cores = 4)
+                  chains = 2,
+                  iter = 1000,
+                  cores = 2)
 ```
 
 
@@ -145,18 +145,19 @@ fit
 
 
 ```{r parplot,echo=F}
-as_tibble(as.matrix(fit))  %>% 
-  select(Sex,contains("BEF_1"),contains("Sigma")) %>% 
+as_tibble(fit)  %>% 
+  select(Sex,contains("Coffee_Shop"),contains("Sigma")) %>% 
     gather(everything(),key="Parameter",value="Sample") %>% 
     group_by(Parameter) %>% 
     summarise_all(list(lower = ~quantile(.,0.05),
                        median = ~median(.),
                        upper = ~quantile(.,0.95))) %>% 
     mutate(Truth = (Parameter=="(Intercept)")*alpha +
-               (Parameter=="BEF_1_dnd")*beta + 
-               (Parameter=="BEF_1_spatial_scale")*theta_s + 
+               (Parameter=="Coffee_Shop_dnd")*beta + 
+               (Parameter=="Coffee_Shop_spatial_scale")*theta_s + 
+               (Parameter=="Coffee_Shop_spatial_shape")*shape +
                (Parameter=="Sex")*delta+
-               (Parameter=="BEF_1_bar")*beta_bar+
+               (Parameter=="Coffee_Shop_bar")*beta_bar+
                (Parameter=="sigma")*sigma + 
                (Parameter=="Sigma[id:(Intercept),(Intercept)]")*sigma_b +
              (Parameter=="Sigma[id:time,time]")*sigma_b +
@@ -173,7 +174,7 @@ as_tibble(as.matrix(fit))  %>%
 
 
 ```{r ranef_parplot,echo=F}
-as_tibble(as.matrix(fit))  %>% 
+as_tibble(fit)  %>% 
   select(contains("b[")) %>% 
     gather(everything(),key="Parameter",value="Sample") %>% 
     group_by(Parameter) %>% 
@@ -183,12 +184,37 @@ as_tibble(as.matrix(fit))  %>%
   mutate(id = stringr::str_split(Parameter,"id:"),
          id = map_int(id,function(x) as.integer(stringr::str_replace(x[2],"]","") ) ) ) %>% 
   arrange(id) %>% left_join(X_bar,by=c("id")) %>% 
-  gather(subj_int,subj_slope,key="Term",value="Truth") %>% 
+  rename(subject_intercept = subj_int, subject_slope = subj_slope) %>% 
+  gather(subject_intercept,subject_slope,key="Term",value="Truth") %>% 
   ggplot(aes(x=med,y=Truth)) + geom_point() + facet_wrap(~Term) + 
   ggthemes::theme_hc() + theme(strip.background = element_blank()) + 
   geom_abline(aes(intercept = 0, slope = 1)) + labs(x= "Median",title = "Random Effect Estimates")
 ```
 
+Below we can see the estimate of the spatial exposure function along with several
+draws from the posterior.
+```{r weiplot,echo=F,warning=F}
+draws <- sample(1:1000,size=20,replace=F)
+as_tibble(fit) %>% select(contains("_spatial")) %>%
+  mutate(sim_id = 1:n())  %>% 
+  dplyr::filter(sim_id %in% draws) %>% 
+  mutate(Distance = list(seq(from = 0, to = 1.2, by = 0.01))) %>% 
+  unnest() %>% 
+  mutate(Exposure = pweibull(Distance,shape = Coffee_Shop_spatial_shape,
+                             scale = Coffee_Shop_spatial_scale,
+                             lower.tail = FALSE)) %>% 
+  ggplot() + geom_line(aes(x=Distance,y=Exposure,group=sim_id),alpha=0.3) + 
+  geom_line(aes(x=Distance,y=Truth),
+            data=tibble(Distance = seq(from = 0, to = 1.2, by =0.01),
+                        Truth = pweibull(q = Distance,
+                                         shape = shape,
+                                         scale = theta_s,lower.tail = F)),color='red') +
+  ggthemes::theme_hc() + 
+  labs(title = "Spatial Exposure Function - Draws and Truth",
+       subtitle = "Draws from Posterior in Gray, Truth in Red",
+       x = "Distance", y = "Exposure")
+
+```
 
 ## References
 More information on the parameterization of this model from an academic and technical perspective can be found in:  

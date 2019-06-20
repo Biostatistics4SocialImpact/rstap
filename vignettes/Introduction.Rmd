@@ -13,7 +13,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = F
+  eval = T 
 )
 ```
 
@@ -405,76 +405,7 @@ tibble(lower = pracma::erfc(d/scale_df$lower),
 
 
 
-## Inclusion of superflous data
 
-If additional fast food restaurants were included, beyond that which were truly "needed"", what would happen to our model estimates?
-Is this equivalent to the non-informative data exclusion?
-
-```{r extra_befs,echo=F}
-extra_befs <- data_frame(x = c(runif(min = -1, max = 0, n = 20),
-                               runif(min = 0, max = 4, n = 20),
-                               runif(min = 3, max = 4, n = 20),
-                               runif(min = -1, max = 4, n = 20)),
-                         y = c(runif(min = -1, max = 4, n = 20),
-                               runif(min = -1, max = 0, n =20 ),
-                               runif(min = -1, max = 4, n = 20),
-                               runif(min = 3, max = 4, n = 20)),
-                         class = 'extra_BEFs')
-rbind(sub_df,bef_df,extra_befs) %>% ggplot(aes(x=x,y=y,colour = class)) + 
-    geom_point() + theme_bw() + ggtitle("Independence Configuration - Extra BEFs")
-```
-
-
-```{r sampling_4,cache=T}
-dists <- fields::rdist(as.matrix(sub_df[,1:2]),
-                       as.matrix(rbind(bef_df[,1:2],extra_befs[,1:2])))
-
-distance_data <- dists %>% as_tibble() %>%
-    mutate(subj_id = 1:num_subj) %>% 
-    tidyr::gather(contains("V"),key = 'BEF',value = 'Distance') %>% 
-    mutate(BEF = 'Fast_Food')
-
-
-fit <- stap_lm(formula = BMI ~ sex + sap(Fast_Food),
-                subject_data = subject_data,
-                distance_data = distance_data,
-                subject_ID = 'subj_id',
-                prior = normal(location = 0, scale = 5,autoscale = F),
-                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
-                prior_stap = normal(location = 0, scale = 3, autoscale = F),
-                prior_theta = log_normal(location = 0, scale = 1), 
-                prior_aux = cauchy(location = 0,scale = 5),
-                max_distance = max(dists),
-               chains = 4, cores = 4, iter = 2E3)  ## including unneccessary data
-```
-
-
-```{r results_4,echo=F}
-edf <- cbind(posterior_interval(fit)[1:4,1],coef(fit),posterior_interval(fit)[1:4,2],
-      c(alpha,delta,beta,theta)) %>% 
-    as_tibble() %>% transmute(lower= V1, 
-                                  mid = V2, 
-                                  upper = V3,
-                                  Truth = V4,
-                                  model = "Extra data") %>%
-    mutate(parameter = c("alpha","sex","Fast_Food","Fast_Food_spatial_scale"),
-           is_alpha = factor((parameter=="alpha"),labels=c("Effects","Intercept")) )
-
-edf %>% rbind(.,fd_df) %>% 
-  dplyr::filter(is_alpha == FALSE) %>% 
-    ggplot(aes(x=parameter,y=mid)) +
-    geom_pointrange(aes(ymin=lower, ymax=upper, color = model),
-                    position = position_dodge(width = .2)) +
-    geom_hline(aes(yintercept = Truth),linetype = 2) + coord_flip() + theme_bw() + 
-    theme( strip.background = element_blank(),
-           strip.text.x = element_blank()) + 
-    xlab("") + ylab("Estimate")
-```
-
-
-Our model is still able to recover the estimates correctly - about as well as it did 
-in the typical model setting! This is because the additional distances only
-contribute an negligible effect under the true spatial scale. 
 
 ## Caveats
 
