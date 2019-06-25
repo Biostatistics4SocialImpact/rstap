@@ -117,7 +117,10 @@ stap_termination.stapreg <- function(object,
         shape_t <- (stap_data$weight_mats[ix,2]==6)
         if(stap_data$stap_code[ix] %in% c(0,2)){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
+            if(shape_s)
+                fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
+            else
+                fvec <- purrr::map2_dbl(scls[,scl_ix],rep(1,nrow(scls)),function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance))) ## 1 is a dummy here
             lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
             median[scl_ix] <- median(fvec)
             upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
@@ -128,7 +131,10 @@ stap_termination.stapreg <- function(object,
         }
         if(stap_data$stap_code[ix] %in% c(1,2) ){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_time)))
+            if(shape_t)
+                fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
+            else
+                fvec <- purrr::map2_dbl(scls[,scl_ix],rep(1,nrow(scls)),function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance))) ## 1 is a dummy here
             lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
             median[scl_ix] <- median(fvec)
             upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
