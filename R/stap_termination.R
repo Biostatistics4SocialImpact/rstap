@@ -33,6 +33,9 @@
 #'          amount of exposure for which the function will return an estimate of
 #'           distance/time. 
 #'           Note that the exposure_limit corresponds to spatial exposure and 1-temporal exposure.
+#' @param max_value by defuault the max_distance and/or time from the model's original input
+#'        will be used to calculate the upper bound of possible terminating 
+#'        distances/times - the max_value can be used to specify a new value for this value.
 #' @return A matrix with three columns and as many rows as model parameters (or
 #'   the subset of parameters specified by \code{pars} and/or
 #'   \code{regex_pars}). For a given value of \code{prob}, \eqn{p}, the columns
@@ -80,6 +83,7 @@ stap_termination <- function(object,
                              prob = .9,
                              exposure_limit= 0.05,
                              pars = NULL,
+                             max_value = NULL,
                              ...
                              )
     UseMethod("stap_termination")
@@ -90,6 +94,7 @@ stap_termination.stapreg <- function(object,
                                      prob = .9,
                                      exposure_limit = 0.05,
                                      pars = NULL,
+                                     max_value = NULL,
                                      ...){
 
     if(prob>=1 || prob<=0)
@@ -105,12 +110,14 @@ stap_termination.stapreg <- function(object,
     lower <- median <- upper <- rep(0,stap_data$Q)
     scl_ix <- 1 
     shp_ix <- 1
+    max_distance <- if(!is.null(max_value)) max_value else object$max_distance
+    max_time <- if(!is.null(max_value)) max_value else object$max_time
     for(ix in 1:stap_data$Q){
         shape_s <- (stap_data$weight_mats[ix,1]==5)
         shape_t <- (stap_data$weight_mats[ix,2]==6)
         if(stap_data$stap_code[ix] %in% c(0,2)){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,.Machine$double.xmax)))
+            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
             lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
             median[scl_ix] <- median(fvec)
             upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
@@ -121,7 +128,7 @@ stap_termination.stapreg <- function(object,
         }
         if(stap_data$stap_code[ix] %in% c(1,2) ){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,.Machine$double.xmax)))
+            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
             lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
             median[scl_ix] <- median(fvec)
             upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
