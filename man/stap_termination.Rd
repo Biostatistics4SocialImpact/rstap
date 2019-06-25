@@ -6,10 +6,10 @@
 \title{Spatial-Temporal Exposure Termination-Maximization Estimates}
 \usage{
 stap_termination(object, prob = 0.9, exposure_limit = 0.05,
-  pars = NULL, max_value = NULL, ...)
+  pars = NULL, ...)
 
 \method{stap_termination}{stapreg}(object, prob = 0.9,
-  exposure_limit = 0.05, pars = NULL, max_value = NULL, ...)
+  exposure_limit = 0.05, pars = NULL, ...)
 }
 \arguments{
 \item{object}{A fitted model object returned by one of the 
@@ -27,14 +27,10 @@ amount of exposure for which the function will return an estimate of
 
 \item{pars}{An optional character vector of parameter names.}
 
-\item{max_value}{by defuault the max_distance and/or time from the model's original input
-will be used to calculate the upper bound of possible terminating 
-distances/times - the max_value can be used to specify a new value for this value.}
-
 \item{...}{Currently ignored.}
 }
 \value{
-A matrix with two columns and as many rows as model parameters (or
+A matrix with three columns and as many rows as model parameters (or
   the subset of parameters specified by \code{pars} and/or
   \code{regex_pars}). For a given value of \code{prob}, \eqn{p}, the columns
   correspond to the lower and upper \eqn{100p}\% interval limits and have the
