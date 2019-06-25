@@ -128,7 +128,7 @@ stap_termination.stapreg <- function(object,
         }
         if(stap_data$stap_code[ix] %in% c(1,2) ){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
+            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_time)))
             lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
             median[scl_ix] <- median(fvec)
             upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
@@ -147,5 +147,6 @@ stap_termination.stapreg <- function(object,
 }
 
 .find_root <- function(f, interval)
-    uniroot(f, interval)$root
+    tryCatch(uniroot(f, interval)$root,warning = function(w){
+                 print(paste("Error in root solving function, likely need to increase max value",w))}))
 
