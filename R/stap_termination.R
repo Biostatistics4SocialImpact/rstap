@@ -148,5 +148,5 @@ stap_termination.stapreg <- function(object,
 
 .find_root <- function(f, interval)
     tryCatch(uniroot(f, interval)$root,warning = function(w){
-                 print(paste("Error in root solving function, likely need to increase max value",w))}))
+                 print(paste("Error in root solving function, likely need to increase max value",w))})
 
