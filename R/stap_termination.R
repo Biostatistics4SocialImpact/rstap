@@ -36,7 +36,7 @@
 #' @param max_value by defuault the max_distance and/or time from the model's original input
 #'        will be used to calculate the upper bound of possible terminating 
 #'        distances/times - the max_value can be used to specify a new value for this value.
-#' @return A matrix with two columns and as many rows as model parameters (or
+#' @return A matrix with three columns and as many rows as model parameters (or
 #'   the subset of parameters specified by \code{pars} and/or
 #'   \code{regex_pars}). For a given value of \code{prob}, \eqn{p}, the columns
 #'   correspond to the lower and upper \eqn{100p}\% interval limits and have the
@@ -97,21 +97,17 @@ stap_termination.stapreg <- function(object,
                                      max_value = NULL,
                                      ...){
 
+    if(prob>=1 || prob<=0)
+        stop("prob must be a number between 0 and 1")
     stap_data <- object$stap_data
     scls <- theta_names(stap_data)
     shps <- shape_names(stap_data)
-    interval <- posterior_interval(object,prob = prob)
-    scls <- intersect(rownames(interval),scls)
-    shps <- intersect(rownames(interval),shps)
-    scl_interval <- interval[scls,,drop=F]
-    shp_interval <- interval[shps,,drop=F]
-    low <- scl_interval[,1, drop=T]
-    shp_low <- shp_interval[,1,drop=T]
-    up <- scl_interval[,2, drop = T]
-    shp_up <- shp_interval[,2,drop=T]
-    med <- apply(as.matrix(object)[,scls,drop=F],2,median)
-    shp_med <- apply(as.matrix(object)[,shps,drop=F],2,median)
-    lower <- median <- upper <- rep(0,length(med))
+    mat <- as.matrix(object)
+    scls <- intersect(colnames(mat),scls)
+    shps <- intersect(colnames(mat),shps)
+    scls <- mat[,scls,drop=F]
+    shps <- mat[,shps,drop=F]
+    lower <- median <- upper <- rep(0,stap_data$Q)
     scl_ix <- 1 
     shp_ix <- 1
     max_distance <- if(!is.null(max_value)) max_value else object$max_distance
@@ -121,26 +117,28 @@ stap_termination.stapreg <- function(object,
         shape_t <- (stap_data$weight_mats[ix,2]==6)
         if(stap_data$stap_code[ix] %in% c(0,2)){
             f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
-            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix],shp_low[shp_ix]) - exposure_limit}, c(0,max_distance))
-            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix],shp_med[shp_ix]) - exposure_limit}, c(0,max_distance))
-            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix],shp_up[shp_ix]) - exposure_limit},  c(0,max_distance))
+            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
+            lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
+            median[scl_ix] <- median(fvec)
+            upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
             if(shape_s)
                 shp_ix <- shp_ix + 1
             if(stap_data$stap_code[ix] == 2)
                 scl_ix <- scl_ix + 1
         }
         if(stap_data$stap_code[ix] %in% c(1,2) ){
-            f <- get_weight_function(stap_data$weight_mats[ix,2])
-            lower[scl_ix] <- .find_root(function(x){ f(x,low[scl_ix],shp_low[shp_ix]) - (1-exposure_limit)}, c(0,max_time))
-            median[scl_ix] <- .find_root(function(x){ f(x,med[scl_ix],shp_med[shp_ix]) - (1-exposure_limit)}, c(0,max_time))
-            upper[scl_ix] <- .find_root(function(x){ f(x,up[scl_ix],shp_up[shp_ix]) - (1-exposure_limit)},  c(0,max_time)) 
+            f <- get_weight_function(stap_data$weight_mats[scl_ix,1])
+            fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
+            lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
+            median[scl_ix] <- median(fvec)
+            upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
             if(shape_t)
                 shp_ix <- shp_ix + 1
         }
         scl_ix <- scl_ix + 1
     }
     out <- matrix(apply(cbind(lower,median,upper),1,sort),ncol=3)
-    rownames(out) <- beta_names(stap_data)
+    rownames(out) <- if(any_bar(stap_data)) grep("_bar",beta_names(stap_data),invert = TRUE, value = T) else beta_names(stap_data)
     colnames(out) <- c(paste0((.5-prob/2),"%"),"median",paste0((.5+prob/2),"%"))
     if(!is.null(pars))
         return(out[pars,,drop=F])
