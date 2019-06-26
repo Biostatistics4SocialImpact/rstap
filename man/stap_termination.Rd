@@ -34,7 +34,7 @@ distances/times - the max_value can be used to specify a new value for this valu
 \item{...}{Currently ignored.}
 }
 \value{
-A matrix with two columns and as many rows as model parameters (or
+A matrix with three columns and as many rows as model parameters (or
   the subset of parameters specified by \code{pars} and/or
   \code{regex_pars}). For a given value of \code{prob}, \eqn{p}, the columns
   correspond to the lower and upper \eqn{100p}\% interval limits and have the

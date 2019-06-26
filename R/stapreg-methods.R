@@ -388,6 +388,9 @@ terms.stapreg <- function(x, ..., fixed.only = TRUE, random.only = FALSE) {
   
   return(Terms)
 }
+#' Method for calculating Widely Applicable Information Criteria
+#' 
+#' @export 
 waic <- function(x)
     UseMethod("waic")
 

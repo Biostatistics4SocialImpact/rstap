@@ -144,10 +144,28 @@ ll_args.stapreg <- function(object,
     x <- get_x(object)
     y <- get_y(object)
     beta <- beta_names(object$stap_data)
-    stap_exp <- matrix(NA,dim(x)[2],dim(x)[1]) # num_obs x num_samps
+    if(any_dnd(object$stap_data)){
+      subj_mat <- as.matrix(Matrix::fac2sparse(as.factor(object$glmod$reTrms$flist[[1]])))
+      subj_n_diag <- solve(diag(as.vector(table(object$glmod$reTrms$flist[[1]]) )))
+      X_bar <- array(dim=dim(x))
+      for(i in 1:object$stap_data$Q)
+        X_bar[,,i] <- t(t(subj_mat) %*% (subj_n_diag %*% (subj_mat %*% t(x[,,i]) )))
+      X_tilde <- x - X_bar
+    }
     beta_samps <- stanmat[, beta, drop=F]
-    for(subj_ix in 1:dim(x)[2])
-        stap_exp[subj_ix,] <- rowSums(as.matrix(x[,subj_ix,]) * beta_samps)
+    stap_exp <- matrix(NA,dim(x)[2],dim(x)[1]) # num_obs x num_samps
+    if(any_dnd(object$stap_data)){
+      for(subj_ix in 1:dim(X_tilde)[2]){
+        X_ <- as.matrix(X_tilde[,subj_ix,])
+        if(any_bar(object$stap_data))
+          X_ <- cbind(as.matrix(X_tilde[,subj_ix,]),as.matrix(X_bar[,subj_ix,]) )
+        stap_exp[subj_ix,] <- rowSums(X_ * beta_samps)
+      }
+    }
+    else{
+      for(subj_ix in 1:dim(x)[2])
+          stap_exp[subj_ix,] <- rowSums(as.matrix(x[,subj_ix,]) * beta_samps)
+    }
     colnames(stap_exp) <- paste0("stap_exp_",1:ncol(stap_exp))
   }
   
@@ -196,7 +214,10 @@ ll_args.stapreg <- function(object,
     } else {
       w <- get_w(object)
     }
-    data <- cbind(data, as.matrix(w)[1:NROW(z),, drop = FALSE])
+    if(!is.binomial(fname))
+      data <- data.frame(y,z,as.matrix(w),stap_exp)
+    else
+      data <- data.frame(y,trials,z,as.matrix(w),stap_exp)
     draws$delta <- cbind(draws$delta, b)
   }
   
