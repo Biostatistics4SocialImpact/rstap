@@ -121,9 +121,9 @@ stap_termination.stapreg <- function(object,
                 fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
             else
                 fvec <- purrr::map2_dbl(scls[,scl_ix],rep(1,nrow(scls)),function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance))) ## 1 is a dummy here
-            lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
-            median[scl_ix] <- median(fvec)
-            upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
+            lower[scl_ix] <- quantile(fvec, (.5 - prob/2), na.rm = T )
+            median[scl_ix] <- median(fvec, na.rm = T)
+            upper[scl_ix] <- quantile(fvec,(.5 + prob/2), na.rm = T)
             if(shape_s)
                 shp_ix <- shp_ix + 1
             if(stap_data$stap_code[ix] == 2)
@@ -135,9 +135,9 @@ stap_termination.stapreg <- function(object,
                 fvec <- purrr::map2_dbl(scls[,scl_ix],shps[,shp_ix],function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance)))
             else
                 fvec <- purrr::map2_dbl(scls[,scl_ix],rep(1,nrow(scls)),function(x,y) .find_root(function(z){ f(z,x,y) - exposure_limit},c(0,max_distance))) ## 1 is a dummy here
-            lower[scl_ix] <- quantile(fvec, (.5 - prob/2) )
-            median[scl_ix] <- median(fvec)
-            upper[scl_ix] <- quantile(fvec,(.5 + prob/2))
+            lower[scl_ix] <- quantile(fvec, (.5 - prob/2), na.rm = T )
+            median[scl_ix] <- median(fvec, na.rm = T)
+            upper[scl_ix] <- quantile(fvec,(.5 + prob/2), na.rm = T)
             if(shape_t)
                 shp_ix <- shp_ix + 1
         }
@@ -152,7 +152,10 @@ stap_termination.stapreg <- function(object,
         return(out)
 }
 
-.find_root <- function(f, interval)
-    tryCatch(uniroot(f, interval)$root,warning = function(w){
-                 print(paste("Error in root solving function, likely need to increase max value",w))})
+.find_root <- function(f, interval){
+    if( ( (f(interval[2]) > 0) && (f(interval[1])>0)) || ((f(interval[2])<0) && (f(interval[1])<0) ) ) 
+        return(NA)
+    else
+        uniroot(f, interval)$root
+}
 
