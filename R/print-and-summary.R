@@ -32,8 +32,8 @@
 #' @details 
 #' \subsection{Point estimates}{
 #' Point estimates are medians computed from simulations.
-#' For models fit using MCMC (\code{"sampling"}) the posterior
-#' sample is used.  The point estimates reported are the same as the values
+#' For models fit using MCMC  the posterior sample is used.
+#' The point estimates reported are the same as the values
 #' returned by \code{\link[=coef.stapreg]{coef}}.
 #' }
 #' \subsection{Uncertainty estimates (MAD_SD)}{

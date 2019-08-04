@@ -278,7 +278,7 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
         temp <- all_names[which(all_names == stap_covs[ix])+1]
         if(stap_code[ix] %in% c(0,2)){
             if(temp %in% c("erf","cexp","cwei"))
-                stop("erf,cwei and the complementary  exponential are reserved for temporal decay only")
+                stop("erf,cwei and the complementary  exponential are reserved for temporal accumulation only")
             if(temp %in% c("cerf","exp","wei"))
                 w[ix,1] <- w_codes[[temp]]
             else
@@ -293,7 +293,7 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
         }
         if(stap_code[ix] == 2){
             temp <- all_names[which(all_names == stap_covs[ix])+2]
-            if(temp %in% c("erf","exp"))
+            if(temp %in% c("erf","exp","cwei"))
                w[ix,2] <- w_codes[[temp]]
             else
                 w[ix,2] <- 1
@@ -382,7 +382,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
         t_col_ics <- unlist(apply(time_data, 1,
                                   function(x) which(x %in% tap_stap)))
         if(!all(d_col_ics) && !all(t_col_ics) && !all(d_col_ics) && !all(t_col_ics))
-            stop("Stap covariates - of any kind - must all be in (only) one column
+            stop("sap tap or stap covariates  must all be in (only) one column
                  of the distance dataframe as a character or factor variable. See '?stap_glm'",.call=F)
         .check_bef_data(d_col_ics)
         .check_bef_data(t_col_ics,F)

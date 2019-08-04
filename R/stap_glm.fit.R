@@ -516,9 +516,9 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     pars <- c(if (has_intercept) "alpha",
               "delta",
               "adj_beta",
-              if(stap_data$Q_s + stap_data$Q_st>0) "theta_s",
+              if(stap_data$Q_s + stap_data$Q_st > 0) "theta_s",
+              if(stap_data$Q_t + stap_data$Q_st > 0) "theta_t",
               if(num_s_wei(stap_data)>0) "shape_s",
-              if(stap_data$Q_t + stap_data$Q_st >0) "theta_t",
               if(num_t_wei(stap_data)>0) "shape_t",
               if(length(group)) "b",
               if(standata$len_theta_L) "theta_L",
@@ -567,6 +567,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         }
         Sigma_nms <- unlist(Sigma_nms)
     }
+
     new_names <- c(if (has_intercept) "(Intercept)",
                    colnames(ztemp),
                    coef_names(stap_data),

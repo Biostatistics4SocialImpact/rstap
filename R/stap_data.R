@@ -206,7 +206,7 @@ any_tbar.stap_data <- function(object){
 
 coef_names.stap_data <- function(object){
     get_name <- function(a,d,b,x,y){
-        space_shape <- a[1] >4
+        space_shape <- a[1] > 4
         time_shape <- a[2] > 4
         space_time_shape <- space_shape && time_shape
         dnd <- d > 0
@@ -218,28 +218,28 @@ coef_names.stap_data <- function(object){
             name <- c(name,paste0(y,"_bar"))
         else
             name <- y
-        if(space_shape)
-            name <- c(name,switch(x+1,
-                              paste0(y,c("_spatial_scale","_spatial_shape")),
-                              paste0(y,"_temporal_scale"),
-                              c(paste0(y,c("_spatial_scale","_spatial_shape")),
-                                paste0(y,"_temporal_scale"))))
-        else if(time_shape)
-            name <- c(name,switch(x+1,
-                                  paste0(y,c("_spatial_scale")),
-                                  paste0(y,c("_temporal_scale","_temporal_shape")),
-                                  c(paste0(y,"_spatial_scale"),
-                                    paste0(y,c("_temporal_scale","_temporal_shape")) ) ))
-        else if(space_time_shape)
+        if(space_time_shape)
             name <- c(name,switch(x+1,
                                   paste0(y,c("_spatial_scale","_spatial_shape")),
                                   paste0(y,c("_temporal_scale","_temporal_shape")),
-                                  c(paste0(y,"_spatial_scale","_spatial_shape"),
+                                  c(paste0(y,c("_spatial_scale","_spatial_shape")),
                                     paste0(y,c("_temporal_scale","_temporal_shape")) ) ))
+        else if(space_shape)
+            name <- c(name,switch(x+1,
+                                  paste0(y,c("_spatial_scale","_spatial_shape")),
+                                  paste0(y,"_temporal_scale"),
+                                  c(paste0(y,c("_spatial_scale","_spatial_shape")),
+                                    paste0(y,"_temporal_scale"))))
+        else if(time_shape)
+            name <-c(name,switch(x+1,
+                                 paste0(y,c("_spatial_scale")),
+                                 paste0(y,c("_temporal_scale","_temporal_shape")),
+                                 c(paste0(y,"_spatial_scale"),
+                                   paste0(y,c("_temporal_scale","_temporal_shape")) ) ))
         else
             name <- c(name,switch(x+1,
                                   paste0(y,c("_spatial_scale")),
-                                  paste0(y,c("_spatial_scale")),
+                                  paste0(y,c("_temporal_scale")),
                                   paste0(y,c("_spatial_scale","_temporal_scale"))))
         
         

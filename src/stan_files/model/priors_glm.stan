@@ -69,15 +69,15 @@
     if(stap_code[q_ix] == 1 || stap_code[q_ix] == 2){
         if(prior_dist_for_theta_t[cnt_t] == 1){
             target += normal_lpdf(theta_t[cnt_t]|prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
-            if(num_t_wei > 0 && weight_mat[q_ix,2] > 4){
-                target += normal_lpdf(shape_s[cnt_shape_t] | prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
+            if(num_t_wei > 0 && weight_mat[q_ix,2] == 6){
+                target += normal_lpdf(shape_s[cnt_shape_t] | prior_mean_for_theta_s[cnt_t], prior_scale_for_theta_t[cnt_t]);
                 cnt_shape_t += 1;
             }
         }
         if(prior_dist_for_theta_t[cnt_t] == 8){
             target += lognormal_lpdf(theta_t[cnt_t]|prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
-            if(num_t_wei > 0 && weight_mat[q_ix,2] > 4){
-                target += lognormal_lpdf(shape_s[cnt_shape_t] | prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
+            if(num_t_wei > 0 && weight_mat[q_ix,2] == 6){
+                target += lognormal_lpdf(shape_t[cnt_shape_t] | prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
                 cnt_shape_t += 1;
             }
         }

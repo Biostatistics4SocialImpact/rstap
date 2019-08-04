@@ -35,15 +35,17 @@ Note that we'll generate the outcome under the difference in difference paramete
 
 ```{r generate_data,echo=F,results=F}
 set.seed(24)
-num_subj <- 80
+num_subj <- 20
 num_bef <- 20
 Z <- sapply(1:num_subj, function(x) rep(rbinom(n = 1, size = 1, prob = .5),3))
 Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>% 
     mutate(subj_id = 1:n()) %>% 
     gather(contains("time"), key="time",value="Sex") %>% 
-    mutate(time = as.integer(stringr::str_replace(time,"time_","") ))
+    mutate(time = as.integer(stringr::str_replace(time,"time_","") )) %>% 
+  rename(measurement=time)
 delta <- -.5
-theta_s <- 0.5
+theta_s <- 0.25
+theta_t <- .15
 shape <- 4
 alpha <- 22
 beta <- 1.2
@@ -61,18 +63,39 @@ dists_2 <- matrix(rexp(n = num_subj*num_bef,
 dists_3 <- matrix(rexp(n= num_subj*num_bef,
                        rate = .5),
                   nrow = num_subj, ncol = num_bef)
-dists <- rbind(dists_1,dists_2,dists_3)
-colnames(dists) <- stringr::str_c("BEF_",1:ncol(dists))
-dists <- as_tibble(dists) 
+dists <- rbind(dists_1,
+               dists_2,
+               dists_3)
+times <- dists*6
+dists <- as_tibble(dists)
+times <- as_tibble(times)
 grd <- expand.grid(subj=1:num_subj,time = 1:3)
-dists <- dists %>% mutate(id= grd$subj,
-                         time = grd$time) %>%
-    gather(contains("BEF"),key = "BEF", value="Distance") %>% 
-    dplyr::filter(Distance<=5) %>% 
-    mutate(BEF = "Coffee_Shop")
 
-X <- dists %>% group_by(id,time) %>% 
-    summarise(Exposure = sum(exp(- (Distance / theta_s)^shape )))
+dists <- dists %>% mutate(id= grd$subj,
+                         measurement = grd$time) %>%
+    gather(contains("V"),key = "BEF_id", value="Distance") %>% 
+    mutate(BEF_id = stringr::str_replace(BEF_id,"V",""),
+           BEF = "Coffee_Shop") %>% 
+  dplyr::filter(Distance<=5)
+
+times <- times %>% mutate(id=grd$subj,
+                          measurement=grd$time) %>% 
+  gather(contains("V"),key="BEF_id",value="Time") %>%
+  mutate(BEF_id = stringr::str_replace(BEF_id,"V","")) %>% 
+  dplyr::filter(Time<=(30)) %>% 
+  mutate(BEF =  "Coffee_Shop")
+
+dt_df <- dists %>% select(-BEF) %>% left_join(times %>% 
+                                                select(-BEF),
+                                              by=c("id","measurement","BEF_id"))
+
+
+
+X <- dt_df %>% group_by(id,measurement) %>% 
+    summarise(Exposure = sum(pweibull(Distance,shape = shape,
+                                      scale = theta_s,
+                                      lower.tail = FALSE) * pexp(Time,
+                                                                 rate = 1/theta_t)  ))
 
 X_bar <- X %>% group_by(id) %>% summarise(MN_Exposure = mean(Exposure)) %>% 
     mutate(subj_int = rnorm(n = num_subj,
@@ -83,8 +106,8 @@ X_bar <- X %>% group_by(id) %>% summarise(MN_Exposure = mean(Exposure)) %>%
 
 X_diff <- X %>% left_join(X_bar,by='id') %>% 
     mutate(X_diff = Exposure - MN_Exposure) %>% 
-    left_join(Z,by=c("id"="subj_id","time")) %>% 
-    arrange(id,time)
+    left_join(Z,by=c("id"="subj_id","measurement")) %>% 
+    arrange(id,measurement)
 
 epsilon_ij <- rnorm(n = num_subj * 3, mean = 0, sd = sigma)
 
@@ -120,19 +143,23 @@ We combine these two main effect estimates with standard, non time-varying confo
 
 We'll fit the model with priors that reflect our relative uncertainty about the spatial and temporal scales and place a fairly uninformative prior on the subject-specific variance. For information on how priors are set on the subject specific covariance, see the ```rstanarm``` vignette's write up [here](http://mc-stan.org/rstanarm/articles/glmer.html). The functional form will be the same as the model under which it was simulated since this vignette is for exposition.
 ```{r fit_model,results=F,warning=F,message=F}
-fit <- stapdnd_lmer(BMI ~ Sex + sap_dnd_bar(Coffee_Shop,wei) + (time|id),
+fit <- stapdnd_lmer(BMI ~ Sex + stap_dnd_bar(Coffee_Shop,wei,cwei) + (measurement|id),
                   subject_data = subj_df, ## names of datasets 
                   distance_data = dists,##  simulated above
+                  time_data = times,
                   subject_ID = 'id',
-                  group_ID = "time",
+                  group_ID = "measurement",
                   prior_intercept = normal(location = 25, scale = 4, autoscale = F),
                   prior = normal(location = 0, scale = 3,autoscale=F),
                   prior_stap = normal(location = 0, scale = 3),
-                  prior_theta = log_normal(location = 1,scale = 1),
+                  prior_theta = log_normal(location = .5,scale = .5),
                   max_distance = max(dists$Distance),
-                  prior_covariance = decov(regularization = 1,concentration = 1,shape = 1,scale = 1),
-                  chains = 2,
-                  iter = 1000,
+                  prior_covariance = decov(regularization = 1,
+                                           concentration = 1,
+                                           shape = 1,
+                                           scale = 1),
+                  chains = 1,
+                  iter = 2000,
                   cores = 2)
 ```
 
