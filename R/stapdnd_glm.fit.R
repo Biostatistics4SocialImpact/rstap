@@ -319,11 +319,11 @@ stapdnd_glm.fit <- function(y, z, w,
         }
     } else{
         if(stap_data$Q_st>0){
-            standata$prior_dist_for_theta_s <- array(prior_dist_for_theta)
+            standata$prior_dist_for_theta_s <- array(rep(prior_dist_for_theta,stap_data$Q_st+stap_data$Q_s))
             standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
             standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
             standata$prior_mean_for_theta_s <-  array(prior_mean_for_theta)
-            standata$prior_dist_for_theta_t <- array(as.integer(prior_dist_for_theta))
+            standata$prior_dist_for_theta_t <- array(rep(prior_dist_for_theta,stap_data$Q_st+stap_data$Q_s))
             standata$prior_scale_for_theta_t <- array(prior_scale_for_theta)
             standata$prior_mean_for_theta_t <- array(prior_mean_for_theta)
             standata$prior_df_for_theta_t <- array(prior_df_for_theta)

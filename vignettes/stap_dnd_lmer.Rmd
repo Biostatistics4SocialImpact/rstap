@@ -35,7 +35,7 @@ Note that we'll generate the outcome under the difference in difference paramete
 
 ```{r generate_data,echo=F,results=F}
 set.seed(24)
-num_subj <- 20
+num_subj <- 300
 num_bef <- 20
 Z <- sapply(1:num_subj, function(x) rep(rbinom(n = 1, size = 1, prob = .5),3))
 Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>% 
@@ -141,9 +141,9 @@ We combine these two main effect estimates with standard, non time-varying confo
 
 
 
-We'll fit the model with priors that reflect our relative uncertainty about the spatial and temporal scales and place a fairly uninformative prior on the subject-specific variance. For information on how priors are set on the subject specific covariance, see the ```rstanarm``` vignette's write up [here](http://mc-stan.org/rstanarm/articles/glmer.html). The functional form will be the same as the model under which it was simulated since this vignette is for exposition.
+We'll fit the model with priors that reflect our relative uncertainty about the spatial and temporal scales and place a fairly uninformative prior on the subject-specific variance. We'll also use a Weibull survival/cdf function to model the spatial/temporal relationship. This is more flexible than we need, but should still allow us to capture the true information.  For information on how priors are set on the subject specific covariance, see the ```rstanarm``` vignette's write up [here](http://mc-stan.org/rstanarm/articles/glmer.html). The functional form will be the same as the model under which it was simulated since this vignette is for exposition.
 ```{r fit_model,results=F,warning=F,message=F}
-fit <- stapdnd_lmer(BMI ~ Sex + stap_dnd_bar(Coffee_Shop,wei,cwei) + (measurement|id),
+fit <- stapdnd_lmer(BMI ~ Sex + stap_dnd_bar(Coffee_Shop,wei,cexp) + (measurement|id),
                   subject_data = subj_df, ## names of datasets 
                   distance_data = dists,##  simulated above
                   time_data = times,
@@ -158,9 +158,9 @@ fit <- stapdnd_lmer(BMI ~ Sex + stap_dnd_bar(Coffee_Shop,wei,cwei) + (measuremen
                                            concentration = 1,
                                            shape = 1,
                                            scale = 1),
-                  chains = 1,
+                  chains = 4,
                   iter = 2000,
-                  cores = 2)
+                  cores = 4)
 ```
 
 

@@ -43,7 +43,7 @@ transformed parameters {
              prior_scale_for_aux * aux_unscaled + prior_mean_for_aux :
              prior_scale_for_aux * aux_unscaled);
 
-  // defines beta, delta, X, X_tilde
+  // defines beta, delta, X, X_tilde X_bar
 #include /tparameters/tparameters_dnd.stan
 if (t > 0) {
     if (special_case == 1) {

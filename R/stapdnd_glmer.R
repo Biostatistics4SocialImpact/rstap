@@ -164,10 +164,7 @@ stapdnd_glmer <-
   if(any_dnd(stap_data) || any_bar(stap_data)){
       subj_matrix <- as.matrix(Matrix::fac2sparse(glmod$reTrms$flist[[subject_ID]]))
       subj_n_vec <- 1/table(glmod$reTrms$flist[[subject_ID]])
-      if(num_dnd(stap_data) > 1)
-          subj_n <- Reduce(cbind,lapply(1:(sum(stap_data$dnd_code)),function(x) x))
-      else
-          subj_n <- matrix(subj_n_vec,ncol=1)
+      subj_n <- matrix(subj_n_vec,ncol=stap_data$Q,nrow = dim(subj_matrix)[1])
       stapfit <- stapdnd_glm.fit(y = y, z = Z,
                                  subject_n = subj_n,
                                   subject_matrix = subj_matrix,

@@ -178,6 +178,9 @@ stapdnd_lm <-
            distance_data = NULL,
            time_data = NULL,
            subject_ID = NULL,
+           group_ID = NULL,
+           subject_matrix,
+           subject_n,
            max_distance = NULL,
            max_time = NULL,
            weights,
@@ -202,7 +205,7 @@ stapdnd_lm <-
   mc <- call <- match.call(expand.dots = TRUE)
   if (!"formula" %in% names(call))
     names(call)[2L] <- "formula"
-  mc[[1L]] <- quote(stap_glm)
+  mc[[1L]] <- quote(stapdnd_glm)
   mc$family <- "gaussian"
   out <- eval(mc, parent.frame())
   out$call <- call

@@ -391,11 +391,10 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
         dist_var <- colnames(distance_data)[dcol_ix]
         time_var <- colnames(time_data)[tcol_ix]
         ddata <- purrr::map(sap_stap,function(x) dplyr::filter(distance_data,!!dplyr::sym(stap_dvar) == x,!!dplyr::sym(dist_var) <=max_distance))
-        mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by=id_key))
+        mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by = id_key))
         tdata <- purrr::map(tap_stap,function(x) dplyr::filter(time_data,!!dplyr::sym(stap_tvar) == x,
                                                                 !!dplyr::sym(time_var) <= max_time))
         mtdata <- purrr::map(tdata, function(y) dplyr::left_join(subject_data,y,by=id_key))
-        mddata <- purrr::map(ddata, function(y) dplyr::left_join(subject_data,y,by=id_key))
         M <- max(purrr::map_dbl(mddata, nrow))
         if(M != max(sapply(mtdata,nrow)))
             stop("Something wrong please report bug")
