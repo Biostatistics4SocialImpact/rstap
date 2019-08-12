@@ -35,8 +35,8 @@ Note that we'll generate the outcome under the difference in difference paramete
 
 ```{r generate_data,echo=F,results=F}
 set.seed(24)
-num_subj <- 300
-num_bef <- 20
+num_subj <- 200
+num_bef <- 15
 Z <- sapply(1:num_subj, function(x) rep(rbinom(n = 1, size = 1, prob = .5),3))
 Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>% 
     mutate(subj_id = 1:n()) %>% 
@@ -45,11 +45,11 @@ Z <- tibble(time_1 = t(Z)[,1], time_2 = t(Z)[,2], time_3 = t(Z)[,3]) %>%
   rename(measurement=time)
 delta <- -.5
 theta_s <- 0.25
-theta_t <- .15
+theta_t <- 1.1
 shape <- 4
 alpha <- 22
-beta <- 1.2
-beta_bar <- .7
+beta <- 3.2
+beta_bar <- 2.1
 sigma <- 1  
 sigma_b <- 1
 dists_1 <- matrix(rexp(n = num_subj*num_bef,
@@ -92,10 +92,7 @@ dt_df <- dists %>% select(-BEF) %>% left_join(times %>%
 
 
 X <- dt_df %>% group_by(id,measurement) %>% 
-    summarise(Exposure = sum(pweibull(Distance,shape = shape,
-                                      scale = theta_s,
-                                      lower.tail = FALSE) * pexp(Time,
-                                                                 rate = 1/theta_t)  ))
+    summarise(Exposure = sum(pracma::erfc(Distance/theta_s) * pracma::erf(Time/theta_t) ))
 
 X_bar <- X %>% group_by(id) %>% summarise(MN_Exposure = mean(Exposure)) %>% 
     mutate(subj_int = rnorm(n = num_subj,
@@ -143,7 +140,7 @@ We combine these two main effect estimates with standard, non time-varying confo
 
 We'll fit the model with priors that reflect our relative uncertainty about the spatial and temporal scales and place a fairly uninformative prior on the subject-specific variance. We'll also use a Weibull survival/cdf function to model the spatial/temporal relationship. This is more flexible than we need, but should still allow us to capture the true information.  For information on how priors are set on the subject specific covariance, see the ```rstanarm``` vignette's write up [here](http://mc-stan.org/rstanarm/articles/glmer.html). The functional form will be the same as the model under which it was simulated since this vignette is for exposition.
 ```{r fit_model,results=F,warning=F,message=F}
-fit <- stapdnd_lmer(BMI ~ Sex + stap_dnd_bar(Coffee_Shop,wei,cexp) + (measurement|id),
+fit <- stapdnd_lmer(BMI ~ Sex + stap_dnd_bar(Coffee_Shop) + (measurement|id),
                   subject_data = subj_df, ## names of datasets 
                   distance_data = dists,##  simulated above
                   time_data = times,
@@ -158,9 +155,9 @@ fit <- stapdnd_lmer(BMI ~ Sex + stap_dnd_bar(Coffee_Shop,wei,cexp) + (measuremen
                                            concentration = 1,
                                            shape = 1,
                                            scale = 1),
-                  chains = 4,
-                  iter = 2000,
-                  cores = 4)
+                  chains = 2,
+                  iter = 1000,
+                  cores = 2)
 ```
 
 
@@ -182,13 +179,14 @@ as_tibble(fit)  %>%
     mutate(Truth = (Parameter=="(Intercept)")*alpha +
                (Parameter=="Coffee_Shop_dnd")*beta + 
                (Parameter=="Coffee_Shop_spatial_scale")*theta_s + 
+               (Parameter=="Coffee_Shop_temporal_scale")*theta_t+ 
                (Parameter=="Coffee_Shop_spatial_shape")*shape +
                (Parameter=="Sex")*delta+
                (Parameter=="Coffee_Shop_bar")*beta_bar+
                (Parameter=="sigma")*sigma + 
                (Parameter=="Sigma[id:(Intercept),(Intercept)]")*sigma_b +
-             (Parameter=="Sigma[id:time,time]")*sigma_b +
-             (Parameter=="Sigma[id:time,(Intercept)]")*0,
+             (Parameter=="Sigma[id:measurement,measurement]")*sigma_b +
+             (Parameter=="Sigma[id:measurement,(Intercept)]")*0,
            ranef = grepl("Sigma",Parameter)) %>% 
     ggplot(aes(x=Parameter,y=median),alpha=.5) + 
   geom_point(aes(x=Parameter,y=Truth),color='red',size=2.5)+ 
@@ -218,28 +216,27 @@ as_tibble(fit)  %>%
   geom_abline(aes(intercept = 0, slope = 1)) + labs(x= "Median",title = "Random Effect Estimates")
 ```
 
-Below we can see the estimate of the spatial exposure function along with several
-draws from the posterior.
-```{r weiplot,echo=F,warning=F}
-draws <- sample(1:1000,size=20,replace=F)
-as_tibble(fit) %>% select(contains("_spatial")) %>%
-  mutate(sim_id = 1:n())  %>% 
-  dplyr::filter(sim_id %in% draws) %>% 
-  mutate(Distance = list(seq(from = 0, to = 1.2, by = 0.01))) %>% 
-  unnest() %>% 
-  mutate(Exposure = pweibull(Distance,shape = Coffee_Shop_spatial_shape,
-                             scale = Coffee_Shop_spatial_scale,
-                             lower.tail = FALSE)) %>% 
-  ggplot() + geom_line(aes(x=Distance,y=Exposure,group=sim_id),alpha=0.3) + 
-  geom_line(aes(x=Distance,y=Truth),
-            data=tibble(Distance = seq(from = 0, to = 1.2, by =0.01),
-                        Truth = pweibull(q = Distance,
-                                         shape = shape,
-                                         scale = theta_s,lower.tail = F)),color='red') +
-  ggthemes::theme_hc() + 
-  labs(title = "Spatial Exposure Function - Draws and Truth",
-       subtitle = "Draws from Posterior in Gray, Truth in Red",
-       x = "Distance", y = "Exposure")
+
+```{r exposure_plot,echo=F,warning=F}
+# draws <- sample(1:1000,size=20,replace=F)
+# as_tibble(fit) %>% select(contains("_spatial")) %>%
+#   mutate(sim_id = 1:n())  %>%
+#   dplyr::filter(sim_id %in% draws) %>%
+#   mutate(Distance = list(seq(from = 0, to = 1.2, by = 0.01))) %>%
+#   unnest() %>%
+#   mutate(Exposure = pweibull(Distance,shape = Coffee_Shop_spatial_shape,
+#                              scale = Coffee_Shop_spatial_scale,
+#                              lower.tail = FALSE)) %>%
+#   ggplot() + geom_line(aes(x=Distance,y=Exposure,group=sim_id),alpha=0.3) +
+#   geom_line(aes(x=Distance,y=Truth),
+#             data=tibble(Distance = seq(from = 0, to = 1.2, by =0.01),
+#                         Truth = pweibull(q = Distance,
+#                                          shape = shape,
+#                                          scale = theta_s,lower.tail = F)),color='red') +
+#   ggthemes::theme_hc() +
+#   labs(title = "Spatial Exposure Function - Draws and Truth",
+#        subtitle = "Draws from Posterior in Gray, Truth in Red",
+#        x = "Distance", y = "Exposure")
 
 ```
 
