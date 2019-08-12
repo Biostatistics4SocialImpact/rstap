@@ -63,8 +63,6 @@ stapdnd_glm.fit <- function(y, z, w,
     fam <- which(pmatch(supported_families, family$family, nomatch = 0L) == 1L)
     if(!length(fam))
         stop("'family' must be one of ", paste(supported_families, collapse = ', '))
-    if(max_distance < max(dists_crs))
-        stop("max_distance must be the maximum possible distance amongst all distances in dists_crs")
 
     supported_links <- supported_glm_links(supported_families[fam])
     link <- which(supported_links == family$link)
@@ -164,7 +162,7 @@ stapdnd_glm.fit <- function(y, z, w,
         prior_theta_stuff <-
             handle_glm_prior(
                 prior_theta,
-                nvars = nrow(dists_crs),
+                nvars = stap_data$Q,
                 default_scale = 1,
                 link = NULL,
                 ok_dists = nlist("normal","lognormal")
@@ -253,7 +251,7 @@ stapdnd_glm.fit <- function(y, z, w,
         weight_mat = stap_data$weight_mats,
         log_ar = stap_data$log_switch, 
         stap_code = stap_data$stap_code,
-        M = ncol(dists_crs),
+        M = ifelse(ncol(dists_crs),ncol(dists_crs),ncol(times_crs)),
         zbar = as.array(zbar),
         family = stan_family_number(famname),
         link,

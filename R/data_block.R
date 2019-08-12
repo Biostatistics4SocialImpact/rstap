@@ -286,14 +286,14 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
         }else if(stap_code[ix] == 1){
             if(temp %in% c("cerf","exp","wei"))
                 stop("cerf, wei and exponential functions  are reserved for spatial decay only")
-            if(temp %in% c("erf","exp","cwei"))
+            if(temp %in% c("erf","cexp","cwei"))
                 w[ix,2] <- w_codes[[temp]]
             else
                 w[ix,2] <- 1
         }
         if(stap_code[ix] == 2){
             temp <- all_names[which(all_names == stap_covs[ix])+2]
-            if(temp %in% c("erf","exp","cwei"))
+            if(temp %in% c("erf","cexp","cwei"))
                w[ix,2] <- w_codes[[temp]]
             else
                 w[ix,2] <- 1
@@ -485,8 +485,8 @@ get_stapless_formula <- function(f){
                                          "stap_dnd","stap_bar_dnd"))
     sap_ics <- which(all.names(f) %in% c("sap","sap_log","sap_dnd_bar",
                                          "sap_dnd","sap_bar_dnd"))
-    tap_ics <- which(all.names(f) %in% c("tap","tap_log","sap_dnd_bar",
-                                         "sap_dnd","sap_bar_dnd"))
+    tap_ics <- which(all.names(f) %in% c("tap","tap_log","tap_dnd_bar",
+                                         "tap_dnd","tap_bar_dnd"))
     if(!length(stap_ics) & !length(sap_ics) & !length(tap_ics))
         stop("No covariates designated as 'stap','sap',or 'tap'  in formula", .call = F)
     stap_nms <- all.names(f)[stap_ics + 1]

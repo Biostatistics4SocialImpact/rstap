@@ -388,7 +388,7 @@
           return(0);
       else
           out = sum(get_weights(dists[u_s[n,(q*2)-1] :  u_s[n,(q*2)]] * inv(theta_s), w_s, shape_s, cnt_shape_s ) .*
-          get_weights(time[u_t[n,(q*2)-1] : u_t[n,(q*2)]] * inv(theta_t), w_t, shape_t,cnt_shape_t));
+                    get_weights(time[u_t[n,(q*2)-1] : u_t[n,(q*2)]] * inv(theta_t), w_t, shape_t,cnt_shape_t));
       if(log_switch == 1)
         return(log(out));
       else

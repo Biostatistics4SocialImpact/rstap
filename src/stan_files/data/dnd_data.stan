@@ -27,6 +27,6 @@
 
   // Meta data
   int u_s[(Q_s + Q_st) > 0 ? N: 0, (Q_s +Q_st) > 0 ? ((Q_s + Q_st) * 2) : 0]; //index holder array for distances
-  int u_t[(Q_t + Q_st) > 0 ? N : 0, (Q_t +Q_st) > 0 ? ((Q_s + Q_st) * 2) : 0]; // index holder array for times
+  int u_t[(Q_t + Q_st) > 0 ? N : 0, (Q_t +Q_st) > 0 ? ((Q_t + Q_st) * 2) : 0]; // index holder array for times
   real<lower=0> max_distance; // Max distance for spatial scales
   real<lower=0> max_time; // Max Time
