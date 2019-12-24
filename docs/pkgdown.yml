@@ -1,6 +1,6 @@
 pandoc: 2.3.1
-pkgdown: 1.3.0
-pkgdown_sha: ~
+pkgdown: 1.4.1.9000
+pkgdown_sha: dfae44ecfcc5b0ac51f9489993ddd79ad6c707c3
 articles:
   Introduction: Introduction.html
   stap_dnd_lmer: stap_dnd_lmer.html

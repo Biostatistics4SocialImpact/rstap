@@ -1,6 +1,5 @@
 
-
-## <img src = "docs/reference/figures/rstap_hex.png" align="right">`rstap`: Spatial-Temporal Aggregated Predictor Models Implemented in R
+# <img src="man/figures/rstap_hex.png" align="right" width=95 height=100 />  `rstap`: Spatial-Temporal Aggregated Predictor Models in R
 <!---
 [![Build Status](https://travis-ci.org/Biostatistics4SocialImpact/rstap.svg?branch=master)](https://travis-ci.org/Biostatistics4SocialImpact/rstap)
 -->
