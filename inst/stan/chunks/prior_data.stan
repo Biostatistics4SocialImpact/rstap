@@ -1,0 +1,21 @@
+        // prior data    
+        int<lower=0> prior_intercept;
+        int<lower=0> prior_intercept_df;
+        real prior_intercept_loc;
+        real<lower=0> prior_intercept_scale;
+        int<lower=0> prior_beta_one;
+        int<lower=0> prior_beta_one_df;
+        real prior_beta_one_loc;
+        real<lower=0> prior_beta_one_scale;
+        int<lower=0> prior_beta_two;
+        int<lower=0> prior_beta_two_df;
+        real prior_beta_two_loc;
+        real<lower=0> prior_beta_two_scale;
+        int<lower=0> prior_theta [q];
+        int<lower=0> prior_theta_df[q];
+        real prior_theta_loc [q];
+        real<lower=0> prior_theta_scale [q];
+        int<lower=0> prior_sigma;
+        int<lower=0> prior_sigma_df;
+        real<lower=0> prior_sigma_loc;
+        real<lower=0> prior_sigma_scale;
