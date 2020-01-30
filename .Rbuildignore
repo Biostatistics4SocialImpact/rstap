@@ -1,0 +1,8 @@
+^LICENSE\.md$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.Rhistory
+.travis.yml
+^_pkgdown\.yml$
+^docs$
+^man-roxygen$

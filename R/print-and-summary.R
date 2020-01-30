@@ -32,7 +32,6 @@
 #' @details 
 #' \subsection{Point estimates}{
 #' Point estimates are medians computed from simulations.
-#' For models fit using MCMC  the posterior sample is used.
 #' The point estimates reported are the same as the values
 #' returned by \code{\link[=coef.stapreg]{coef}}.
 #' }
@@ -150,25 +149,9 @@ print.stapreg <- function(x, digits = 1, include_X = FALSE, ...) {
 #'   varying intercepts and/or slopes they can be selected using \code{pars = 
 #'   "varying"}.
 #'   
-#'   In addition, for \code{stapmvreg} objects there are some additional shortcuts 
-#'   available. Using \code{pars = "long"} will display the 
-#'   parameter estimates for the longitudinal submodels only (excluding group-specific
-#'   pparameters, but including auxiliary parameters).
-#'   Using \code{pars = "event"} will display the 
-#'   parameter estimates for the event submodel only, including any association
-#'   parameters. 
-#'   Using \code{pars = "assoc"} will display only the 
-#'   association parameters. 
-#'   Using \code{pars = "fixef"} will display all fixed effects, but not
-#'   the random effects or the auxiliary parameters. 
-#'    \code{pars} and \code{regex_pars} are set to \code{NULL} then all 
-#'   fixed effect regression coefficients are selected, as well as any 
-#'   auxiliary parameters and the log posterior.   
-#'   
 #'   If \code{pars} is \code{NULL} all parameters are selected for a \code{stapreg}
 #'   object.
-#' @param probs For models fit using MCMC, 
-#'   an optional numeric vector of probabilities passed to 
+#' @param probs Ann optional numeric vector of probabilities passed to 
 #'   \code{\link[stats]{quantile}}.
 #' @param include_X logical for whether or not estimated latent STAP exposure should be included in summary defaults to FALSE
 #' @param digits Number of digits to use for formatting numbers when printing. 
@@ -181,8 +164,8 @@ print.stapreg <- function(x, digits = 1, include_X = FALSE, ...) {
 #'   \code{"summary.stapreg"}), which is a matrix of 
 #'   summary statistics and 
 #'   diagnostics, with attributes storing information for use by the
-#'   \code{print} method. The \code{print} method for \code{summary.stapreg} or
-#'   \code{summary.stapmvreg} objects is called for its side effect and just returns 
+#'   \code{print} method. The \code{print} method for \code{summary.stapreg}
+#'   is called for its side effect and just returns 
 #'   its input. The \code{as.data.frame} method for \code{summary.stapreg} 
 #'   objects converts the matrix to a data.frame, preserving row and column 
 #'   names but dropping the \code{print}-related attributes.

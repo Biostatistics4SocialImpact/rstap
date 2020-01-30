@@ -31,6 +31,7 @@ LinkingTo: StanHeaders (>= 2.18.0), rstan (>= 2.18.1), BH (>= 1.66.0-1), Rcpp (>
 SystemRequirements: GNU make
 NeedsCompilation: yes
 RoxygenNote: 6.1.1
+Biarch: true
 Suggests:
     testthat,
     digest,

@@ -1,5 +1,4 @@
 # Part of the rstap package for estimating model parameters
-# Copyright (C) 2015, 2016, 2017 Trustees of Columbia University
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -210,6 +209,52 @@ set_plotting_fun <- function(plotfun = NULL) {
     "'bayesplot' package beginning with the prefix 'mcmc_'.",
     call. = FALSE
   )
+}
+
+
+#' Exposure Plots
+#'
+#' @export
+#' @param samples samples from the distribution of interest
+#' @param samples_2 samples from the distribution of interest for a 2D parameter NULL by default
+#' @param K function with 2 arguments the first for distance/time and the second (and/or third) for evaluating a 2D exposure function
+#' @param grid grid values to evaluate K on 
+#' @param q quantiles at which to evaluate the sample
+#' @param Distance boolean value used to label horizontal axis of plot 
+#' @details  Useful for deciding whether you have the right prior 
+#' for a spatial temporal parameters
+#'
+check_exposure_plot <- function(samples, samples_2 = NULL, K = function(x,y) exp(-x/y), 
+								grid = seq(from = 0, to = 10, by = 0.01), 
+								q = c(0.025,0.975), Distance = TRUE ){
+
+	if(length(q)!=2 || !is.numeric(q))
+		stop("q must be a 2D numeric vector")
+
+	qs <- quantile(samples,q)
+	if(!is.null(samples_2)){
+		p <- tibble::tibble(Distance = grid,
+					   lower = K(grid,qs[1],qs_2[1]),
+					   med = K(grid,median(samples),median(samples_2)),
+					   upper = K(grid,qs[2],qs_2[2])
+					   ) 	
+	}else{
+
+		p  <- tibble::tibble(Distance = grid,
+					   lower = K(grid,qs[1]),
+					   med = K(grid,median(samples)),
+					   upper = K(grid,qs[2]),
+					   )
+
+	}
+		p <- p %>% ggplot2::ggplot(aes(x=Distance,y=med)) + 
+					ggplot2::geom_line() + 
+					ggplot2::geom_ribbon(aes(ymin=lower,ymax=upper),alpha=0.5)
+
+	if(!Distance)
+		p <- p + xlab("Time")
+
+	return(p)
 }
 
 

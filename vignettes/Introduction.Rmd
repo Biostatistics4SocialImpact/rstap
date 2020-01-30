@@ -13,7 +13,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = T 
+  eval = F
 )
 ```
 
@@ -65,7 +65,7 @@ For this example we use the following fixed parameters to simulate our dataset:
 alpha <- 22.5 ## Average BMI for men with no FF exposure
 Z <- rbinom(n = num_subj, prob = .45, size = 1) ## sex in this setting
 delta <- -.8 ## Sex effect
-theta <- .3 ## Spatial scale
+theta <- .3 ## Spatial parameter
 theta_2 <- 3 ## for later
 beta <- 1.2 ## Fast Food Effect
 sigma <- 2.3 ## Residual Noise
@@ -89,11 +89,11 @@ d <- seq(from = 0, to = max(dists), by = 0.01)
 X_theta_one <- pracma::erfc(d/theta)
 p1 <- tibble(Distance = d,
        Exposure = X_theta_one) %>% ggplot(aes(x=Distance,y=Exposure)) + geom_line() + 
-    theme_bw() + scale_colour_grey() + ggtitle("Simulated Spatial Distance Decay") + 
+    theme_bw() + scale_colour_grey() + ggtitle("Spatial Exposure") + 
     xlab("Distance") + theme(text = element_text(size=22))
 p2 <- tibble(Exposure =  X) %>% ggplot(aes(x=Exposure)) + geom_histogram() + 
     theme_bw() + scale_colour_grey() + xlab("Aggregated Exposure") + 
-    ggtitle("Spatial Aggregated Exposure Distribution") + 
+    ggtitle("Aggregated Exposure Distribution") + 
     theme(text = element_text(size=22))
 grid.arrange(p1,p2,nrow=1)
 ```
@@ -113,7 +113,7 @@ subject_data %>% head() %>% knitr::kable()
 The distance dataframe contains the corresponding subject id to pair with 
 each built environment feature in the chosen space along with their associated distance.
 Note that the Built Environment Features are labeled as "Fast_Food" for this example - this will be important syntactically for the `stap_glm()` function.
-```{r datasets}
+```{r datasets,warning=F,messages=F}
 distance_data <- dists %>% as_tibble() %>%
     mutate(subj_id = 1:num_subj) %>% 
     gather(contains("V"),key = 'BEF',value = 'Distance') %>% 
@@ -319,7 +319,7 @@ plot(d,X_theta_one,type='l',main = "Exposure Decay Function - reduced domain", x
 
 Simulating a dataset under this model and fitting an rstap model to it with the restricted domain...
 
-```{r}
+```{r,messages=F,warnings=F}
 dists <- fields::rdist(as.matrix(sub_df[,1:2]),
                        as.matrix(bef_df[,1:2]))
 X <- apply(dists,1,function(x) sum(pracma::erfc(x/theta_2)))
