@@ -147,7 +147,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     #prior_{dist, mean, scale, df, dist_name, autoscale}_for_theta
     if(is.null(prior_theta$dist))
         prior_theta  <- handle_theta_stap_prior(prior_theta,
-                                                     ok_dists = nlist("normal","lognormal"),
+                                                     ok_dists = nlist("normal","lognormal","gamma"),
                                                      stap_code = stap_data$stap_code,
                                                      coef_names = grep("_scale",coef_names(stap_data),value = T, invert = T)
                                                      )

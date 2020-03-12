@@ -129,7 +129,7 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_
         if(!length(prior))
             stop("We highly reccomend against using a flat prior",
                  "on the spatial-temporal scales, as it will make
-                 sampling take a very long time")
+                 sampling take a very long time and could possibly lead to an unidentified posterior")
 
         if (!is.list(prior) ) 
             stop(sQuote(deparse(substitute(prior))), " should be a list of lists")
@@ -157,18 +157,23 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_
                     
               } else if (prior_dist_name %in% 
                          c("normal", "t", "cauchy", "laplace", "lasso", 
-                           "product_normal", 'lognormal')) {
+                           "product_normal", 'lognormal',"gamma")) {
                 if (prior_dist_name == "normal") prior_dist <- 1L
                 else if (prior_dist_name == "t") prior_dist <- 2L
                 else if (prior_dist_name == "laplace") prior_dist <- 5L
                 else if (prior_dist_name == "lasso") prior_dist <- 6L
                 else if (prior_dist_name == "product_normal") prior_dist <- 7L
                 else if(prior_dist_name == 'lognormal') prior_dist <- 8L
+                else if(prior_dist_name == 'gamma') prior_dist <- 9L
                 theta_s_dist[i] <- prior_dist
               }
                 theta_s_scale[i] <- if(is.null(prior[[i]]$spatial$scale)) default_scale else prior[[i]]$spatial$scale
                 theta_s_mean[i] <- if(is.na(prior[[i]]$spatial$location)) 0 else prior[[i]]$spatial$location
                 theta_s_df[i] <- if(is.na(prior[[i]]$spatial$df)) 0 else prior[[i]]$spatial$df
+				if(theta_s_dist[i] == 9){
+					theta_s_scale[i] <- prior[[i]]$spatial$shape
+					theta_s_mean[i] <- prior[[i]]$spatial$rate
+				}
                } 
             if(stap_code[i] %in% c(1,2)){
                 prior_dist_name <- prior[[i]]$temporal$dist
@@ -178,18 +183,23 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_
                     
                 } else if (prior_dist_name %in% 
                            c("normal", "t", "cauchy", "laplace", "lasso", 
-                             "product_normal", 'lognormal')) {
+                             "product_normal", 'lognormal',"gamma")) {
                     if (prior_dist_name == "normal") prior_dist <- 1L
                     else if (prior_dist_name == "t") prior_dist <- 2L
                     else if (prior_dist_name == "laplace") prior_dist <- 5L
                     else if (prior_dist_name == "lasso") prior_dist <- 6L
                     else if (prior_dist_name == "product_normal") prior_dist <- 7L
                     else if(prior_dist_name == 'lognormal') prior_dist <- 8L
+					else if(prior_dist_name == 'gamma') prior_dist <- 9L
                     theta_t_dist[i] <- prior_dist
                 }
                 theta_t_scale[i] <- if(is.null(prior[[i]]$temporal$scale)) default_scale else prior[[i]]$temporal$scale
                 theta_t_mean[i] <- if(is.na(prior[[i]]$temporal$location)) 0 else prior[[i]]$temporal$location
                 theta_t_df[i] <- if(is.na(prior[[i]]$temporal$df)) 0 else prior[[i]]$temporal$df
+				if(theta_t_dist[i] == 9){
+					theta_t_scale[i] <- prior[[i]]$spatial$shape
+					theta_t_mean[i] <- prior[[i]]$spatial$rate
+				}
                 }
             }
         if(any(stap_code %in% c(0,2))){

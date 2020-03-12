@@ -225,6 +225,12 @@ log_normal <- function(location = 0, scale = 1){
 
 #' @rdname priors
 #' @export
+gamma <- function(shape = 1, rate = 1){
+	nlist(dist = "gamma", shape, rate)
+}
+
+#' @rdname priors
+#' @export
 #' @param regularization Exponent for an LKJ prior on the correlation matrix in
 #'   the \code{decov}  prior. The default is \eqn{1}, implying a 
 #'   joint uniform prior.
