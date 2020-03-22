@@ -10,6 +10,7 @@
 \alias{product_normal}
 \alias{exponential}
 \alias{log_normal}
+\alias{gamma}
 \alias{decov}
 \title{Prior distributions and options}
 \usage{
@@ -28,6 +29,8 @@ product_normal(df = 2, location = 0, scale = 1)
 exponential(rate = 1, autoscale = TRUE)
 
 log_normal(location = 0, scale = 1)
+
+gamma(shape = 1, rate = 1)
 
 decov(regularization = 1, concentration = 1, shape = 1, scale = 1)
 }
@@ -62,17 +65,17 @@ parameter must be an integer (vector) that is  at least \eqn{2} (the default).}
 \code{1}. For the exponential distribution the rate parameter is the 
 \emph{reciprocal} of the mean.}
 
+\item{shape}{Shape parameter for a gamma prior on the scale parameter in the
+\code{decov} prior. If \code{shape} and \code{scale} are both \eqn{1} (the
+default) then the gamma prior simplifies to the unit-exponential
+distribution.}
+
 \item{regularization}{Exponent for an LKJ prior on the correlation matrix in
 the \code{decov}  prior. The default is \eqn{1}, implying a 
 joint uniform prior.}
 
 \item{concentration}{Concentration parameter for a symmetric Dirichlet 
 distribution. The default is \eqn{1}, implying a joint uniform prior.}
-
-\item{shape}{Shape parameter for a gamma prior on the scale parameter in the
-\code{decov} prior. If \code{shape} and \code{scale} are both \eqn{1} (the
-default) then the gamma prior simplifies to the unit-exponential
-distribution.}
 }
 \value{
 A named list to be used internally by the \pkg{rstap} model

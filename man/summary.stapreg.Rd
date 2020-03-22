@@ -26,21 +26,6 @@ can also be used as a shortcut for \code{"(Intercept)"}. If the model has
 varying intercepts and/or slopes they can be selected using \code{pars = 
 "varying"}.
 
-In addition, for \code{stapmvreg} objects there are some additional shortcuts 
-available. Using \code{pars = "long"} will display the 
-parameter estimates for the longitudinal submodels only (excluding group-specific
-pparameters, but including auxiliary parameters).
-Using \code{pars = "event"} will display the 
-parameter estimates for the event submodel only, including any association
-parameters. 
-Using \code{pars = "assoc"} will display only the 
-association parameters. 
-Using \code{pars = "fixef"} will display all fixed effects, but not
-the random effects or the auxiliary parameters. 
- \code{pars} and \code{regex_pars} are set to \code{NULL} then all 
-fixed effect regression coefficients are selected, as well as any 
-auxiliary parameters and the log posterior.   
-
 If \code{pars} is \code{NULL} all parameters are selected for a \code{stapreg}
 object.}
 
@@ -50,8 +35,7 @@ in place of \code{pars} or in addition to \code{pars}. Currently, all
 functions that accept a \code{regex_pars} argument ignore it for models fit
 using optimization.}
 
-\item{probs}{For models fit using MCMC, 
-an optional numeric vector of probabilities passed to 
+\item{probs}{Ann optional numeric vector of probabilities passed to 
 \code{\link[stats]{quantile}}.}
 
 \item{waic}{logical to determine whether waic should be calculated and printed with the summary object}
@@ -72,8 +56,8 @@ The \code{summary} method returns an object of class
   \code{"summary.stapreg"}), which is a matrix of 
   summary statistics and 
   diagnostics, with attributes storing information for use by the
-  \code{print} method. The \code{print} method for \code{summary.stapreg} or
-  \code{summary.stapmvreg} objects is called for its side effect and just returns 
+  \code{print} method. The \code{print} method for \code{summary.stapreg}
+  is called for its side effect and just returns 
   its input. The \code{as.data.frame} method for \code{summary.stapreg} 
   objects converts the matrix to a data.frame, preserving row and column 
   names but dropping the \code{print}-related attributes.

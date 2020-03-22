@@ -86,6 +86,7 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
     else if (prior_dist_name == "lasso") prior_dist <- 6L
     else if (prior_dist_name == "product_normal") prior_dist <- 7L
     else if(prior_dist_name == 'lognormal') prior_dist <- 8L
+    else if(prior_dist_name == 'gamma') prior_dist <- 9L
     prior_scale <- set_prior_scale(prior_scale, default = default_scale, 
                                    link = link)
   } else if (prior_dist_name %in% c("hs", "hs_plus")) {
@@ -96,6 +97,10 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
     slab_scale <- prior$slab_scale
   } else if (prior_dist_name %in% "exponential") {
     prior_dist <- 3L # only used for scale parameters so 3 not a conflict with 3 for hs
+  } else if(prior_dist_name == 'gamma'){
+	  prior_dist <- 9L
+	  prior_mean <- prior$shape
+	  prior_scale <- prior$rate
   } 
   
   prior_df <- maybe_broadcast(prior_df, nvars)

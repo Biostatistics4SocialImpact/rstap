@@ -15,12 +15,12 @@ stapdnd_glm(formula, family = gaussian(), subject_data = NULL,
   prior_aux = exponential(), adapt_delta = NULL)
 
 stapdnd_lm(formula, subject_data = NULL, distance_data = NULL,
-  time_data = NULL, subject_ID = NULL, max_distance = NULL,
-  max_time = NULL, weights, offset = NULL, model = TRUE, y = TRUE,
-  contrasts = NULL, ..., prior = normal(),
-  prior_intercept = normal(), prior_stap = normal(),
-  prior_theta = log_normal(location = 1L, scale = 1L),
-  prior_aux = exponential(), adapt_delta = NULL)
+  time_data = NULL, subject_ID = NULL, group_ID = NULL,
+  subject_matrix, subject_n, max_distance = NULL, max_time = NULL,
+  weights, offset = NULL, model = TRUE, y = TRUE, contrasts = NULL,
+  ..., prior = normal(), prior_intercept = normal(),
+  prior_stap = normal(), prior_theta = log_normal(location = 1L, scale
+  = 1L), prior_aux = exponential(), adapt_delta = NULL)
 }
 \arguments{
 \item{formula}{Same as for \code{\link[stats]{glm}}. Note that in-formula transformations will not be passed ot the final design matrix. Covariates that have "scale" in their name are not advised as this text is parsed for in the final model fit.}

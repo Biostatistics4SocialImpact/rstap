@@ -158,7 +158,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
                 nvars = stap_data$Q,
                 default_scale = 1,
                 link = NULL,
-                ok_dists = nlist("normal","lognormal")
+                ok_dists = nlist("normal","lognormal","gamma")
             )
         names(prior_theta_stuff) <- paste0(names(prior_theta_stuff),"_for_theta")
         for(i in names(prior_theta_stuff))
