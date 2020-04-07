@@ -228,19 +228,24 @@ check_exposure_plot <- function(samples, samples_2 = NULL, K = function(x,y) exp
 								grid = seq(from = 0, to = 10, by = 0.01), 
 								q = c(0.025,0.975), Distance = TRUE ){
 
+
+
+	## To pass R CMD CHECK
+	qs <- aes <- med <- lower <- upper <- NULL
+
 	if(length(q)!=2 || !is.numeric(q))
 		stop("q must be a 2D numeric vector")
 
 	qs <- quantile(samples,q)
 	if(!is.null(samples_2)){
-		p <- tibble::tibble(Distance = grid,
+		p <- dplyr::tibble(Distance = grid,
 					   lower = K(grid,qs[1],qs_2[1]),
 					   med = K(grid,median(samples),median(samples_2)),
 					   upper = K(grid,qs[2],qs_2[2])
 					   ) 	
 	}else{
 
-		p  <- tibble::tibble(Distance = grid,
+		p  <- dplyr::tibble(Distance = grid,
 					   lower = K(grid,qs[1]),
 					   med = K(grid,median(samples)),
 					   upper = K(grid,qs[2]),

@@ -243,10 +243,11 @@ check_theta_priors <- function(prior_list,stap_code,coef_names){
 
 }
 
-# extract stap data from formula and create stapcov object 
-# 
-# @param formula that designates model expression including stap covariates 
-#'@export
+#' Extract stap data from formula and create stap_data object 
+#' 
+#' @param formula that designates model expression including stap covariates 
+#'
+#' @export
 #
 extract_stap_data <- function(formula){
 
