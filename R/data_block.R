@@ -457,7 +457,7 @@ extract_crs_data <- function(stap_data, subject_data, distance_data,
 # Get time or distance csr matrix from data
 .get_crs_mat <- function(list_data, col_name, M, Q,labels){
 
-    crs_mat <- lapply(list_data, function(x) x[!is.na(x[,col_name]),col_name,drop=T])
+    crs_mat <- lapply(list_data, function(x) x[!is.na(x[,col_name,drop=TRUE]),col_name,drop=T])
     crs_mat <- matrix(Reduce(rbind, lapply(crs_mat,function(x) if(length(x)!=M) c(x,rep(0,M-length(x))) else x)),
                       nrow = Q, ncol = M)
     rownames(crs_mat) <- labels
