@@ -113,6 +113,7 @@ stapdnd_glmer <-
            prior_theta = log_normal(location = 1L, scale = 1L),
            prior_aux = exponential(),
            prior_covariance = decov(),
+		   vb = FALSE,
            adapt_delta = NULL) {
 
   original_formula <- formula
@@ -183,7 +184,7 @@ stapdnd_glmer <-
                                   prior_aux = prior_aux, 
                                   prior_theta = prior_theta,
                                   adapt_delta = adapt_delta,
-                                  group = group,...)
+                                  group = group,vb= vb,...)
   }else{
     stapfit <- stap_glm.fit(y = y,z = Z, 
                           dists_crs = crs_data$d_mat,
@@ -201,8 +202,10 @@ stapdnd_glmer <-
                           prior_aux = prior_aux, 
                           prior_theta = prior_theta,
                           adapt_delta = adapt_delta,
-                          group = group,  ...)
+                          group = group,  vb = vb,...)
   }
+  if(vb)
+	  return(stapfit)
   sel <- apply(Z, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
   Z <- Z[ , !sel, drop = FALSE]
   W <- pad_reTrms(Ztlist = group$Ztlist, cnms = group$cnms, 

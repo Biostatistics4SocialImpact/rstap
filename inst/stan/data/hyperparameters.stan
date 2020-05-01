@@ -4,12 +4,16 @@
   vector<lower=0>[Q] prior_scale_for_stap;
   vector<lower=0>[(Q_s + Q_st) >0 ? (Q_s + Q_st) : 0] prior_scale_for_theta_s;
   vector<lower=0>[(Q_t + Q_st) >0 ? (Q_t + Q_st) : 0] prior_scale_for_theta_t;
+  vector<lower=0>[num_s_wei > 0 ? num_s_wei : 0] prior_scale_for_theta_s_shape;
+  vector<lower=0>[num_t_wei > 0 ? num_t_wei : 0] prior_scale_for_theta_t_shape;
   real<lower=0> prior_scale_for_intercept;
   real<lower=0> prior_scale_for_aux;
   vector[K] prior_mean;
   vector[Q] prior_mean_for_stap;
   vector[(Q_s + Q_st) > 0 ? (Q_s + Q_st) : 0] prior_mean_for_theta_s;
   vector[(Q_t + Q_st) > 0 ? (Q_t + Q_st) : 0] prior_mean_for_theta_t;
+  vector[num_s_wei] prior_mean_for_theta_s_shape;
+  vector[num_t_wei] prior_mean_for_theta_t_shape;
   real prior_mean_for_intercept;
   real<lower=0> prior_mean_for_aux;
   vector<lower=0>[K] prior_df;
@@ -18,6 +22,8 @@
   vector<lower=0>[(Q_s + Q_st) >0 ? (Q_s + Q_st) : 0] prior_df_for_theta_s;
   vector<lower=0>[(Q_t + Q_st) >0 ? (Q_t + Q_st) : 0] prior_df_for_theta_t;
   vector<lower=0>[Q] prior_df_for_stap;
+  vector<lower=0>[num_s_wei] prior_df_for_theta_s_shape;
+  vector<lower=0>[num_t_wei] prior_df_for_theta_t_shape;
   
   int<lower=2> num_normals[prior_dist == 7 ? K : 0];
   int<lower=2> num_normals_for_stap[prior_dist_for_stap == 7 ? Q : 0];

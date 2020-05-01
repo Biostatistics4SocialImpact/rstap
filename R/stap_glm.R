@@ -89,6 +89,7 @@ stap_glm <- function(formula,
                      prior_stap = normal(),
                      prior_theta = log_normal(location = 1L, scale = 1L),
                      prior_aux = exponential(), 
+					 optimize = FALSE,
                      adapt_delta = NULL){
 
     stap_data <- extract_stap_data(formula)

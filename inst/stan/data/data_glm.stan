@@ -16,4 +16,6 @@
   
   // prior family: 0 = none, 1 = normal, 8 = log_normal
   int<lower=0,upper=9> prior_dist_for_theta_s[(Q_s + Q_st) >0 ? (Q_s + Q_st) : 0];
+  int<lower=0,upper=9> prior_dist_for_theta_s_shape[num_s_wei >0 ? num_s_wei : 0];
   int<lower=0,upper=9> prior_dist_for_theta_t[(Q_t + Q_st) >0 ? (Q_t + Q_st) : 0];
+  int<lower=0,upper=9> prior_dist_for_theta_t_shape[num_t_wei > 0? num_t_wei : 0];

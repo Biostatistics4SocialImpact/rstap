@@ -56,6 +56,7 @@ stapdnd_glm.fit <- function(y, z, w,
                             group = list(), 
                             prior_theta = list(theta_one = normal()),
                             prior_aux = cauchy(location = 0L, scale = 5L),
+							vb = FALSE,
                             adapt_delta = NULL){
 
     family <- validate_family(family)
@@ -156,8 +157,9 @@ stapdnd_glm.fit <- function(y, z, w,
         prior_theta  <- handle_theta_stap_prior(prior_theta,
                                                 ok_dists = nlist("normal","lognormal"),
                                                 stap_code = stap_data$stap_code,
+												weight_mat = stap_data$weight_mats,
                                                 coef_names = grep("_scale",coef_names(stap_data),value = T, invert = T)
-        )
+												)
     else{
         prior_theta_stuff <-
             handle_glm_prior(
@@ -277,7 +279,7 @@ stapdnd_glm.fit <- function(y, z, w,
         prior_dist_for_intercept,
         prior_dist_for_stap, prior_mean_for_stap,
         prior_scale_for_stap = array(prior_scale_for_stap),
-        prior_df_for_stap,
+        prior_df_for_stap = prior_df_for_stap,
         prior_dist_for_aux = prior_dist_for_aux,
         num_normals = if(prior_dist == 7) as.integer(prior_df) else integer(0),
         num_normals_for_stap = if(prior_dist_for_stap == 7) as.integer(prior_df_for_stap) else integer(0)
@@ -294,34 +296,58 @@ stapdnd_glm.fit <- function(y, z, w,
             standata$prior_scale_for_theta_t <- array(prior_theta$theta_t_scale)
             standata$prior_mean_for_theta_t <- array(prior_theta$theta_t_mean)
             standata$prior_df_for_theta_t <- array(prior_theta$theta_t_df)
+            standata$prior_dist_for_theta_s_shape <- array(prior_theta$theta_s_shape_dist)
+            standata$prior_scale_for_theta_s_shape <- array(prior_theta$theta_s_shape_scale)
+            standata$prior_df_for_theta_s_shape <- array(prior_theta$theta_s_shape_df)
+            standata$prior_mean_for_theta_s_shape <- array(prior_theta$theta_s_shape_mean)
+            standata$prior_dist_for_theta_t_shape <- array(prior_theta$theta_t_shape_dist)
+            standata$prior_scale_for_theta_t_shape <- array(prior_theta$theta_t_shape_scale)
+            standata$prior_mean_for_theta_t_shape <- array(prior_theta$theta_t_shape_mean)
+            standata$prior_df_for_theta_t_shape <- array(prior_theta$theta_t_shape_df)
         } else if(stap_data$Q_s>0){
-            standata$prior_dist_for_theta_s <- array(prior_theta$theta_s_dist)
+            standata$prior_dist_for_theta_s <- array(prior_theta$theta_s_dist,stap_data$Q_s)
             standata$prior_scale_for_theta_s <- array(prior_theta$theta_s_scale)
             standata$prior_df_for_theta_s <- array(prior_theta$theta_s_df)
             standata$prior_mean_for_theta_s <- array(prior_theta$theta_s_mean)
+            standata$prior_dist_for_theta_s_shape <- array(prior_theta$theta_s_shape_dist)
+            standata$prior_scale_for_theta_s_shape <- array(prior_theta$theta_s_shape_scale)
+            standata$prior_df_for_theta_s_shape <- array(prior_theta$theta_s_shape_df)
+            standata$prior_mean_for_theta_s_shape <- array(prior_theta$theta_s_shape_mean)
             #null entries
             standata$prior_dist_for_theta_t <- double()
             standata$prior_scale_for_theta_t <- double()
             standata$prior_df_for_theta_t <- double()
             standata$prior_mean_for_theta_t <- double()
+            standata$prior_dist_for_theta_t_shape <- double()
+            standata$prior_scale_for_theta_t_shape <- double()
+            standata$prior_mean_for_theta_t_shape <- double()
+            standata$prior_df_for_theta_t_shape <- double()
         } else if(stap_data$Q_t>0){
             standata$prior_dist_for_theta_t <- array(prior_theta$theta_t_dist)
             standata$prior_scale_for_theta_t <- array(prior_theta$theta_t_scale)
             standata$prior_mean_for_theta_t <- array(prior_theta$theta_t_mean)
             standata$prior_df_for_theta_t <- array(prior_theta$theta_t_df)
+            standata$prior_dist_for_theta_t_shape <- array(prior_theta$theta_t_shape_dist)
+            standata$prior_scale_for_theta_t_shape <- array(prior_theta$theta_t_shape_scale)
+            standata$prior_mean_for_theta_t_shape <- array(prior_theta$theta_t_shape_mean)
+            standata$prior_df_for_theta_t_shape <- array(prior_theta$theta_t_shape_df)
             #null entries
             standata$prior_mean_for_theta_s <- double()
             standata$prior_dist_for_theta_s <- double()
             standata$prior_scale_for_theta_s <- double()
             standata$prior_df_for_theta_s <- double()
+            standata$prior_mean_for_theta_shape_s <- double()
+            standata$prior_dist_for_theta_shape_s <- double()
+            standata$prior_scale_for_theta_shape_s <- double()
+            standata$prior_df_for_theta_shape_s <- double()
         }
     } else{
         if(stap_data$Q_st>0){
-            standata$prior_dist_for_theta_s <- array(rep(prior_dist_for_theta,stap_data$Q_st+stap_data$Q_s))
+            standata$prior_dist_for_theta_s <- array(prior_dist_for_theta)
             standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
             standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
             standata$prior_mean_for_theta_s <-  array(prior_mean_for_theta)
-            standata$prior_dist_for_theta_t <- array(rep(prior_dist_for_theta,stap_data$Q_st+stap_data$Q_s))
+            standata$prior_dist_for_theta_t <- array(as.integer(prior_dist_for_theta))
             standata$prior_scale_for_theta_t <- array(prior_scale_for_theta)
             standata$prior_mean_for_theta_t <- array(prior_mean_for_theta)
             standata$prior_df_for_theta_t <- array(prior_df_for_theta)
@@ -336,7 +362,7 @@ stapdnd_glm.fit <- function(y, z, w,
             standata$prior_scale_for_theta_s <- double()
             standata$prior_df_for_theta_s <- double()
         } else if(stap_data$Q_s>0){
-            standata$prior_dist_for_theta_s <- array(as.integer(prior_dist_for_theta))
+            standata$prior_dist_for_theta_s <- array(rep(as.integer(prior_dist_for_theta),stap_data$Q_s))
             standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
             standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
             standata$prior_mean_for_theta_s <-  array(prior_mean_for_theta)
@@ -345,6 +371,30 @@ stapdnd_glm.fit <- function(y, z, w,
             standata$prior_scale_for_theta_t <- double()
             standata$prior_df_for_theta_t <- double()
             standata$prior_mean_for_theta_t <- double()
+        }
+        if(num_t_wei(stap_data)>0){
+            standata$prior_dist_for_theta_t_shape <- array(prior_dist_for_theta)
+            standata$prior_scale_for_theta_t_shape <- array(prior_scale_for_theta)
+            standata$prior_mean_for_theta_t_shape <- array(prior_mean_for_theta)
+            standata$prior_df_for_theta_t_shape <- array(prior_df_for_theta)
+        }
+        else{
+            standata$prior_dist_for_theta_t_shape <- double()
+            standata$prior_scale_for_theta_t_shape <- double()
+            standata$prior_mean_for_theta_t_shape <- double()
+            standata$prior_df_for_theta_t_shape <- double()
+        }
+        if(num_s_wei(stap_data)>0){
+            standata$prior_mean_for_theta_s_shape <- array(prior_mean_for_theta)
+            standata$prior_dist_for_theta_s_shape <- array(prior_dist_for_theta)
+            standata$prior_scale_for_theta_s_shape <- array(prior_scale_for_theta)
+            standata$prior_df_for_theta_s_shape <- array(prior_df_for_theta_s)
+            
+        }else{
+            standata$prior_mean_for_theta_s_shape <- double()
+            standata$prior_dist_for_theta_s_shape <- double()
+            standata$prior_scale_for_theta_s_shape <- double()
+            standata$prior_df_for_theta_s_shape <- double()
         }
     }
     
@@ -532,7 +582,11 @@ stapdnd_glm.fit <- function(y, z, w,
               "X",
               "mean_PPD"
               )
-    
+	if(vb){
+		stapfit <- rstan::vb(stanfit,data=standata,
+							 pars=pars,
+							 algorithm="meanfield",grad_samples = 10)
+	}else{
     sampling_args <- set_sampling_args(
         object = stanfit,
         prior = prior,
@@ -545,6 +599,7 @@ stapdnd_glm.fit <- function(y, z, w,
     stapfit <- do.call(sampling, sampling_args)
     check <- try(check_stanfit(stapfit))
     if (!isTRUE(check)) return(standata)
+	}
     if(standata$len_theta_L){
         thetas_ref <- rstan::extract(stapfit, pars = "theta_L", inc_warmup = FALSE,
                                      permuted = FALSE)

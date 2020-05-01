@@ -53,21 +53,21 @@
       if(prior_dist_for_theta_s[cnt_s] == 1){
         target += normal_lpdf(theta_s[cnt_s]|prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
         if(num_s_wei > 0 && weight_mat[q_ix,1] > 4){
-            target += normal_lpdf(shape_s[cnt_shape_s] | prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
+            target += normal_lpdf(shape_s[cnt_shape_s] | prior_mean_for_theta_s_shape[cnt_s], prior_scale_for_theta_s_shape[cnt_s]);
             cnt_shape_s += 1;
         }
     }
       else if(prior_dist_for_theta_s[cnt_s] == 8){
         target += lognormal_lpdf(theta_s[cnt_s]|prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
         if(num_s_wei > 0 && weight_mat[q_ix,1] > 4){
-            target += lognormal_lpdf(shape_s[cnt_shape_s] | prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
+            target += lognormal_lpdf(shape_s[cnt_shape_s] | prior_mean_for_theta_s_shape[cnt_s], prior_scale_for_theta_s_shape[cnt_s]);
             cnt_shape_s += 1;
         }
 	  }
       else if(prior_dist_for_theta_s[cnt_s] == 9){
         target += gamma_lpdf(theta_s[cnt_s]|prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
         if(num_s_wei > 0 && weight_mat[q_ix,1] > 4){
-            target += gamma_lpdf(shape_s[cnt_shape_s] | prior_mean_for_theta_s[cnt_s], prior_scale_for_theta_s[cnt_s]);
+            target += gamma_lpdf(shape_s[cnt_shape_s] | prior_mean_for_theta_s_shape[cnt_s], prior_scale_for_theta_s_shape[cnt_s]);
             cnt_shape_s += 1;
         }
     }
@@ -77,21 +77,21 @@
         if(prior_dist_for_theta_t[cnt_t] == 1){
             target += normal_lpdf(theta_t[cnt_t]|prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
             if(num_t_wei > 0 && weight_mat[q_ix,2] == 6){
-                target += normal_lpdf(shape_s[cnt_shape_t] | prior_mean_for_theta_s[cnt_t], prior_scale_for_theta_t[cnt_t]);
+                target += normal_lpdf(shape_t[cnt_shape_t] | prior_mean_for_theta_t_shape[cnt_t], prior_scale_for_theta_t_shape[cnt_t]);
                 cnt_shape_t += 1;
             }
         }
         if(prior_dist_for_theta_t[cnt_t] == 8){
             target += lognormal_lpdf(theta_t[cnt_t]|prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
             if(num_t_wei > 0 && weight_mat[q_ix,2] == 6){
-                target += lognormal_lpdf(shape_t[cnt_shape_t] | prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
+                target += lognormal_lpdf(shape_t[cnt_shape_t] | prior_mean_for_theta_t_shape[cnt_t], prior_scale_for_theta_t_shape[cnt_t]);
                 cnt_shape_t += 1;
             }
         }
         if(prior_dist_for_theta_t[cnt_t] == 9){
             target += gamma_lpdf(theta_t[cnt_t]|prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
             if(num_t_wei > 0 && weight_mat[q_ix,2] == 6){
-                target += gamma_lpdf(shape_t[cnt_shape_t] | prior_mean_for_theta_t[cnt_t], prior_scale_for_theta_t[cnt_t]);
+                target += gamma_lpdf(shape_t[cnt_shape_t] | prior_mean_for_theta_t_shape[cnt_t], prior_scale_for_theta_t_shape[cnt_t]);
                 cnt_shape_t += 1;
             }
         }

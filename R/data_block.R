@@ -49,7 +49,7 @@ center_z <- function(z) {
 # @param default_scale Default value to use to scale if not specified by user
 # @param link String naming the link function.
 # @param ok_dists A list of admissible distributions.
-handle_glm_prior <- function(prior, nvars, default_scale, link,
+handle_glm_prior <- function(prior, nvars, default_scale = 1, link,
                              ok_dists = nlist("normal", student_t = "t", 
                                               "cauchy", "hs", "hs_plus", 
                                               "laplace", "lasso", "product_normal")) {
@@ -128,11 +128,11 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
 # @param nvars An integer indicating the number of variables
 # @param link String naming the link function.
 # @param ok_dists A list of admissible distributions.
-handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_names){
+handle_theta_stap_prior <- function(prior,ok_dists,stap_code,weight_mat,default_scale = 1,coef_names){
 
 
         if(!length(prior))
-            stop("We highly reccomend against using a flat prior",
+            stop("We highly reccomend AGAINST using a flat prior",
                  "on the spatial-temporal scales, as it will make
                  sampling take a very long time and could possibly lead to an unidentified posterior")
 
@@ -150,62 +150,128 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_
         theta_t_mean <- rep(0,sum(stap_code==1) + sum(stap_code==2))
         theta_s_df <- rep(0,sum(stap_code==0) + sum(stap_code==2))
         theta_t_df <- rep(0,sum(stap_code==1) + sum(stap_code==2))
+        theta_s_shape_dist <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_s_shape_scale <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_s_shape_mean <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_s_shape_df <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_shape_dist <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_shape_scale <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_shape_mean <- rep(0,sum(stap_code==0) + sum(stap_code==2))
+        theta_t_shape_df <- rep(0,sum(stap_code==0) + sum(stap_code==2))
         prior_theta <- list()
+
+		check_weibull_prior_dist <- function(prior_dist_name){
+			if(is.null(prior_dist_name))
+				stop("For weibull functions where a prior is specified, a prior must be included for both the 
+					 'theta'(scale) and 'shape' components in the prior list")
+		}
+
+		get_prior_dist_number <- function(prior_dist_name, ok_dists){
+			if(!prior_dist_name %in% unlist(ok_dists)){
+				stop("The prior distribution should be one of",
+					 paste(names(ok_dists), collapse = ", "))
+			}else if(prior_dist_name %in% c("normal", "t", "cauchy", "laplace", "lasso", 
+				   "product_normal", 'lognormal',"gamma")) {
+				if (prior_dist_name == "normal") prior_dist <- 1L
+				else if (prior_dist_name == "t") prior_dist <- 2L
+				else if (prior_dist_name == "laplace") prior_dist <- 5L
+				else if (prior_dist_name == "lasso") prior_dist <- 6L
+				else if (prior_dist_name == "product_normal") prior_dist <- 7L
+				else if(prior_dist_name == 'lognormal') prior_dist <- 8L
+				else if(prior_dist_name == 'gamma') prior_dist <- 9L
+			}
+			return(prior_dist)
+		}
 
 
         for(i in 1:length(prior)){
             if(stap_code[i] %in% c(0,2)){
-                prior_dist_name <- prior[[i]]$spatial$dist
-                if(!prior_dist_name %in% unlist(ok_dists)){
-                    stop("The prior distribution should be one of",
-                         paste(names(ok_dists), collapse = ", "))
-                    
-              } else if (prior_dist_name %in% 
-                         c("normal", "t", "cauchy", "laplace", "lasso", 
-                           "product_normal", 'lognormal',"gamma")) {
-                if (prior_dist_name == "normal") prior_dist <- 1L
-                else if (prior_dist_name == "t") prior_dist <- 2L
-                else if (prior_dist_name == "laplace") prior_dist <- 5L
-                else if (prior_dist_name == "lasso") prior_dist <- 6L
-                else if (prior_dist_name == "product_normal") prior_dist <- 7L
-                else if(prior_dist_name == 'lognormal') prior_dist <- 8L
-                else if(prior_dist_name == 'gamma') prior_dist <- 9L
-                theta_s_dist[i] <- prior_dist
-              }
-                theta_s_scale[i] <- if(is.null(prior[[i]]$spatial$scale)) default_scale else prior[[i]]$spatial$scale
-                theta_s_mean[i] <- if(is.na(prior[[i]]$spatial$location)) 0 else prior[[i]]$spatial$location
-                theta_s_df[i] <- if(is.na(prior[[i]]$spatial$df)) 0 else prior[[i]]$spatial$df
-				if(theta_s_dist[i] == 9){
-					theta_s_scale[i] <- prior[[i]]$spatial$shape
-					theta_s_mean[i] <- prior[[i]]$spatial$rate
+				if(weight_mat[i,1] == 5){
+					prior_dist_name <- prior[[i]]$spatial$theta$dist
+					check_weibull_prior_dist(prior_dist_name)
+					theta_s_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists)
+					if(theta_s_dist[i] == 9){
+					    theta_s_scale[i] <- prior[[i]]$spatial$theta$shape
+					    theta_s_mean[i] <- prior[[i]]$spatial$theta$rate
+					    theta_s_df[i] <- 0
+					}
+					else{
+    					theta_s_scale[i] <- if(is.na(prior[[i]]$spatial$theta$scale)) default_scale else prior[[i]]$spatial$theta$scale
+    					theta_s_mean[i] <- if(is.na(prior[[i]]$spatial$theta$location)) 0 else prior[[i]]$spatial$theta$location
+    					theta_s_df[i] <- if(is.na(prior[[i]]$spatial$theta$df)) 0 else prior[[i]]$spatial$theta$df
+					}
+					
+					prior_dist_name <- prior[[i]]$spatial$shape$dist
+					check_weibull_prior_dist(prior_dist_name)
+					theta_s_shape_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists) 
+					if(theta_s_shape_dist[i] == 9){
+					    theta_s_shape_scale[i] <- prior[[i]]$spatial$shape$shape
+					    theta_s_shape_mean[i] <- prior[[i]]$spatial$shape$rate
+					    theta_s_shape_df[i] <- 0
+					}
+					else{
+					    theta_s_shape_scale[i] <- if(is.na(prior[[i]]$spatial$shape$scale)) default_scale else prior[[i]]$spatial$shape$scale
+					    theta_s_shape_mean[i] <- if(is.na(prior[[i]]$spatial$shape$location)) 0 else prior[[i]]$spatial$shape$location
+					    theta_s_shape_df[i] <- if(is.na(prior[[i]]$spatial$shape$df)) 0 else prior[[i]]$spatial$shape$df
+					}
+				}else{
+				    prior_dist_name <- prior[[i]]$spatial$dist
+				    prior_dist <- get_prior_dist_number(prior_dist_name,ok_dists)
+				    if(theta_s_dist[i] == 9){
+				        theta_s_scale[i] <- prior[[i]]$spatial$shape
+				        theta_s_mean[i] <- prior[[i]]$spatial$rate
+				        theta_s-df[i] <- 0
+				    }
+				    else{
+				        theta_s_scale[i] <- if(is.na(prior[[i]]$spatial$scale)) default_scale else prior[[i]]$spatial$scale
+				        theta_s_mean[i] <- if(is.na(prior[[i]]$spatial$location)) 0 else prior[[i]]$spatial$location
+				        theta_s_df[i] <- if(is.na(prior[[i]]$spatial$df)) 0 else prior[[i]]$spatial$df
+				    }
 				}
                } 
             if(stap_code[i] %in% c(1,2)){
-                prior_dist_name <- prior[[i]]$temporal$dist
-                if(!prior_dist_name %in% unlist(ok_dists)){
-                    stop("The prior distribution should be one of",
-                         paste(names(ok_dists), collapse = ", "))
-                    
-                } else if (prior_dist_name %in% 
-                           c("normal", "t", "cauchy", "laplace", "lasso", 
-                             "product_normal", 'lognormal',"gamma")) {
-                    if (prior_dist_name == "normal") prior_dist <- 1L
-                    else if (prior_dist_name == "t") prior_dist <- 2L
-                    else if (prior_dist_name == "laplace") prior_dist <- 5L
-                    else if (prior_dist_name == "lasso") prior_dist <- 6L
-                    else if (prior_dist_name == "product_normal") prior_dist <- 7L
-                    else if(prior_dist_name == 'lognormal') prior_dist <- 8L
-					else if(prior_dist_name == 'gamma') prior_dist <- 9L
-                    theta_t_dist[i] <- prior_dist
-                }
-                theta_t_scale[i] <- if(is.null(prior[[i]]$temporal$scale)) default_scale else prior[[i]]$temporal$scale
-                theta_t_mean[i] <- if(is.na(prior[[i]]$temporal$location)) 0 else prior[[i]]$temporal$location
-                theta_t_df[i] <- if(is.na(prior[[i]]$temporal$df)) 0 else prior[[i]]$temporal$df
-				if(theta_t_dist[i] == 9){
-					theta_t_scale[i] <- prior[[i]]$spatial$shape
-					theta_t_mean[i] <- prior[[i]]$spatial$rate
+				if(weight_mat[i,2] == 6){
+					prior_dist_name <- prior[[i]]$temporal$theta$dist
+					check_weibull_prior_dist(prior_dist_name)
+					theta_t_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists)
+					if(theta_t_dist[i] == 9){
+					    theta_t_scale[i] <- prior[[i]]$temporal$theta$shape
+					    theta_t_mean[i] <- prior[[i]]$temporal$theta$rate
+					    theta_t-df[i] <- 0
+					}else{
+					    theta_t_scale[i] <- if(is.na(prior[[i]]$temporal$theta$scale)) default_scale else prior[[i]]$temporal$theta$scale
+					    theta_t_mean[i] <- if(is.na(prior[[i]]$temporal$theta$location)) 0 else prior[[i]]$temporal$theta$location
+					    theta_t_df[i] <- if(is.na(prior[[i]]$temporal$theta$df)) 0 else prior[[i]]$temporal$theta$df
+					}
+					
+					prior_dist_name <- prior[[i]]$temporal$shape$dist
+					check_weibull_prior_dist(prior_dist_name)
+					theta_t_shape_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists) 
+					if(theta_t_shape_dist[i] == 9){
+					    theta_t_shape_scale[i] <- prior[[i]]$temporal$theta$shape
+					    theta_t_shape_mean[i] <- prior[[i]]$temporal$theta$rate
+					    theta_t_shape_df[i] <- 0
+					}else{
+					    theta_t_shape_scale[i] <- if(is.na(prior[[i]]$temporal$shape$scale)) default_scale else prior[[i]]$temporal$shape$scale
+					    theta_t_shape_mean[i] <- if(is.na(prior[[i]]$temporal$shape$location)) 0 else prior[[i]]$temporal$shape$location
+					    theta_t_shape_df[i] <- if(is.na(prior[[i]]$temporal$shape$df)) 0 else prior[[i]]$temporal$shape$df
+					}
+				}else{
+				    
+				    prior_dist_name <- prior[[i]]$temporal$dist
+				    theta_t_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists)
+				    if(theta_t_dist[i] == 9){
+				        theta_t_scale[i] <- prior[[i]]$temporal$shape
+				        theta_t_mean[i] <- prior[[i]]$temporal$rate
+				        theta_t_df[i] <- 0
+				    }
+				    else{
+				        theta_t_scale[i] <- if(is.na(prior[[i]]$temporal$scale)) default_scale else prior[[i]]$temporal$scale
+				        theta_t_mean[i] <- if(is.na(prior[[i]]$temporal$location)) 0 else prior[[i]]$temporal$location
+				        theta_t_df[i] <- if(is.na(prior[[i]]$temporal$df)) 0 else prior[[i]]$temporal$df
+				    }
 				}
-                }
+			}
             }
         if(any(stap_code %in% c(0,2))){
             prior_theta$theta_s_dist <- theta_s_dist
@@ -219,6 +285,17 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_
             prior_theta$theta_t_mean <- theta_t_mean
             prior_theta$theta_t_df <- theta_t_df
         }
+		if(any(weight_mat %in% c(5,6))){
+			prior_theta$theta_s_shape_dist <- theta_s_shape_dist
+			prior_theta$theta_s_shape_scale <- theta_s_shape_scale
+			prior_theta$theta_s_shape_mean <- theta_s_shape_mean
+			prior_theta$theta_s_shape_df <- theta_s_shape_df
+			prior_theta$theta_t_shape_dist <- theta_t_shape_dist
+			prior_theta$theta_t_shape_scale <- theta_t_shape_scale
+			prior_theta$theta_t_shape_mean <- theta_t_shape_mean
+			prior_theta$theta_t_shape_df <- theta_t_shape_df
+		}
+
         return(prior_theta)
 }
 
@@ -230,16 +307,16 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,default_scale,coef_
 check_theta_priors <- function(prior_list,stap_code,coef_names){
 
     if(any( !(names(prior_list) %in% coef_names))  | length(stap_code) != length(prior_list)  )
-        stop("if assigning any individual priors for spatial-temporal scales - ALL scales must be assigned an
+        stop("if assigning any individual priors for spatial-temporal parameters - ALL parameters must be assigned an
              appropriately named prior")
 
-    chck <- sapply(1:length(stap_code), function(x) switch(stap_code[x]+1, names(prior_list[[x]]) == "spatial",
-                                                  names(prior_list[[x]]) == "temporal",
-                                                  all(names(prior_list[[x]])==c("spatial","temporal"))))
+    chck <- sapply(1:length(stap_code), function(x) switch(stap_code[x]+1, 
+														   names(prior_list[[x]]) == "spatial",
+														  names(prior_list[[x]]) == "temporal",
+														  all(names(prior_list[[x]])==c("spatial","temporal"))))
     if(!all(chck==T))
         stop("if assigning any individual priors for spatial-temporal scales -
              ALL scales must be assigned a prior and named appropriately")
-
 
 }
 
