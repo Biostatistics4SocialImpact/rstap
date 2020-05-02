@@ -191,8 +191,8 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,weight_mat,default_
 					check_weibull_prior_dist(prior_dist_name)
 					theta_s_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists)
 					if(theta_s_dist[i] == 9){
-					    theta_s_scale[i] <- prior[[i]]$spatial$theta$shape
-					    theta_s_mean[i] <- prior[[i]]$spatial$theta$rate
+					    theta_s_mean[i] <- prior[[i]]$spatial$theta$shape
+					    theta_s_scale[i] <- prior[[i]]$spatial$theta$rate
 					    theta_s_df[i] <- 0
 					}
 					else{
@@ -205,8 +205,8 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,weight_mat,default_
 					check_weibull_prior_dist(prior_dist_name)
 					theta_s_shape_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists) 
 					if(theta_s_shape_dist[i] == 9){
-					    theta_s_shape_scale[i] <- prior[[i]]$spatial$shape$shape
-					    theta_s_shape_mean[i] <- prior[[i]]$spatial$shape$rate
+					    theta_s_shape_mean[i] <- prior[[i]]$spatial$shape$shape
+					    theta_s_shape_scale[i] <- prior[[i]]$spatial$shape$rate
 					    theta_s_shape_df[i] <- 0
 					}
 					else{
@@ -218,8 +218,8 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,weight_mat,default_
 				    prior_dist_name <- prior[[i]]$spatial$dist
 				    prior_dist <- get_prior_dist_number(prior_dist_name,ok_dists)
 				    if(theta_s_dist[i] == 9){
-				        theta_s_scale[i] <- prior[[i]]$spatial$shape
-				        theta_s_mean[i] <- prior[[i]]$spatial$rate
+				        theta_s_mean[i] <- prior[[i]]$spatial$shape
+				        theta_s_scale[i] <- prior[[i]]$spatial$rate
 				        theta_s-df[i] <- 0
 				    }
 				    else{
@@ -257,12 +257,11 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,weight_mat,default_
 					    theta_t_shape_df[i] <- if(is.na(prior[[i]]$temporal$shape$df)) 0 else prior[[i]]$temporal$shape$df
 					}
 				}else{
-				    
 				    prior_dist_name <- prior[[i]]$temporal$dist
 				    theta_t_dist[i] <- get_prior_dist_number(prior_dist_name,ok_dists)
 				    if(theta_t_dist[i] == 9){
-				        theta_t_scale[i] <- prior[[i]]$temporal$shape
-				        theta_t_mean[i] <- prior[[i]]$temporal$rate
+				        theta_t_mean[i] <- prior[[i]]$temporal$shape
+				        theta_t_scale[i] <- prior[[i]]$temporal$rate
 				        theta_t_df[i] <- 0
 				    }
 				    else{

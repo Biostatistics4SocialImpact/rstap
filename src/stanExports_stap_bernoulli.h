@@ -71,13 +71,13 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(828, 103, "restart", "model_stap_bernoulli");
     reader.add_event(847, 122, "include", "/model/priors_glm.stan");
     reader.add_event(847, 0, "start", "/model/priors_glm.stan");
-    reader.add_event(949, 102, "end", "/model/priors_glm.stan");
-    reader.add_event(949, 123, "restart", "model_stap_bernoulli");
-    reader.add_event(963, 137, "include", "/model/make_eta_bern.stan");
-    reader.add_event(963, 0, "start", "/model/make_eta_bern.stan");
-    reader.add_event(990, 27, "end", "/model/make_eta_bern.stan");
-    reader.add_event(990, 138, "restart", "model_stap_bernoulli");
-    reader.add_event(1015, 161, "end", "model_stap_bernoulli");
+    reader.add_event(948, 101, "end", "/model/priors_glm.stan");
+    reader.add_event(948, 123, "restart", "model_stap_bernoulli");
+    reader.add_event(962, 137, "include", "/model/make_eta_bern.stan");
+    reader.add_event(962, 0, "start", "/model/make_eta_bern.stan");
+    reader.add_event(989, 27, "end", "/model/make_eta_bern.stan");
+    reader.add_event(989, 138, "restart", "model_stap_bernoulli");
+    reader.add_event(1014, 161, "end", "model_stap_bernoulli");
     return reader;
 }
 template <typename T0__>
@@ -3771,83 +3771,73 @@ public:
                     if (as_bool(logical_eq(get_base1(prior_dist_for_theta_s, cnt_s, "prior_dist_for_theta_s", 1), 1))) {
                         current_statement_begin__ = 901;
                         lp_accum__.add(normal_log(get_base1(theta_s, cnt_s, "theta_s", 1), get_base1(prior_mean_for_theta_s, cnt_s, "prior_mean_for_theta_s", 1), get_base1(prior_scale_for_theta_s, cnt_s, "prior_scale_for_theta_s", 1)));
-                        current_statement_begin__ = 902;
-                        if (as_bool((primitive_value(logical_gt(num_s_wei, 0)) && primitive_value(logical_gt(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 1, "weight_mat", 2), 4))))) {
-                            current_statement_begin__ = 903;
-                            lp_accum__.add(normal_log(get_base1(shape_s, cnt_shape_s, "shape_s", 1), get_base1(prior_mean_for_theta_s_shape, cnt_s, "prior_mean_for_theta_s_shape", 1), get_base1(prior_scale_for_theta_s_shape, cnt_s, "prior_scale_for_theta_s_shape", 1)));
-                            current_statement_begin__ = 904;
-                            stan::math::assign(cnt_shape_s, (cnt_shape_s + 1));
-                        }
                     } else if (as_bool(logical_eq(get_base1(prior_dist_for_theta_s, cnt_s, "prior_dist_for_theta_s", 1), 8))) {
-                        current_statement_begin__ = 908;
+                        current_statement_begin__ = 904;
                         lp_accum__.add(lognormal_log(get_base1(theta_s, cnt_s, "theta_s", 1), get_base1(prior_mean_for_theta_s, cnt_s, "prior_mean_for_theta_s", 1), get_base1(prior_scale_for_theta_s, cnt_s, "prior_scale_for_theta_s", 1)));
-                        current_statement_begin__ = 909;
-                        if (as_bool((primitive_value(logical_gt(num_s_wei, 0)) && primitive_value(logical_gt(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 1, "weight_mat", 2), 4))))) {
-                            current_statement_begin__ = 910;
-                            lp_accum__.add(lognormal_log(get_base1(shape_s, cnt_shape_s, "shape_s", 1), get_base1(prior_mean_for_theta_s_shape, cnt_s, "prior_mean_for_theta_s_shape", 1), get_base1(prior_scale_for_theta_s_shape, cnt_s, "prior_scale_for_theta_s_shape", 1)));
-                            current_statement_begin__ = 911;
-                            stan::math::assign(cnt_shape_s, (cnt_shape_s + 1));
-                        }
                     } else if (as_bool(logical_eq(get_base1(prior_dist_for_theta_s, cnt_s, "prior_dist_for_theta_s", 1), 9))) {
-                        current_statement_begin__ = 915;
+                        current_statement_begin__ = 907;
                         lp_accum__.add(gamma_log(get_base1(theta_s, cnt_s, "theta_s", 1), get_base1(prior_mean_for_theta_s, cnt_s, "prior_mean_for_theta_s", 1), get_base1(prior_scale_for_theta_s, cnt_s, "prior_scale_for_theta_s", 1)));
-                        current_statement_begin__ = 916;
-                        if (as_bool((primitive_value(logical_gt(num_s_wei, 0)) && primitive_value(logical_gt(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 1, "weight_mat", 2), 4))))) {
-                            current_statement_begin__ = 917;
-                            lp_accum__.add(gamma_log(get_base1(shape_s, cnt_shape_s, "shape_s", 1), get_base1(prior_mean_for_theta_s_shape, cnt_s, "prior_mean_for_theta_s_shape", 1), get_base1(prior_scale_for_theta_s_shape, cnt_s, "prior_scale_for_theta_s_shape", 1)));
-                            current_statement_begin__ = 918;
-                            stan::math::assign(cnt_shape_s, (cnt_shape_s + 1));
-                        }
                     }
-                    current_statement_begin__ = 921;
+                    current_statement_begin__ = 910;
+                    if (as_bool((primitive_value(logical_gt(num_s_wei, 0)) && primitive_value(logical_gt(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 1, "weight_mat", 2), 4))))) {
+                        current_statement_begin__ = 911;
+                        if (as_bool(logical_eq(get_base1(prior_dist_for_theta_s_shape, cnt_shape_s, "prior_dist_for_theta_s_shape", 1), 1))) {
+                            current_statement_begin__ = 912;
+                            lp_accum__.add(normal_log(get_base1(shape_s, cnt_shape_s, "shape_s", 1), get_base1(prior_mean_for_theta_s_shape, cnt_shape_s, "prior_mean_for_theta_s_shape", 1), get_base1(prior_scale_for_theta_s_shape, cnt_shape_s, "prior_scale_for_theta_s_shape", 1)));
+                        } else if (as_bool(logical_eq(get_base1(prior_dist_for_theta_s_shape, cnt_shape_s, "prior_dist_for_theta_s_shape", 1), 8))) {
+                            current_statement_begin__ = 915;
+                            lp_accum__.add(lognormal_log(get_base1(shape_s, cnt_shape_s, "shape_s", 1), get_base1(prior_mean_for_theta_s_shape, cnt_shape_s, "prior_mean_for_theta_s_shape", 1), get_base1(prior_scale_for_theta_s_shape, cnt_shape_s, "prior_scale_for_theta_s_shape", 1)));
+                        } else if (as_bool(logical_eq(get_base1(prior_dist_for_theta_s_shape, cnt_shape_s, "prior_dist_for_theta_s_shape", 1), 9))) {
+                            current_statement_begin__ = 918;
+                            lp_accum__.add(gamma_log(get_base1(shape_s, cnt_shape_s, "shape_s", 1), get_base1(prior_mean_for_theta_s_shape, cnt_shape_s, "prior_mean_for_theta_s_shape", 1), get_base1(prior_scale_for_theta_s_shape, cnt_shape_s, "prior_scale_for_theta_s_shape", 1)));
+                        }
+                        current_statement_begin__ = 920;
+                        stan::math::assign(cnt_shape_s, (cnt_shape_s + 1));
+                    }
+                    current_statement_begin__ = 922;
                     stan::math::assign(cnt_s, (cnt_s + 1));
                 }
-                current_statement_begin__ = 923;
+                current_statement_begin__ = 924;
                 if (as_bool((primitive_value(logical_eq(get_base1(stap_code, q_ix, "stap_code", 1), 1)) || primitive_value(logical_eq(get_base1(stap_code, q_ix, "stap_code", 1), 2))))) {
-                    current_statement_begin__ = 924;
+                    current_statement_begin__ = 925;
                     if (as_bool(logical_eq(get_base1(prior_dist_for_theta_t, cnt_t, "prior_dist_for_theta_t", 1), 1))) {
-                        current_statement_begin__ = 925;
-                        lp_accum__.add(normal_log(get_base1(theta_t, cnt_t, "theta_t", 1), get_base1(prior_mean_for_theta_t, cnt_t, "prior_mean_for_theta_t", 1), get_base1(prior_scale_for_theta_t, cnt_t, "prior_scale_for_theta_t", 1)));
                         current_statement_begin__ = 926;
-                        if (as_bool((primitive_value(logical_gt(num_t_wei, 0)) && primitive_value(logical_eq(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 2, "weight_mat", 2), 6))))) {
-                            current_statement_begin__ = 927;
-                            lp_accum__.add(normal_log(get_base1(shape_t, cnt_shape_t, "shape_t", 1), get_base1(prior_mean_for_theta_t_shape, cnt_t, "prior_mean_for_theta_t_shape", 1), get_base1(prior_scale_for_theta_t_shape, cnt_t, "prior_scale_for_theta_t_shape", 1)));
-                            current_statement_begin__ = 928;
-                            stan::math::assign(cnt_shape_t, (cnt_shape_t + 1));
-                        }
+                        lp_accum__.add(normal_log(get_base1(theta_t, cnt_t, "theta_t", 1), get_base1(prior_mean_for_theta_t, cnt_t, "prior_mean_for_theta_t", 1), get_base1(prior_scale_for_theta_t, cnt_t, "prior_scale_for_theta_t", 1)));
+                    }
+                    current_statement_begin__ = 928;
+                    if (as_bool(logical_eq(get_base1(prior_dist_for_theta_t, cnt_t, "prior_dist_for_theta_t", 1), 8))) {
+                        current_statement_begin__ = 929;
+                        lp_accum__.add(lognormal_log(get_base1(theta_t, cnt_t, "theta_t", 1), get_base1(prior_mean_for_theta_t, cnt_t, "prior_mean_for_theta_t", 1), get_base1(prior_scale_for_theta_t, cnt_t, "prior_scale_for_theta_t", 1)));
                     }
                     current_statement_begin__ = 931;
-                    if (as_bool(logical_eq(get_base1(prior_dist_for_theta_t, cnt_t, "prior_dist_for_theta_t", 1), 8))) {
-                        current_statement_begin__ = 932;
-                        lp_accum__.add(lognormal_log(get_base1(theta_t, cnt_t, "theta_t", 1), get_base1(prior_mean_for_theta_t, cnt_t, "prior_mean_for_theta_t", 1), get_base1(prior_scale_for_theta_t, cnt_t, "prior_scale_for_theta_t", 1)));
-                        current_statement_begin__ = 933;
-                        if (as_bool((primitive_value(logical_gt(num_t_wei, 0)) && primitive_value(logical_eq(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 2, "weight_mat", 2), 6))))) {
-                            current_statement_begin__ = 934;
-                            lp_accum__.add(lognormal_log(get_base1(shape_t, cnt_shape_t, "shape_t", 1), get_base1(prior_mean_for_theta_t_shape, cnt_t, "prior_mean_for_theta_t_shape", 1), get_base1(prior_scale_for_theta_t_shape, cnt_t, "prior_scale_for_theta_t_shape", 1)));
-                            current_statement_begin__ = 935;
-                            stan::math::assign(cnt_shape_t, (cnt_shape_t + 1));
-                        }
-                    }
-                    current_statement_begin__ = 938;
                     if (as_bool(logical_eq(get_base1(prior_dist_for_theta_t, cnt_t, "prior_dist_for_theta_t", 1), 9))) {
-                        current_statement_begin__ = 939;
+                        current_statement_begin__ = 932;
                         lp_accum__.add(gamma_log(get_base1(theta_t, cnt_t, "theta_t", 1), get_base1(prior_mean_for_theta_t, cnt_t, "prior_mean_for_theta_t", 1), get_base1(prior_scale_for_theta_t, cnt_t, "prior_scale_for_theta_t", 1)));
-                        current_statement_begin__ = 940;
-                        if (as_bool((primitive_value(logical_gt(num_t_wei, 0)) && primitive_value(logical_eq(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 2, "weight_mat", 2), 6))))) {
-                            current_statement_begin__ = 941;
-                            lp_accum__.add(gamma_log(get_base1(shape_t, cnt_shape_t, "shape_t", 1), get_base1(prior_mean_for_theta_t_shape, cnt_t, "prior_mean_for_theta_t_shape", 1), get_base1(prior_scale_for_theta_t_shape, cnt_t, "prior_scale_for_theta_t_shape", 1)));
-                            current_statement_begin__ = 942;
-                            stan::math::assign(cnt_shape_t, (cnt_shape_t + 1));
-                        }
                     }
-                    current_statement_begin__ = 945;
+                    current_statement_begin__ = 934;
+                    if (as_bool((primitive_value(logical_gt(num_t_wei, 0)) && primitive_value(logical_eq(get_base1(get_base1(weight_mat, q_ix, "weight_mat", 1), 2, "weight_mat", 2), 6))))) {
+                        current_statement_begin__ = 935;
+                        if (as_bool(logical_eq(get_base1(prior_dist_for_theta_t_shape, cnt_shape_t, "prior_dist_for_theta_t_shape", 1), 1))) {
+                            current_statement_begin__ = 936;
+                            lp_accum__.add(normal_log(get_base1(shape_t, cnt_shape_t, "shape_t", 1), get_base1(prior_mean_for_theta_t_shape, cnt_shape_t, "prior_mean_for_theta_t_shape", 1), get_base1(prior_scale_for_theta_t_shape, cnt_shape_t, "prior_scale_for_theta_t_shape", 1)));
+                        } else if (as_bool(logical_eq(get_base1(prior_dist_for_theta_t_shape, cnt_shape_t, "prior_dist_for_theta_t_shape", 1), 8))) {
+                            current_statement_begin__ = 938;
+                            lp_accum__.add(lognormal_log(get_base1(shape_t, cnt_shape_t, "shape_t", 1), get_base1(prior_mean_for_theta_t_shape, cnt_shape_t, "prior_mean_for_theta_t_shape", 1), get_base1(prior_scale_for_theta_t_shape, cnt_shape_t, "prior_scale_for_theta_t_shape", 1)));
+                        } else if (as_bool(logical_eq(get_base1(prior_dist_for_theta_t_shape, cnt_shape_t, "prior_dist_for_theta_t_shape", 1), 9))) {
+                            current_statement_begin__ = 940;
+                            lp_accum__.add(gamma_log(get_base1(shape_t, cnt_shape_t, "shape_t", 1), get_base1(prior_mean_for_theta_t_shape, cnt_shape_t, "prior_mean_for_theta_t_shape", 1), get_base1(prior_scale_for_theta_t_shape, cnt_shape_t, "prior_scale_for_theta_t_shape", 1)));
+                        }
+                        current_statement_begin__ = 942;
+                        stan::math::assign(cnt_shape_t, (cnt_shape_t + 1));
+                    }
+                    current_statement_begin__ = 944;
                     stan::math::assign(cnt_t, (cnt_t + 1));
                 }
             }
             }
-            current_statement_begin__ = 950;
+            current_statement_begin__ = 949;
             if (as_bool(logical_gt(t, 0))) {
-                current_statement_begin__ = 950;
+                current_statement_begin__ = 949;
                 decov_lp(z_b, z_T, rho, zeta, tau, regularization, del, shape, t, p, lp__, lp_accum__, pstream__);
             }
             }
@@ -4423,121 +4413,121 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 954;
+            current_statement_begin__ = 953;
             validate_non_negative_index("alpha", "has_intercept", has_intercept);
             std::vector<double> alpha(has_intercept, double(0));
             stan::math::initialize(alpha, DUMMY_VAR__);
             stan::math::fill(alpha, DUMMY_VAR__);
-            current_statement_begin__ = 955;
+            current_statement_begin__ = 954;
             validate_non_negative_index("adj_beta", "Q", Q);
             Eigen::Matrix<double, Eigen::Dynamic, 1> adj_beta(Q);
             stan::math::initialize(adj_beta, DUMMY_VAR__);
             stan::math::fill(adj_beta, DUMMY_VAR__);
-            current_statement_begin__ = 956;
+            current_statement_begin__ = 955;
             double mean_PPD;
             (void) mean_PPD;  // dummy to suppress unused var warning
             stan::math::initialize(mean_PPD, DUMMY_VAR__);
             stan::math::fill(mean_PPD, DUMMY_VAR__);
             stan::math::assign(mean_PPD,0);
             // generated quantities statements
-            current_statement_begin__ = 957;
+            current_statement_begin__ = 956;
             if (as_bool(logical_eq(has_intercept, 1))) {
-                current_statement_begin__ = 958;
+                current_statement_begin__ = 957;
                 stan::model::assign(alpha, 
                             stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
                             ((get_base1(gamma, 1, "gamma", 1) - dot_product(zbar, delta)) - dot_product(colmeans(X, pstream__), elt_divide(beta, colsds(X, pstream__)))), 
                             "assigning variable alpha");
             }
             {
-            current_statement_begin__ = 961;
+            current_statement_begin__ = 960;
             validate_non_negative_index("pi0", "get_base1(N, 1, \"N\", 1)", get_base1(N, 1, "N", 1));
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> pi0(get_base1(N, 1, "N", 1));
             stan::math::initialize(pi0, DUMMY_VAR__);
             stan::math::fill(pi0, DUMMY_VAR__);
-            current_statement_begin__ = 962;
+            current_statement_begin__ = 961;
             validate_non_negative_index("pi1", "get_base1(N, 2, \"N\", 1)", get_base1(N, 2, "N", 1));
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> pi1(get_base1(N, 2, "N", 1));
             stan::math::initialize(pi1, DUMMY_VAR__);
             stan::math::fill(pi1, DUMMY_VAR__);
-            current_statement_begin__ = 965;
+            current_statement_begin__ = 964;
             validate_non_negative_index("eta0", "get_base1(N, 1, \"N\", 1)", get_base1(N, 1, "N", 1));
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta0(get_base1(N, 1, "N", 1));
             stan::math::initialize(eta0, DUMMY_VAR__);
             stan::math::fill(eta0, DUMMY_VAR__);
-            current_statement_begin__ = 966;
+            current_statement_begin__ = 965;
             validate_non_negative_index("eta1", "get_base1(N, 2, \"N\", 1)", get_base1(N, 2, "N", 1));
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta1(get_base1(N, 2, "N", 1));
             stan::math::initialize(eta1, DUMMY_VAR__);
             stan::math::fill(eta1, DUMMY_VAR__);
-            current_statement_begin__ = 967;
+            current_statement_begin__ = 966;
             stan::math::assign(eta0, rep_vector(0.0, get_base1(N, 1, "N", 1)));
-            current_statement_begin__ = 968;
+            current_statement_begin__ = 967;
             stan::math::assign(eta1, rep_vector(0.0, get_base1(N, 2, "N", 1)));
-            current_statement_begin__ = 970;
+            current_statement_begin__ = 969;
             if (as_bool(logical_eq(has_intercept, 0))) {
                 {
-                current_statement_begin__ = 971;
+                current_statement_begin__ = 970;
                 local_scalar_t__ tmp(DUMMY_VAR__);
                 (void) tmp;  // dummy to suppress unused var warning
                 stan::math::initialize(tmp, DUMMY_VAR__);
                 stan::math::fill(tmp, DUMMY_VAR__);
-                current_statement_begin__ = 972;
+                current_statement_begin__ = 971;
                 stan::math::assign(tmp, dot_product(zbar, delta));
-                current_statement_begin__ = 973;
+                current_statement_begin__ = 972;
                 stan::math::assign(eta0, add(eta0, tmp));
-                current_statement_begin__ = 974;
+                current_statement_begin__ = 973;
                 stan::math::assign(eta1, add(eta1, tmp));
                 }
             } else {
-                current_statement_begin__ = 976;
+                current_statement_begin__ = 975;
                 stan::math::assign(eta0, add(add(eta0, multiply(Z0, delta)), multiply(stan::model::rvalue(X_tilde, stan::model::cons_list(stan::model::index_multi(y_0), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "X_tilde"), beta)));
-                current_statement_begin__ = 977;
+                current_statement_begin__ = 976;
                 stan::math::assign(eta1, add(add(eta1, multiply(Z1, delta)), multiply(stan::model::rvalue(X_tilde, stan::model::cons_list(stan::model::index_multi(y_1), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "X_tilde"), beta)));
             }
-            current_statement_begin__ = 979;
+            current_statement_begin__ = 978;
             if (as_bool(logical_eq(has_offset, 1))) {
-                current_statement_begin__ = 980;
+                current_statement_begin__ = 979;
                 stan::math::assign(eta0, add(eta0, offset0));
-                current_statement_begin__ = 981;
+                current_statement_begin__ = 980;
                 stan::math::assign(eta1, add(eta1, offset1));
             }
-            current_statement_begin__ = 983;
+            current_statement_begin__ = 982;
             if (as_bool(special_case)) {
-                current_statement_begin__ = 983;
+                current_statement_begin__ = 982;
                 for (int i = 1; i <= t; ++i) {
-                    current_statement_begin__ = 984;
+                    current_statement_begin__ = 983;
                     stan::math::assign(eta0, add(eta0, stan::model::rvalue(b, stan::model::cons_list(stan::model::index_multi(get_base1(V0, i, "V0", 1)), stan::model::nil_index_list()), "b")));
-                    current_statement_begin__ = 985;
+                    current_statement_begin__ = 984;
                     stan::math::assign(eta1, add(eta1, stan::model::rvalue(b, stan::model::cons_list(stan::model::index_multi(get_base1(V1, i, "V1", 1)), stan::model::nil_index_list()), "b")));
                 }
             } else if (as_bool(logical_gt(t, 0))) {
-                current_statement_begin__ = 988;
+                current_statement_begin__ = 987;
                 stan::math::assign(eta0, add(eta0, csr_matrix_times_vector(get_base1(N, 1, "N", 1), q, w0, v0, u0, b)));
-                current_statement_begin__ = 989;
+                current_statement_begin__ = 988;
                 stan::math::assign(eta1, add(eta1, csr_matrix_times_vector(get_base1(N, 2, "N", 1), q, w1, v1, u1, b)));
             }
-            current_statement_begin__ = 991;
+            current_statement_begin__ = 990;
             if (as_bool(logical_eq(has_intercept, 1))) {
-                current_statement_begin__ = 992;
+                current_statement_begin__ = 991;
                 if (as_bool(logical_neq(link, 4))) {
-                    current_statement_begin__ = 993;
+                    current_statement_begin__ = 992;
                     stan::math::assign(eta0, add(get_base1(gamma, 1, "gamma", 1), eta0));
-                    current_statement_begin__ = 994;
+                    current_statement_begin__ = 993;
                     stan::math::assign(eta1, add(get_base1(gamma, 1, "gamma", 1), eta1));
                 } else {
                     {
-                    current_statement_begin__ = 997;
+                    current_statement_begin__ = 996;
                     local_scalar_t__ shift(DUMMY_VAR__);
                     (void) shift;  // dummy to suppress unused var warning
                     stan::math::initialize(shift, DUMMY_VAR__);
                     stan::math::fill(shift, DUMMY_VAR__);
-                    current_statement_begin__ = 998;
+                    current_statement_begin__ = 997;
                     stan::math::assign(shift, stan::math::fmax(max(eta0), max(eta1)));
-                    current_statement_begin__ = 999;
+                    current_statement_begin__ = 998;
                     stan::math::assign(eta0, subtract(add(get_base1(gamma, 1, "gamma", 1), eta0), shift));
-                    current_statement_begin__ = 1000;
+                    current_statement_begin__ = 999;
                     stan::math::assign(eta1, subtract(add(get_base1(gamma, 1, "gamma", 1), eta1), shift));
-                    current_statement_begin__ = 1001;
+                    current_statement_begin__ = 1000;
                     stan::model::assign(alpha, 
                                 stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
                                 (get_base1(alpha, 1, "alpha", 1) - shift), 
@@ -4545,37 +4535,37 @@ public:
                     }
                 }
             }
-            current_statement_begin__ = 1005;
+            current_statement_begin__ = 1004;
             stan::math::assign(pi0, linkinv_bern(eta0, link, pstream__));
-            current_statement_begin__ = 1006;
+            current_statement_begin__ = 1005;
             stan::math::assign(pi1, linkinv_bern(eta1, link, pstream__));
-            current_statement_begin__ = 1007;
+            current_statement_begin__ = 1006;
             for (int n = 1; n <= get_base1(N, 1, "N", 1); ++n) {
-                current_statement_begin__ = 1007;
+                current_statement_begin__ = 1006;
                 stan::math::assign(mean_PPD, (mean_PPD + bernoulli_rng(get_base1(pi0, n, "pi0", 1), base_rng__)));
             }
-            current_statement_begin__ = 1008;
+            current_statement_begin__ = 1007;
             for (int n = 1; n <= get_base1(N, 2, "N", 1); ++n) {
-                current_statement_begin__ = 1008;
+                current_statement_begin__ = 1007;
                 stan::math::assign(mean_PPD, (mean_PPD + bernoulli_rng(get_base1(pi1, n, "pi1", 1), base_rng__)));
             }
-            current_statement_begin__ = 1010;
+            current_statement_begin__ = 1009;
             stan::math::assign(mean_PPD, (mean_PPD / NN));
-            current_statement_begin__ = 1011;
+            current_statement_begin__ = 1010;
             stan::math::assign(adj_beta, elt_divide(beta, colsds(X, pstream__)));
             }
             // validate, write generated quantities
-            current_statement_begin__ = 954;
+            current_statement_begin__ = 953;
             size_t alpha_k_0_max__ = has_intercept;
             for (size_t k_0__ = 0; k_0__ < alpha_k_0_max__; ++k_0__) {
                 vars__.push_back(alpha[k_0__]);
             }
-            current_statement_begin__ = 955;
+            current_statement_begin__ = 954;
             size_t adj_beta_j_1_max__ = Q;
             for (size_t j_1__ = 0; j_1__ < adj_beta_j_1_max__; ++j_1__) {
                 vars__.push_back(adj_beta(j_1__));
             }
-            current_statement_begin__ = 956;
+            current_statement_begin__ = 955;
             vars__.push_back(mean_PPD);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
