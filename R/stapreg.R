@@ -38,7 +38,7 @@ stapreg <- function(object){
     coefs <- stap_summary[1:nvars, "50%"]
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
     
-    x <- array(rstan::extract(stapfit)$X,dim = c(nrow(stanmat),length(y),stap_data$Q))
+    x <- array(rstan::extract(stapfit)$X,dim = c(nrow(stanmat),nobs,stap_data$Q))
     
     if(any_dnd(stap_data)){
       subj_n_diag <- diag(as.vector(object$subj_n))

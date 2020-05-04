@@ -132,7 +132,9 @@ stapdnd_glm.fit <- function(y, z, w,
         default_scale = 2.5,
         ok_dists = ok_dists
     )
+
     names(prior_stap_stuff) <- paste0(names(prior_stap_stuff), "_for_stap")
+
     for(i in names(prior_stap_stuff))
         assign(i, prior_stap_stuff[[i]])
     
@@ -144,6 +146,7 @@ stapdnd_glm.fit <- function(y, z, w,
             link = NULL, # don't need to adjust scale based on logit vs probit
             ok_dists = ok_aux_dists
         )
+
     # prior_{dist, mean, scale, df, dist_name, autoscale}_for_aux
     names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_aux")
     if (is.null(prior_aux)) {
@@ -388,7 +391,7 @@ stapdnd_glm.fit <- function(y, z, w,
             standata$prior_mean_for_theta_s_shape <- array(prior_mean_for_theta)
             standata$prior_dist_for_theta_s_shape <- array(prior_dist_for_theta)
             standata$prior_scale_for_theta_s_shape <- array(prior_scale_for_theta)
-            standata$prior_df_for_theta_s_shape <- array(prior_df_for_theta_s)
+            standata$prior_df_for_theta_s_shape <- array(prior_df_for_theta)
             
         }else{
             standata$prior_mean_for_theta_s_shape <- double()
