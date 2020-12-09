@@ -3,7 +3,8 @@
 \name{example_model}
 \alias{example_model}
 \title{Example model}
-\format{Calling \code{example("example_model")} will run the model in the 
+\format{
+Calling \code{example("example_model")} will run the model in the 
   Examples section, below, and the resulting stapreg object will then be
   available in the global environment. The \code{chains} and \code{iter}
   arguments are specified to make this example small in size. In practice,
@@ -11,7 +12,8 @@
   values (4 and 2000 respectively) or increased if there are convergence
   problems. The \code{cores} argument is optional and on a multicore system,
   the user may well want to set that equal to the number of chains being
-  executed.}
+  executed.
+}
 \description{
 A model for use in \pkg{rstap} examples.
 }

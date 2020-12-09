@@ -4,9 +4,14 @@
 \alias{check_exposure_plot}
 \title{Exposure Plots}
 \usage{
-check_exposure_plot(samples, samples_2 = NULL, K = function(x, y)
-  exp(-x/y), grid = seq(from = 0, to = 10, by = 0.01), q = c(0.025,
-  0.975), Distance = TRUE)
+check_exposure_plot(
+  samples,
+  samples_2 = NULL,
+  K = function(x, y) exp(-x/y),
+  grid = seq(from = 0, to = 10, by = 0.01),
+  q = c(0.025, 0.975),
+  Distance = TRUE
+)
 }
 \arguments{
 \item{samples}{samples from the distribution of interest}

@@ -10,7 +10,7 @@
 \alias{product_normal}
 \alias{exponential}
 \alias{log_normal}
-\alias{gamma}
+\alias{gamma_prior}
 \alias{decov}
 \title{Prior distributions and options}
 \usage{
@@ -30,7 +30,7 @@ exponential(rate = 1, autoscale = TRUE)
 
 log_normal(location = 0, scale = 1)
 
-gamma(shape = 1, rate = 1)
+gamma_prior(shape = 1, rate = 1)
 
 decov(regularization = 1, concentration = 1, shape = 1, scale = 1)
 }

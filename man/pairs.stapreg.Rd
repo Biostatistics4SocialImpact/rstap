@@ -6,8 +6,13 @@
 \alias{pairs_condition}
 \title{Pairs method for stapreg objects}
 \usage{
-\method{pairs}{stapreg}(x, pars = NULL, regex_pars = NULL,
-  condition = pairs_condition(nuts = "accept_stat__"), ...)
+\method{pairs}{stapreg}(
+  x,
+  pars = NULL,
+  regex_pars = NULL,
+  condition = pairs_condition(nuts = "accept_stat__"),
+  ...
+)
 }
 \arguments{
 \item{x}{A fitted model object returned by one of the 

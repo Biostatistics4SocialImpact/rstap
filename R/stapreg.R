@@ -23,12 +23,12 @@ stapreg <- function(object){
 
     mer <- !is.null(object$glmod) # used stap_(g)lmer
     stapfit <- object$stapfit
-    stap_data <- object$stap_data
+    spec <- object$spec
     family <- object$family
-    y <- object$y
-    Z <- object$z
-    nvars <- ncol(Z) + stap_data$Q_s*2 + stap_data $Q_t*2 + stap_data$Q_st*3  + 
-      num_bar(stap_data) + num_s_wei(stap_data) + num_t_wei(stap_data)
+    y <- object$mf$y
+    Z <- object$mf$X
+    nvars <- ncol(Z) + .Q_s(spec)*2 + .Q_t(spec)*2 + .Q_st(spec)*3  + 
+      .num_bar(spec) + num_s_wei(spec) + num_t_wei(spec)
     if(mer){
         nvars <- nvars + ncol(object$w)
     }
@@ -38,12 +38,12 @@ stapreg <- function(object){
     coefs <- stap_summary[1:nvars, "50%"]
     stanmat <- as.matrix(stapfit)[,names(coefs), drop = F ]
     
-    x <- array(rstan::extract(stapfit)$X,dim = c(nrow(stanmat),nobs,stap_data$Q))
+    x <- array(rstan::extract(stapfit)$X,dim = c(nrow(stanmat),nobs,.Q(stapmat)))
     
     if(any_dnd(stap_data)){
       subj_n_diag <- diag(as.vector(object$subj_n))
       X_bar <- array(dim=dim(x))
-      for(i in 1:object$stap_data$Q)
+      for(i in 1:.Q(spec))
         X_bar[,,i] <- t(t(object$subj_matrix) %*% (subj_n_diag %*% (object$subj_matrix %*% t(x[,,i]) )))
       X_tilde <- x - X_bar
     }

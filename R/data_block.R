@@ -128,7 +128,7 @@ handle_glm_prior <- function(prior, nvars, default_scale = 1, link,
 # @param nvars An integer indicating the number of variables
 # @param link String naming the link function.
 # @param ok_dists A list of admissible distributions.
-handle_theta_stap_prior <- function(prior,ok_dists,stap_code,weight_mat,default_scale = 1,coef_names){
+handle_theta_stap_prior <- function(prior,ok_dists,fcode,weight_mat,default_scale = 1,coef_names){
 
 
         if(!length(prior))
@@ -415,22 +415,9 @@ get_stap_code <- function(all_names,stap_covs){
 # extract crs data
 #
 # @param stap_data the stap data object extracted from \code{extract_stap_data}
-# @param subject_data the subject_data data.frame
-# @param distance_data the distance data.frame (optional)
-# @param time_data the time data.frame (optional)
-# @param id_key string of the id column(s) name to join on across subject, distance and time data. 
-# @param max_distance  the maximum distance in distance_data
-# @param max_time  the maximum distance in time_data 
-# @return a list of the crs data for the spatial and/or temporal data as appropriate 
-extract_crs_data <- function(stap_data, subject_data, distance_data, 
-                             time_data, id_key, max_distance, max_time){
+#'@param benvo built environment object
+extract_crs_data <- function(stap_data,benvo){
     
-    dcol_ix <- validate_distancedata(distance_data,max_distance)
-    tcol_ix <- validate_timedata(time_data)
-    if(is.null(dcol_ix) & is.null(tcol_ix))
-        stop("Neither distance_data, nor time_data submitted to function",",at least one is neccessary for rstap functions")
-    if(is.null(max_distance) & !is.null(distance_data)) max_distance <- max(distance_data[,dcol_ix])
-    if(is.null(max_time) & !is.null(time_data)) max_time <- max(time_data[,tcol_ix])
 
     if(stap_data$t_only){
         stap_covs <- stap_data$covariates 

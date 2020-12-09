@@ -6,11 +6,9 @@
 \alias{as.data.frame.stapreg}
 \title{Extract the posterior sample via matrix}
 \usage{
-\method{as.matrix}{stapreg}(x, ..., pars = NULL, regex_pars = NULL,
-  include_X = FALSE)
+\method{as.matrix}{stapreg}(x, ..., pars = NULL, regex_pars = NULL, include_X = FALSE)
 
-\method{as.array}{stapreg}(x, ..., pars = NULL, regex_pars = NULL,
-  include_X = FALSE)
+\method{as.array}{stapreg}(x, ..., pars = NULL, regex_pars = NULL, include_X = FALSE)
 
 \method{as.data.frame}{stapreg}(x, ..., pars = NULL, regex_pars = NULL)
 }

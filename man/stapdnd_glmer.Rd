@@ -4,14 +4,29 @@
 \alias{stapdnd_glmer}
 \title{Bayesian spatial-temporal generalized linear models with group-specific terms via Stan}
 \usage{
-stapdnd_glmer(formula, family = gaussian(), subject_data = NULL,
-  distance_data = NULL, time_data = NULL, subject_ID = NULL,
-  group_ID = NULL, max_distance = NULL, max_time = NULL, weights,
-  offset, contrasts = NULL, ..., prior = normal(),
-  prior_intercept = normal(), prior_stap = normal(),
+stapdnd_glmer(
+  formula,
+  family = gaussian(),
+  subject_data = NULL,
+  distance_data = NULL,
+  time_data = NULL,
+  subject_ID = NULL,
+  group_ID = NULL,
+  max_distance = NULL,
+  max_time = NULL,
+  weights,
+  offset,
+  contrasts = NULL,
+  ...,
+  prior = normal(),
+  prior_intercept = normal(),
+  prior_stap = normal(),
   prior_theta = log_normal(location = 1L, scale = 1L),
-  prior_aux = exponential(), prior_covariance = decov(),
-  adapt_delta = NULL)
+  prior_aux = exponential(),
+  prior_covariance = decov(),
+  vb = FALSE,
+  adapt_delta = NULL
+)
 }
 \arguments{
 \item{formula}{Same as for \code{\link[lme4]{glmer}}. Note that in-formula

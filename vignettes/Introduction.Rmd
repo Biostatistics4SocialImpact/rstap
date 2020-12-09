@@ -126,15 +126,8 @@ These data are then modeled with rstap in the following manner - note the placem
 designating the rows labeled as Fast_Food in the distance_data as the appropriate ones to model as **Spatial** Aggregated Predictor with these data. Note that we sample the posterior with 4 chains for 2000 iterations here. This is very conservative and fewer samples/chains could be used when first fitting a model to make sure the sampler is functioning appropriately.
 ```{r sampling_1, cache=T,results=F}
 fit <- stap_lm(formula = BMI ~ sex + sap(Fast_Food),
-                subject_data = subject_data,
-                distance_data = distance_data,
-                subject_ID = 'subj_id',
-                prior = normal(location = 0, scale = 5,autoscale = F),
-                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
-                prior_stap = normal(location = 0, scale = 3, autoscale = F),
-                prior_theta = log_normal(location = 1, scale = 1), 
-                prior_aux = cauchy(location = 0,scale = 5),
-                max_distance = max(dists), 
+               benvo = FFR_example,
+                prior = stap_prior(),
                 chains = 4, iter = 2E3, cores = 4) ## include all data
 ```
 
@@ -207,15 +200,11 @@ when we set the exclusion distance to be 1.25 miles.
 
 ```{r sampling_2,cache=T,results=F}
 fit_125 <- stap_lm(BMI ~ sex + sap(Fast_Food), 
-                    subject_data = subject_data,
-                distance_data = distance_data,
-                subject_ID = 'subj_id',
-                prior = normal(location = 0,scale = 5,autoscale = F),
-                prior_intercept = normal(location = 25, scale = 5, autoscale = F),
-                prior_stap = normal(location = 0, scale = 3, autoscale = F),
-                prior_theta = log_normal(location = 1, scale = 1), 
-                prior_aux = cauchy(location = 0,scale = 5),
-                max_distance = 1.25, chains = 4, iter = 2E3, cores = 4)
+                    benvo = FFR_benvo,
+                prior = stap_prior(),
+                chains = 4, 
+                iter = 2E3, 
+                cores = 4)
 ```
 
 We excluded about half of the total data (not exactly even across individuals)

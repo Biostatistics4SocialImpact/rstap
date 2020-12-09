@@ -5,9 +5,17 @@
 \alias{predictive_error.stapreg}
 \title{In-sample or out-of-sample predictive errors}
 \usage{
-\method{predictive_error}{stapreg}(object, newsubjdata = NULL,
-  newdistdata = NULL, newtimedata = NULL, draws = NULL,
-  re.form = NULL, seed = NULL, offset = NULL, ...)
+\method{predictive_error}{stapreg}(
+  object,
+  newsubjdata = NULL,
+  newdistdata = NULL,
+  newtimedata = NULL,
+  draws = NULL,
+  re.form = NULL,
+  seed = NULL,
+  offset = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{Either a fitted model object returned by one of the 

@@ -5,11 +5,23 @@
 \alias{stap_termination.stapreg}
 \title{Spatial-Temporal Exposure Termination-Maximization Estimates}
 \usage{
-stap_termination(object, prob = 0.9, exposure_limit = 0.05,
-  pars = NULL, max_value = NULL, ...)
+stap_termination(
+  object,
+  prob = 0.9,
+  exposure_limit = 0.05,
+  pars = NULL,
+  max_value = NULL,
+  ...
+)
 
-\method{stap_termination}{stapreg}(object, prob = 0.9,
-  exposure_limit = 0.05, pars = NULL, max_value = NULL, ...)
+\method{stap_termination}{stapreg}(
+  object,
+  prob = 0.9,
+  exposure_limit = 0.05,
+  pars = NULL,
+  max_value = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{A fitted model object returned by one of the 

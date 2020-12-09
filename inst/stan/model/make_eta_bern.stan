@@ -13,10 +13,6 @@
     eta0 =  eta0 + Z0 * delta + X_tilde[y_0,] * beta;
     eta1 = eta1 + Z1 * delta + X_tilde[y_1,] * beta;
   }
-  if (has_offset == 1) {
-    eta0 = eta0 + offset0;
-    eta1 = eta1 + offset1;
-  }
   if (special_case) for (i in 1:t) {
     eta0 = eta0 + b[V0[i]];
     eta1 = eta1 + b[V1[i]];

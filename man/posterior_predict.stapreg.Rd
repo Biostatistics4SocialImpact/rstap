@@ -5,10 +5,20 @@
 \alias{posterior_predict}
 \title{Draw from posterior predictive distribution}
 \usage{
-\method{posterior_predict}{stapreg}(object, newsubjdata = NULL,
-  newdistdata = NULL, newtimedata = NULL, draws = NULL,
-  subject_ID = NULL, group_ID = NULL, re.form = NULL, fun = NULL,
-  seed = NULL, offset = NULL, ...)
+\method{posterior_predict}{stapreg}(
+  object,
+  newsubjdata = NULL,
+  newdistdata = NULL,
+  newtimedata = NULL,
+  draws = NULL,
+  subject_ID = NULL,
+  group_ID = NULL,
+  re.form = NULL,
+  fun = NULL,
+  seed = NULL,
+  offset = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{A fitted model object returned by one of the 

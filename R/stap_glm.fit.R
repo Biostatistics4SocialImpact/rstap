@@ -1,4 +1,4 @@
-# Part of the rstap2 package for estimating model parameters
+# Part of the rstap package for estimating model parameters
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -12,8 +12,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #' Fitting Generalized Linear STAP models
+#' @describeIn stap_glm
 #'
-#'@template args-adapt_delta
 #'@param y n length vector or n x 2 matrix of outcomes
 #'@param z n x p design matrix of subject specific covariates
 #'@param dists_crs (q_s+q_st) x M matrix of distances between outcome 
@@ -21,37 +21,24 @@
 #'@param u_s n x (q *2) matrix of compressed row storage array indices for dists_crs
 #'@param times_crs (q_t+q_st) x M matrix of times where the outcome observations
 #' were exposed to the built environment features with a hypothesized temporal scale
-#'@param u_t n x (q*2) matrix of compressed row storage array  indices for times_crs
+#' @param u_t n x (q*2) matrix of compressed row storage array  indices for times_crs
+#'@param spec stap model specification - of class stapspec
 #'@param weight_functions a Q x 2 matrix with integers coding the appropriate weight function for each STAP
-#'@param stap_data object of class "stap_data" that contains information on all the spatial-temporal predictors in the model
-#'@param max_distance the upper bound on any and all distances included in the model 
-#'@param max_time the upper bound on any and all times included in the model
-#'@param weights weights to be added to the likelihood observation for a given subject
-#'@param offset offset term to be added to the outcome for a given subject
 #'@param family distributional family - only binomial gaussian or poisson currently allowed
-#'@param prior,prior_intercept,prior_stap,prior_theta,prior_aux see \code{stap_glm} for more information
+#'@param prior_list  see \code{\link{stap_glm}} and \code{\link{prior_stap}} for more information
 #'@param group list of of group terms from \code{lme4::glmod}
 #'@param ... optional arguments passed to the sampler - e.g. iter,warmup, etc.
-#'@export stap_glm
-stap_glm.fit <- function(y, z, dists_crs, u_s,
+#'@export
+stap_glm.fit <- function(y, z,
+						 dists_crs, u_s,
                          times_crs, u_t,
-                         weight_functions,
-                         stap_data,
-                         max_distance = max(dists_crs),
-                         max_time = max(times_crs),
-                         weights = rep(1,NROW(y)),
-                         offset = rep(0, NROW(y)),
+						 stapmat,
                          family = stats::gaussian(),
-                         ...,
-                         prior = normal(),
-                         prior_intercept = normal(),
-                         prior_stap = normal(),
-                         group = list(), 
-                         prior_theta = list(theta_one = normal()),
-                         prior_aux = cauchy(location = 0L, scale = 5L),
-						 optimize = FALSE,
-						 vb = FALSE,
-                         adapt_delta = NULL){
+						 weights = rep(1,length(y)),
+						 offset = rep(0,length(y)),
+						 prior_list = stap_prior(),
+						 group = NULL,
+						 ...){
 
     family <- validate_family(family)
     supported_families <- c("binomial","gaussian","poisson")
@@ -74,6 +61,19 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         y <- as.integer(y[,1L])
     }
 
+	prior_intercept <- prior_list$intercept
+	prior <- prior_list$delta
+	prior_stap <- prior_list$beta
+	prior_theta <- prior_list$theta
+	prior_aux <- prior_list$auxiliary
+	
+	Q <- nrow(stapmat)
+	Q_s <- sum(stapmat$component == "Distance")
+	Q_t <- sum(stapmat$component == "Time")
+	Q_st <- sum(stapmat$component == "Distance-Time")
+	num_s_wei <- sum(stapmat$s_function[!is.na(stapmat$s_function)] == "wei")
+	num_t_wei <- sum(stapmat$t_function[!is.na(stapmat$t_function)] == "wei")
+	
     # useless assignments to pass R CMD check
     has_intercept <-
         prior_df <- prior_df_for_intercept <- prior_df_for_aux  <-
@@ -121,7 +121,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
 
     prior_stap_stuff <- handle_glm_prior(
         prior_stap,
-        nvars = stap_data$Q,
+        nvars = nrow(stapmat),
         link = family$link,
         default_scale = 2.5,
         ok_dists = ok_dists
@@ -147,18 +147,17 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         assign(i, prior_aux_stuff[[i]])
 
     #prior_{dist, mean, scale, df, dist_name, autoscale}_for_theta
-    if(is.null(prior_theta$dist))
+    if(is.null(prior_theta$dist))##TODO: Fix handle_theta_stap_prior function
         prior_theta  <- handle_theta_stap_prior(prior_theta,
                                                      ok_dists = nlist("normal","lognormal","gamma"),
-                                                     stap_code = stap_data$stap_code,
-													 weight_mat = stap_data$weight_mats,
-                                                     coef_names = grep("_scale",coef_names(stap_data),value = T, invert = T)
+                                                     stapmat = stapmat,
+                                                     coef_names = paste0(stapmat$term,"_scale")
                                                      )
     else{
         prior_theta_stuff <-
             handle_glm_prior(
                 prior_theta,
-                nvars = stap_data$Q,
+                nvars = nrow(stapmat),
                 default_scale = 1,
                 link = NULL,
                 ok_dists = nlist("normal","lognormal","gamma")
@@ -233,19 +232,17 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     standata <- nlist(
         N = nrow(ztemp),
         K = ncol(ztemp),
-        Q = stap_data$Q, 
-        Q_s = stap_data$Q_s, 
-        Q_t = stap_data$Q_t,
-        Q_st = stap_data$Q_st,
-        weight_mat = stap_data$weight_mats,
-        log_ar = stap_data$log_switch, 
-        stap_code = stap_data$stap_code,
+        Q = nrow(stapmat),
+        Q_s = Q_s, 
+        Q_t = Q_t,
+        Q_st = Q_st,
+        weight_mat = cbind(stapmat$s_code,dplyr::case_when(is.na(stapmat$t_code) ~ 0, TRUE ~ stapmat$t_code)),
+        log_ar = array(stapmat$log*1,dim = Q), 
+        stap_code = array(stapmat$component_code,dim=Q),
         M = ifelse(ncol(dists_crs),ncol(dists_crs),ncol(times_crs)),
         zbar = as.array(zbar),
         family = stan_family_number(famname),
         link,
-        max_distance = max_distance / get_space_constraint(stap_data,quantile= 0.975),
-        max_time = max_time / get_time_constraint(stap_data,0.975),
         u_s = u_s,
         u_t = u_t,
         dists_crs = dists_crs,
@@ -253,8 +250,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
         has_weights = length(weights) > 0,
         has_offset = length(offset) > 0,
         has_intercept,
-        num_s_wei = num_s_wei(stap_data),
-        num_t_wei = num_t_wei(stap_data),
+        num_s_wei = num_s_wei,
+        num_t_wei = num_t_wei,
         prior_dist,
         prior_mean,
         prior_scale,
@@ -331,7 +328,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_df_for_theta_shape_s <- double()
         }
     } else{
-        if(stap_data$Q_st>0){
+        if(Q_st>0){
             standata$prior_dist_for_theta_s <- array(prior_dist_for_theta)
             standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
             standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
@@ -340,7 +337,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_scale_for_theta_t <- array(prior_scale_for_theta)
             standata$prior_mean_for_theta_t <- array(prior_mean_for_theta)
             standata$prior_df_for_theta_t <- array(prior_df_for_theta)
-        } else if(stap_data$Q_t>0){
+        } else if(Q_t>0){
             standata$prior_dist_for_theta_t <- array(as.integer(prior_dist_for_theta))
             standata$prior_scale_for_theta_t <- array(prior_scale_for_theta)
             standata$prior_mean_for_theta_t <- array(prior_mean_for_theta)
@@ -350,8 +347,8 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_dist_for_theta_s <- double()
             standata$prior_scale_for_theta_s <- double()
             standata$prior_df_for_theta_s <- double()
-        } else if(stap_data$Q_s>0){
-            standata$prior_dist_for_theta_s <- array(rep(as.integer(prior_dist_for_theta),stap_data$Q_s))
+        } else if(Q_s>0){
+            standata$prior_dist_for_theta_s <- array(rep(as.integer(prior_dist_for_theta),Q_s))
             standata$prior_scale_for_theta_s <- array(prior_scale_for_theta)
             standata$prior_df_for_theta_s <-  array(prior_df_for_theta)
             standata$prior_mean_for_theta_s <-  array(prior_mean_for_theta)
@@ -361,7 +358,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_df_for_theta_t <- double()
             standata$prior_mean_for_theta_t <- double()
         }
-        if(num_t_wei(stap_data)>0){
+        if(num_t_wei>0){
             standata$prior_dist_for_theta_t_shape <- array(prior_dist_for_theta)
             standata$prior_scale_for_theta_t_shape <- array(prior_scale_for_theta)
             standata$prior_mean_for_theta_t_shape <- array(prior_mean_for_theta)
@@ -373,11 +370,11 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_mean_for_theta_t_shape <- double()
             standata$prior_df_for_theta_t_shape <- double()
         }
-        if(num_s_wei(stap_data)>0){
+        if(num_s_wei>0){
             standata$prior_mean_for_theta_s_shape <- array(prior_mean_for_theta)
             standata$prior_dist_for_theta_s_shape <- array(prior_dist_for_theta)
             standata$prior_scale_for_theta_s_shape <- array(prior_scale_for_theta)
-            standata$prior_df_for_theta_s_shape <- array(prior_df_for_theta_s)
+            standata$prior_df_for_theta_s_shape <- array(prior_df_for_theta)
             
         }else{
             standata$prior_mean_for_theta_s_shape <- double()
@@ -565,37 +562,20 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
     pars <- c(if (has_intercept) "alpha",
               "delta",
               "adj_beta",
-              if(stap_data$Q_s + stap_data$Q_st > 0) "theta_s",
-              if(stap_data$Q_t + stap_data$Q_st > 0) "theta_t",
-              if(num_s_wei(stap_data)>0) "shape_s",
-              if(num_t_wei(stap_data)>0) "shape_t",
+              if(Q_s + Q_st > 0) "theta_s",
+              if(Q_t + Q_st > 0) "theta_t",
+              if(num_s_wei>0) "shape_s",
+              if(num_t_wei>0) "shape_t",
               if(length(group)) "b",
               if(standata$len_theta_L) "theta_L",
               if (is_continuous | is_nb) "aux",
               "X",
               "mean_PPD")
 
-
-	if(optimize){
-		stapfit <- rstan::optimise(stapfit,data=standata,draws=1000,constrained = TRUE)
-		check_stanfit(stapfit)
-		new_names <- names(out$par)
-		mark <- grepl("^delta\\[[[:digit:]]+\\]$", new_names)
-		new_names[mark] <- colnames(ztemp)
-		new_names[new_names == "alpha[1]"] <- "(Intercept)"
-		return(stapfit)
-	}
-	if(vb){
-		stapfit <- rstan::vb(stapfit,data=standata)
-		return(stapfit)
-	}
-
-
     sampling_args <- set_sampling_args(
         object = stanfit,
         prior = prior,
         user_dots = list(...),
-        user_adapt_delta = adapt_delta,
         data = standata,
         pars = pars,
         show_messages = FALSE)
@@ -635,14 +615,14 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
 
     new_names <- c(if (has_intercept) "(Intercept)",
                    colnames(ztemp),
-                   coef_names(stap_data),
+                   stapmat$terms,
                    if(length(group) && length(group$flist)) c (paste0("b[", b_nms, "]")),
                    if(standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                    if (is_gaussian) "sigma",
                    if (is_gamma) "shape",
                    if (is_ig) "lambda",
                    if (is_nb) "reciprocal_dispersion",
-                   as.vector(sapply(1:nrow(ztemp),function(x) paste0("X",x,"_theta_",1:stap_data$Q))),
+                   as.vector(sapply(1:nrow(ztemp),function(x) paste0("X",x,"_theta_",1:Q))),
                    "mean_PPD",
                    "log-posterior")
     stapfit@sim$fnames_oi <- new_names

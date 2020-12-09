@@ -159,6 +159,25 @@
 #' 
 NULL
 
+#' Stap Prior Function
+#'
+#' @param intercept prior for intercept variable
+#' @param delta prior for standard regression coefficients
+#' @param beta prior for stap regression coefficients
+#' @param theta prior for spatio-temporal scale regression coefficients
+#' @param auxiliary prior for auxiliary variance 
+#' 
+#' @export
+stap_prior <- function(intercept = normal(),
+					   delta = normal(),
+					   beta = normal(),
+					   theta = log_normal(),
+					   auxiliary = cauchy()){
+
+	p <- nlist(intercept,delta,beta,theta,auxiliary)
+	return(structure(p,class=c("prior")))
+}
+
 
 #' @rdname priors
 #' @export
@@ -225,7 +244,7 @@ log_normal <- function(location = 0, scale = 1){
 
 #' @rdname priors
 #' @export
-gamma <- function(shape = 1, rate = 1){
+gamma_prior <- function(shape = 1, rate = 1){
 	nlist(dist = "gamma", shape, rate)
 }
 

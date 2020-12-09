@@ -6,11 +6,18 @@
 \alias{as.data.frame.summary.stapreg}
 \title{Summary method for stapreg objects}
 \usage{
-\method{summary}{stapreg}(object, pars = NULL, regex_pars = NULL,
-  probs = NULL, waic = F, include_X = FALSE, ..., digits = 1)
+\method{summary}{stapreg}(
+  object,
+  pars = NULL,
+  regex_pars = NULL,
+  probs = NULL,
+  waic = F,
+  include_X = FALSE,
+  ...,
+  digits = 1
+)
 
-\method{print}{summary.stapreg}(x, digits = max(1, attr(x,
-  "print.digits")), ...)
+\method{print}{summary.stapreg}(x, digits = max(1, attr(x, "print.digits")), ...)
 
 \method{as.data.frame}{summary.stapreg}(x, ...)
 }

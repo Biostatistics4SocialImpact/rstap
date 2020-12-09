@@ -31,14 +31,13 @@
 # @return A list of arguments to use for the \code{args} argument for 
 #   \code{do.call(sampling, args)}.
 set_sampling_args <- function(object, prior, user_dots = list(), 
-                              user_adapt_delta = NULL, ...) {
+                               ...) {
   args <- list(object = object, ...)
   unms <- names(user_dots)
   for (j in seq_along(user_dots)) {
     args[[unms[j]]] <- user_dots[[j]]
   }
-  defaults <- default_stan_control(prior = prior,
-                                   adapt_delta = user_adapt_delta)
+  defaults <- default_stan_control(prior = prior)
 
   if (!"control" %in% unms) {
     # no user-specified 'control' argument

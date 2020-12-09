@@ -4,14 +4,33 @@
 \alias{stapdnd_glm.fit}
 \title{Fitting Generalized Linear STAP Difference in Difference models}
 \usage{
-stapdnd_glm.fit(y, z, w, dists_crs, u_s, times_crs, u_t, subject_matrix,
-  subject_n, weight_functions, stap_data, max_distance = max(dists_crs),
-  max_time = max(times_crs), weights = rep(1, NROW(y)),
-  offset = rep(0, NROW(y)), family = stats::gaussian(), ...,
-  prior = normal(), prior_intercept = normal(),
-  prior_stap = normal(), group = list(), prior_theta = list(theta_one
-  = normal()), prior_aux = cauchy(location = 0L, scale = 5L),
-  adapt_delta = NULL)
+stapdnd_glm.fit(
+  y,
+  z,
+  w,
+  dists_crs,
+  u_s,
+  times_crs,
+  u_t,
+  subject_matrix,
+  subject_n,
+  weight_functions,
+  stap_data,
+  max_distance = max(dists_crs),
+  max_time = max(times_crs),
+  weights = rep(1, NROW(y)),
+  offset = rep(0, NROW(y)),
+  family = stats::gaussian(),
+  ...,
+  prior = normal(),
+  prior_intercept = normal(),
+  prior_stap = normal(),
+  group = list(),
+  prior_theta = list(theta_one = normal()),
+  prior_aux = cauchy(location = 0L, scale = 5L),
+  vb = FALSE,
+  adapt_delta = NULL
+)
 }
 \arguments{
 \item{y}{n length vector or n x 2 matrix of outcomes}

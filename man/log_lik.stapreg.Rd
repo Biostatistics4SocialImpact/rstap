@@ -5,8 +5,14 @@
 \alias{log_lik}
 \title{Pointwise log-likelihood matrix}
 \usage{
-\method{log_lik}{stapreg}(object, newsubjdata = NULL,
-  newdistdata = NULL, newtimedata = NULL, offset = NULL, ...)
+\method{log_lik}{stapreg}(
+  object,
+  newsubjdata = NULL,
+  newdistdata = NULL,
+  newtimedata = NULL,
+  offset = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{A fitted model object returned by one of the 

@@ -4,8 +4,7 @@
 \alias{plot.stapreg}
 \title{Plot method for stapreg objects}
 \usage{
-\method{plot}{stapreg}(x, plotfun = "intervals", pars = NULL,
-  regex_pars = NULL, ...)
+\method{plot}{stapreg}(x, plotfun = "intervals", pars = NULL, regex_pars = NULL, ...)
 }
 \arguments{
 \item{x}{A fitted model object returned by one of the 

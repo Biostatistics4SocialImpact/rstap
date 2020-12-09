@@ -6,10 +6,21 @@
 \alias{predictive_interval.ppd}
 \title{Predictive intervals}
 \usage{
-\method{predictive_interval}{stapreg}(object, prob = 0.9,
-  newsubjdata = NULL, newdistdata = NULL, newtimedata = NULL,
-  draws = NULL, subject_ID = NULL, group_ID = NULL, re.form = NULL,
-  fun = NULL, seed = NULL, offset = NULL, ...)
+\method{predictive_interval}{stapreg}(
+  object,
+  prob = 0.9,
+  newsubjdata = NULL,
+  newdistdata = NULL,
+  newtimedata = NULL,
+  draws = NULL,
+  subject_ID = NULL,
+  group_ID = NULL,
+  re.form = NULL,
+  fun = NULL,
+  seed = NULL,
+  offset = NULL,
+  ...
+)
 
 \method{predictive_interval}{ppd}(object, prob = 0.9, ...)
 }

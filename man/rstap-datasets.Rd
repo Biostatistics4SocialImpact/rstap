@@ -9,7 +9,8 @@
 \alias{homog_subject_data}
 \alias{homog_distance_data}
 \title{Datasets for rstap examples}
-\format{\describe{
+\format{
+\describe{
 \item{\code{homog_longitudinal_bef_data}}{
 Simulated data for the longitudinal simulation
 \itemize{
@@ -63,7 +64,8 @@ Source: \href{https://biostatistics4socialimpact.github.io/rstap/articles/Introd
 
 Source: \href{https://biostatistics4socialimpact.github.io/rstap/articles/Introduction.html}{Introduction Vignette}
 
-}}
+}
+}
 \description{
 Small datasets for use in \pkg{rstap} examples and vignettes.
 }
