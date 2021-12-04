@@ -386,7 +386,7 @@ get_weight_code <- function(all_names, stap_covs, stap_code){
         }
         if(stap_code[ix] == 2){
             temp <- all_names[which(all_names == stap_covs[ix])+2]
-            if(temp %in% c("erf","exp","wei"))
+            if(temp %in% c("erf","exp","cwei"))
                w[ix,2] <- w_codes[[temp]]
             else
                 w[ix,2] <- 1
