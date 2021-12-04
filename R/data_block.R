@@ -305,6 +305,7 @@ handle_theta_stap_prior <- function(prior,ok_dists,stap_code,weight_mat,default_
 # @param coef_names
 check_theta_priors <- function(prior_list,stap_code,coef_names){
 
+    coef_names <- sub("_dnd|_bar","",coef_names)
     if(any( !(names(prior_list) %in% coef_names))  | length(stap_code) != length(prior_list)  )
         stop("if assigning any individual priors for spatial-temporal parameters - ALL parameters must be assigned an
              appropriately named prior")
