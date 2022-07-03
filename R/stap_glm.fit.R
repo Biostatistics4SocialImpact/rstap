@@ -377,7 +377,7 @@ stap_glm.fit <- function(y, z, dists_crs, u_s,
             standata$prior_mean_for_theta_s_shape <- array(prior_mean_for_theta)
             standata$prior_dist_for_theta_s_shape <- array(prior_dist_for_theta)
             standata$prior_scale_for_theta_s_shape <- array(prior_scale_for_theta)
-            standata$prior_df_for_theta_s_shape <- array(prior_df_for_theta_s)
+            standata$prior_df_for_theta_s_shape <- array(prior_df_for_theta)
             
         }else{
             standata$prior_mean_for_theta_s_shape <- double()
